@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import classNames from 'classnames';
 import { Card, Button } from '@/components/atoms';
@@ -32,13 +34,6 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
     if (newQuantity >= 1) {
       setQuantity(newQuantity);
     }
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-    }).format(price);
   };
 
   const cardClasses = classNames(
@@ -85,7 +80,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
           <div className={styles.header}>
             <h3 className={styles.name}>{menuItem.name}</h3>
             <span className={styles.price}>
-              {formatPrice(menuItem.price)}
+              {menuItem.price}
             </span>
           </div>
 

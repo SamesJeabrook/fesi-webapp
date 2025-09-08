@@ -5,27 +5,31 @@ A modern food ordering platform built with Next.js, TypeScript, and Storybook, f
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://gitlab.com/samesJeabrook/fesiwebapp.git
    cd fesiwebapp
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Start development servers**
+
    ```bash
    # Start Next.js development server
    npm run dev
-   
+
    # In another terminal, start Storybook
    npm run storybook
    ```
@@ -74,6 +78,7 @@ src/
 ## 🧪 Component Development
 
 ### Storybook Organization
+
 Components are organized following atomic design principles:
 
 - **🔬 Atoms**: Basic UI elements (Button, Input, Card)
@@ -82,7 +87,9 @@ Components are organized following atomic design principles:
 - **📄 Templates**: Page layouts (coming soon)
 
 ### Component Structure
+
 Each component follows a consistent structure:
+
 ```
 ComponentName/
 ├── ComponentName.component.tsx   # React component
@@ -95,7 +102,9 @@ ComponentName/
 ## 🎨 Design System
 
 ### Design Tokens
+
 Centralized design system with:
+
 - **Colors**: Primary, secondary, neutral, success, warning, error palettes
 - **Typography**: Font sizes, line heights, font weights
 - **Spacing**: Consistent spacing scale
@@ -104,6 +113,7 @@ Centralized design system with:
 - **Animations**: Duration and easing curves
 
 ### SASS Architecture
+
 - **Modern @use syntax**: No deprecated @import statements
 - **Mixins**: Reusable styles for buttons, inputs, typography, responsive design
 - **Path aliases**: Clean imports with `@/styles/mixins`
@@ -130,16 +140,19 @@ npm run lint         # Run ESLint
 ## 🛠️ Technology Stack
 
 ### Core
+
 - **[Next.js 15](https://nextjs.org/)** - React framework with App Router
 - **[React 19](https://react.dev/)** - UI library
 - **[TypeScript](https://www.typescriptlang.org/)** - Type safety
 
 ### Development
+
 - **[Storybook 9](https://storybook.js.org/)** - Component development environment
 - **[Vitest](https://vitest.dev/)** - Testing framework
 - **[MSW](https://mswjs.io/)** - API mocking for development/testing
 
 ### Styling
+
 - **[SASS](https://sass-lang.com/)** - CSS preprocessor with modern syntax
 - **CSS Modules** - Scoped styling
 - **Design Tokens** - Centralized design system
@@ -147,20 +160,26 @@ npm run lint         # Run ESLint
 ## 🏗️ Architecture Decisions
 
 ### Atomic Design
+
 Components are organized using [Brad Frost's Atomic Design](https://bradfrost.com/blog/post/atomic-web-design/) methodology:
+
 - Promotes reusability and consistency
 - Makes component hierarchy clear
 - Facilitates design system thinking
 
 ### App Router (Next.js 15)
+
 Using Next.js App Router for:
+
 - Better developer experience
 - Built-in loading and error states
 - Improved SEO and performance
 - Modern React features support
 
 ### Mock Service Worker (MSW)
+
 MSW for API mocking:
+
 - Realistic API behavior in Storybook
 - Consistent data across development and testing
 - No backend dependency for frontend development
@@ -168,12 +187,15 @@ MSW for API mocking:
 ## 📚 Documentation
 
 ### Component Documentation
+
 Each component includes:
+
 - **Storybook stories**: Interactive examples and documentation
 - **TypeScript interfaces**: Clear prop definitions
 - **Usage examples**: Multiple use cases and variations
 
 ### Design System
+
 - **Storybook**: Visual component library at http://localhost:6006
 - **Design tokens**: Centralized in `src/styles/designTokens.ts`
 - **SASS mixins**: Reusable styles in `src/styles/mixins.scss`
@@ -181,6 +203,7 @@ Each component includes:
 ## 🚧 Roadmap
 
 ### Current Status ✅
+
 - [x] Basic component library (5 atoms, 2 molecules)
 - [x] Next.js app structure with routing
 - [x] Storybook with MSW integration
@@ -189,6 +212,7 @@ Each component includes:
 - [x] Modern SASS with @use syntax
 
 ### Upcoming 🔄
+
 - [ ] Organism components (MenuGrid, RestaurantList)
 - [ ] Template components (page layouts)
 - [ ] API integration with backend

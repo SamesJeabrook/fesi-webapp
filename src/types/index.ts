@@ -83,7 +83,8 @@ export interface MenuItem extends BaseEntity {
   categoryId: string;
   name: string;
   description?: string;
-  price: number;
+  price: string; // Formatted price for display (e.g., "£5.99")
+  basePrice?: number; // Raw price in smallest currency unit (pence) for calculations
   imageUrl?: string;
   isAvailable: boolean;
   isPopular?: boolean;
