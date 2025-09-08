@@ -1,0 +1,55 @@
+@use '@/styles/mixins' as *;
+
+.clearButton {
+  // Override button styles for inline icon usage
+  padding: 0 !important;
+  min-height: auto !important;
+  background: transparent !important;
+  border: none !important;
+  color: var(--color-neutral-500) !important;
+  
+  &:hover {
+    color: var(--color-neutral-700) !important;
+    background: transparent !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  
+  circle {
+    animation: dash 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}

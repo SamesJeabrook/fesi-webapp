@@ -1,0 +1,35 @@
+export interface InputProps {
+  id: string;
+  name?: string;
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search';
+  value?: string;
+  defaultValue?: string;
+  placeholder?: string;
+  label?: string;
+  helperText?: string;
+  errorMessage?: string;
+  isRequired?: boolean;
+  isDisabled?: boolean;
+  isReadOnly?: boolean;
+  autoComplete?: string;
+  autoFocus?: boolean;
+  maxLength?: number;
+  minLength?: number;
+  min?: number;
+  max?: number;
+  step?: number;
+  pattern?: string;
+  size?: 'sm' | 'md' | 'lg';
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  leftAddon?: React.ReactNode;
+  rightAddon?: React.ReactNode;
+  fullWidth?: boolean;
+  className?: string;
+  inputClassName?: string;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  onFocus?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  'data-testid'?: string;
+}
