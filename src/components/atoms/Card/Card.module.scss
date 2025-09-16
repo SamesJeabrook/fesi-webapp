@@ -6,9 +6,7 @@
   transition: all var(--transition-normal);
   overflow: hidden;
   
-  &:focus-visible {
-    @include focus-ring;
-  }
+  
 }
 
 // Variants

@@ -1,8 +1,7 @@
 @use '@/styles/mixins' as *;
+@use '@/styles/tokens/typography' as *;
 
 .button {
-  @include button-base;
-  
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -23,7 +22,7 @@
   
   // Focus styles
   &:focus-visible {
-    @include focus-ring;
+    outline: 1px solid blue;
   }
   
   // Disabled state
@@ -152,19 +151,19 @@
 
 // Sizes
 .sm {
-  @include text-sm;
+  @extend %body-small;
   padding: var(--space-2) var(--space-3);
   min-height: 32px;
 }
 
 .md {
-  @include text-base;
+  @extend %body-medium;
   padding: var(--space-3) var(--space-4);
   min-height: 40px;
 }
 
 .lg {
-  @include text-lg;
+  @extend %body-large;
   padding: var(--space-4) var(--space-6);
   min-height: 48px;
 }

@@ -1,4 +1,5 @@
 @use '@/styles/mixins' as *;
+@use '@/styles/tokens/typography' as *;
 
 .container {
   display: flex;
@@ -11,7 +12,7 @@
 }
 
 .label {
-  @include text-sm;
+  @extend %body-small;
   font-weight: var(--font-weight-medium);
   color: var(--color-neutral-700);
   
@@ -31,7 +32,6 @@
   transition: all var(--transition-normal);
   
   &:focus-within {
-    @include focus-ring;
     border-color: var(--color-brand-500);
   }
   
@@ -68,8 +68,6 @@
 }
 
 .input {
-  @include input-base;
-  
   flex: 1;
   min-width: 0;
   background: transparent;
@@ -105,7 +103,7 @@
   min-height: 32px;
   
   .input {
-    @include text-sm;
+ @extend %body-small;
     padding: var(--space-1) var(--space-3);
   }
   
@@ -122,7 +120,7 @@
   min-height: 40px;
   
   .input {
-    @include text-base;
+    
     padding: var(--space-2) var(--space-3);
   }
   
@@ -139,7 +137,7 @@
   min-height: 48px;
   
   .input {
-    @include text-lg;
+    @extend %body-large;
     padding: var(--space-3) var(--space-4);
   }
   
@@ -189,7 +187,7 @@
   color: var(--color-neutral-600);
   white-space: nowrap;
   
-  @include text-sm;
+  @extend %body-small
 }
 
 .leftAddon {
@@ -204,13 +202,13 @@
 
 // Helper and error text
 .helperText {
-  @include text-xs;
+  @extend %body-small;
   color: var(--color-neutral-600);
   margin-top: var(--space-1);
 }
 
 .errorMessage {
-  @include text-xs;
+  @extend %body-small;
   color: var(--color-error-600);
   margin-top: var(--space-1);
   display: flex;
