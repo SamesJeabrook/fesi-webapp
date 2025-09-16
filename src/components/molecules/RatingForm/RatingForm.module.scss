@@ -1,0 +1,142 @@
+@use '../../../styles/tokens/colors';
+@use '../../../styles/tokens/spacing';
+@use '../../../styles/tokens/typography';
+@use '../../../styles/tokens/borders';
+
+.ratingForm {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.section {
+  margin-bottom: spacing.$space-xl;
+  padding-bottom: spacing.$space-lg;
+  border-bottom: 1px solid colors.$neutral-200;
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+}
+
+.sectionTitle {
+  @extend %heading-3;
+  color: colors.$neutral-900;
+  margin-bottom: spacing.$space-md;
+}
+
+.sectionSubtitle {
+  @extend %heading-4;
+  color: colors.$neutral-700;
+  margin-bottom: spacing.$space-md;
+}
+
+.field {
+  margin-bottom: spacing.$space-md;
+}
+
+.label {
+  @extend %body-medium;
+  display: flex;
+  flex-direction: column;
+  gap: spacing.$space-xs;
+  color: colors.$neutral-700;
+  font-weight: 500;
+}
+
+.starRating {
+  align-self: flex-start;
+}
+
+.error {
+  @extend %body-small;
+  color: colors.$error-600;
+  margin-top: spacing.$space-2xs;
+}
+
+.aspectRatings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: spacing.$space-md;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.menuItems {
+  display: flex;
+  flex-direction: column;
+  gap: spacing.$space-md;
+}
+
+.menuItem {
+  padding: spacing.$space-md;
+  border: 1px solid colors.$neutral-200;
+  border-radius: borders.$radius-md;
+  background: colors.$neutral-50;
+}
+
+.menuItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: spacing.$space-xs;
+}
+
+.menuItemTitle {
+  @extend %body-medium;
+  color: colors.$neutral-900;
+  font-weight: 500;
+}
+
+.menuItemPrice {
+  @extend %body-small;
+  color: colors.$neutral-600;
+  font-weight: 500;
+}
+
+.menuItemRating {
+  margin-bottom: spacing.$space-xs;
+}
+
+.menuItemComment {
+  margin-top: spacing.$space-xs;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: spacing.$space-sm;
+  border: 1px solid colors.$neutral-300;
+  border-radius: borders.$radius-sm;
+  font-family: inherit;
+  @extend %body-medium;
+  color: colors.$neutral-900;
+  background: colors.$white;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: colors.$primary-500;
+    box-shadow: 0 0 0 2px rgba(colors.$primary-500, 0.1);
+  }
+
+  &::placeholder {
+    color: colors.$neutral-400;
+  }
+}
+
+.characterCount {
+  @extend %body-small;
+  color: colors.$neutral-500;
+  text-align: right;
+  margin-top: spacing.$space-2xs;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: spacing.$space-lg;
+}

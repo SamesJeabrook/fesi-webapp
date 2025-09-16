@@ -1,11 +1,17 @@
 import type { Preview } from '@storybook/nextjs-vite';
-import { initialize, mswLoader } from 'msw-storybook-addon';
+// import { initialize, mswLoader } from 'msw-storybook-addon';
+
+// Import global styles - includes all CSS custom properties, design tokens, and base styles
 import '../src/styles/globals.scss';
 
-// Initialize MSW for Storybook
-initialize();
+// Initialize MSW for Storybook with quiet mode to reduce console noise
+// initialize({
+//   onUnhandledRequest: 'bypass',
+//   quiet: true
+// });
 
 const preview: Preview = {
+  // loaders: [mswLoader],
   parameters: {
     controls: {
       matchers: {
@@ -35,31 +41,51 @@ const preview: Preview = {
     },
     viewport: {
       viewports: {
-        mobile: {
-          name: 'Mobile',
+        // Extra small - below sm breakpoint
+        xs: {
+          name: 'Extra Small (xs)',
           styles: {
             width: '375px',
             height: '667px',
           },
         },
-        tablet: {
-          name: 'Tablet',
+        // Small - matches your sm breakpoint (640px)
+        sm: {
+          name: 'Small (sm)',
+          styles: {
+            width: '640px',
+            height: '800px',
+          },
+        },
+        // Medium - matches your md breakpoint (768px)
+        md: {
+          name: 'Medium (md)',
           styles: {
             width: '768px',
             height: '1024px',
           },
         },
-        desktop: {
-          name: 'Desktop',
+        // Large - matches your lg breakpoint (1024px)
+        lg: {
+          name: 'Large (lg)',
           styles: {
             width: '1024px',
             height: '768px',
           },
         },
-        wide: {
-          name: 'Wide',
+        // Extra Large - matches your xl breakpoint (1280px)
+        xl: {
+          name: 'Extra Large (xl)',
           styles: {
-            width: '1440px',
+            width: '1280px',
+            height: '800px',
+          },
+        },
+        // 2XL - matches your 2xl breakpoint (1536px)
+        '2xl': {
+          name: '2X Large (2xl)',
+          styles: {
+            width: '1536px',
             height: '900px',
           },
         },
@@ -84,7 +110,6 @@ const preview: Preview = {
       },
     },
   },
-  loaders: [mswLoader], // Enable MSW for all stories
   tags: ['autodocs'],
 };
 

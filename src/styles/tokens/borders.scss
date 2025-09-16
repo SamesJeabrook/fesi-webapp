@@ -1,0 +1,74 @@
+@use 'sass:map';
+
+// Border Design Tokens - Converted from designTokens.ts
+// SCSS maps and variables for borders and border radius
+
+// Border radius map (using pixel values from design tokens)
+$border-radius: (
+  none: 0,
+  sm: 2px,
+  base: 4px,
+  md: 6px,
+  lg: 8px,
+  xl: 12px,
+  '2xl': 16px,
+  '3xl': 24px,
+  full: 9999px
+);
+
+// Border widths map
+$border-width: (
+  0: 0,
+  1: 1px,
+  2: 2px,
+  4: 4px,
+  8: 8px
+);
+
+// Border styles map
+$border-style: (
+  solid: solid,
+  dashed: dashed,
+  dotted: dotted,
+  double: double,
+  groove: groove,
+  ridge: ridge,
+  inset: inset,
+  outset: outset
+);
+
+// Helper functions
+@function border-radius($size) {
+  @return map.get($border-radius, $size);
+}
+
+@function border-width($width) {
+  @return map.get($border-width, $width);
+}
+
+@function border-style($style) {
+  @return map.get($border-style, $style);
+}
+
+// Legacy border radius variables for backwards compatibility
+$radius-none: map.get($border-radius, none);
+$radius-xs: map.get($border-radius, sm);    // 2px
+$radius-sm: map.get($border-radius, base);  // 4px
+$radius-md: map.get($border-radius, md);    // 6px
+$radius-lg: map.get($border-radius, lg);    // 8px
+$radius-xl: map.get($border-radius, xl);    // 12px
+$radius-2xl: map.get($border-radius, '2xl'); // 16px
+$radius-3xl: map.get($border-radius, '3xl'); // 24px
+$radius-full: map.get($border-radius, full);
+
+// Legacy border width variables for backwards compatibility
+$border-0: map.get($border-width, 0);
+$border-1: map.get($border-width, 1);
+$border-2: map.get($border-width, 2);
+$border-4: map.get($border-width, 4);
+$border-8: map.get($border-width, 8);
+
+// Legacy border style variables for backwards compatibility
+$border-solid: map.get($border-style, solid);
+$border-dashed: map.get($border-style, dashed);
+$border-dotted: map.get($border-style, dotted);

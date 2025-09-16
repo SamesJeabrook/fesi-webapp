@@ -70,14 +70,17 @@
 
 .clickable {
   cursor: pointer;
-  
-  &:hover {
-    box-shadow: var(--shadow-md);
+
+  @include breakpoint(md) {
+      &:hover {
+        box-shadow: var(--shadow-md);
+      }
+      
+      &:active {
+        transform: translateY(1px);
+      }
   }
   
-  &:active {
-    transform: translateY(1px);
-  }
 }
 
 // Responsive design

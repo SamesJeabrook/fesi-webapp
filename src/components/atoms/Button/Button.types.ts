@@ -1,7 +1,7 @@
 export interface ButtonProps {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' |'sm' | 'md' | 'lg';
   isLoading?: boolean;
   isDisabled?: boolean;
   fullWidth?: boolean;

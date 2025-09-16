@@ -1,0 +1,252 @@
+@use '../../../styles/tokens/colors';
+@use '../../../styles/tokens/spacing';
+@use '../../../styles/tokens/typography';
+@use '../../../styles/tokens/borders';
+
+.ratingDisplay {
+  display: flex;
+  flex-direction: column;
+  gap: spacing.$space-lg;
+}
+
+.loading,
+.empty {
+  @include typography.body-medium;
+  color: colors.$neutral-500;
+  text-align: center;
+  padding: spacing.$space-xl;
+}
+
+.rating {
+  padding: spacing.$space-lg;
+  border: 1px solid colors.$neutral-200;
+  border-radius: borders.$radius-md;
+  background: colors.$white;
+}
+
+.ratingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: spacing.$space-sm;
+}
+
+.ratingMeta {
+  display: flex;
+  align-items: center;
+  gap: spacing.$space-sm;
+}
+
+.date {
+  @include typography.body-small;
+  color: colors.$neutral-500;
+}
+
+.customerName {
+  @include typography.body-small;
+  color: colors.$neutral-600;
+  font-weight: 500;
+}
+
+.ratingTitle {
+  @include typography.heading-5;
+  color: colors.$neutral-900;
+  margin-bottom: spacing.$space-xs;
+}
+
+.ratingComment {
+  @include typography.body-medium;
+  color: colors.$neutral-700;
+  line-height: 1.5;
+  margin-bottom: spacing.$space-sm;
+}
+
+.aspectRatings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: spacing.$space-md;
+  margin-bottom: spacing.$space-sm;
+}
+
+.aspectRating {
+  display: flex;
+  align-items: center;
+  gap: spacing.$space-xs;
+}
+
+.aspectLabel {
+  @include typography.body-small;
+  color: colors.$neutral-600;
+  font-weight: 500;
+}
+
+.menuItemRatings {
+  border-top: 1px solid colors.$neutral-200;
+  padding-top: spacing.$space-md;
+  margin-top: spacing.$space-md;
+}
+
+.menuItemTitle {
+  @include typography.body-small;
+  color: colors.$neutral-700;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: spacing.$space-sm;
+}
+
+.menuItemRating {
+  margin-bottom: spacing.$space-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.menuItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: spacing.$space-2xs;
+}
+
+.menuItemName {
+  @include typography.body-small;
+  color: colors.$neutral-700;
+  font-weight: 500;
+}
+
+.menuItemComment {
+  @include typography.body-small;
+  color: colors.$neutral-600;
+  font-style: italic;
+  margin-left: spacing.$space-sm;
+}
+
+.showMore {
+  @include typography.body-small;
+  color: colors.$primary-600;
+  text-align: center;
+  padding: spacing.$space-md;
+  background: colors.$primary-50;
+  border-radius: borders.$radius-sm;
+  font-weight: 500;
+}
+
+// Rating Stats Styles
+.ratingStats {
+  padding: spacing.$space-lg;
+  border: 1px solid colors.$neutral-200;
+  border-radius: borders.$radius-md;
+  background: colors.$white;
+}
+
+.noStats {
+  @include typography.body-medium;
+  color: colors.$neutral-500;
+  text-align: center;
+  padding: spacing.$space-lg;
+}
+
+.statsHeader {
+  text-align: center;
+  margin-bottom: spacing.$space-lg;
+  padding-bottom: spacing.$space-lg;
+  border-bottom: 1px solid colors.$neutral-200;
+}
+
+.averageRating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: spacing.$space-xs;
+  margin-bottom: spacing.$space-sm;
+}
+
+.averageValue {
+  @include typography.heading-1;
+  color: colors.$neutral-900;
+  font-weight: 700;
+}
+
+.ratingLabel {
+  @include typography.body-medium;
+  color: colors.$neutral-600;
+  font-weight: 500;
+}
+
+.totalRatings {
+  @include typography.body-small;
+  color: colors.$neutral-500;
+}
+
+.ratingBreakdown {
+  margin-bottom: spacing.$space-lg;
+}
+
+.ratingBar {
+  display: flex;
+  align-items: center;
+  gap: spacing.$space-sm;
+  margin-bottom: spacing.$space-xs;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.starLabel {
+  @include typography.body-small;
+  color: colors.$neutral-600;
+  min-width: 50px;
+}
+
+.barContainer {
+  flex: 1;
+  height: 8px;
+  background: colors.$neutral-200;
+  border-radius: borders.$radius-full;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background: colors.$warning-500;
+  transition: width 0.3s ease;
+}
+
+.percentage {
+  @include typography.body-small;
+  color: colors.$neutral-600;
+  min-width: 35px;
+  text-align: right;
+}
+
+.aspectStats {
+  border-top: 1px solid colors.$neutral-200;
+  padding-top: spacing.$space-lg;
+}
+
+.aspectTitle {
+  @include typography.body-medium;
+  color: colors.$neutral-700;
+  font-weight: 600;
+  margin-bottom: spacing.$space-md;
+}
+
+.aspectStat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: spacing.$space-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .aspectLabel {
+    @include typography.body-small;
+    color: colors.$neutral-600;
+    font-weight: 500;
+  }
+}

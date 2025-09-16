@@ -1,0 +1,197 @@
+@use 'sass:map';
+// Typography Design Tokens - Converted from designTokens.ts
+// SCSS maps and variables for typography
+
+// Font families map
+$font-family: (
+  primary: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  secondary: '"Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  mono: '"JetBrains Mono", "Fira Code", Consolas, monospace'
+);
+
+// Font sizes map (using pixel values from design tokens)
+$font-size: (
+  xs: 12px,
+  sm: 14px,
+  base: 16px,
+  lg: 18px,
+  xl: 20px,
+  '2xl': 24px,
+  '3xl': 30px,
+  '4xl': 36px,
+  '5xl': 48px,
+  '6xl': 60px
+);
+
+// Font weights map
+$font-weight: (
+  thin: 100,
+  extralight: 200,
+  light: 300,
+  normal: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+  extrabold: 800,
+  black: 900
+);
+
+// Line heights map
+$line-height: (
+  none: 1,
+  tight: 1.25,
+  snug: 1.375,
+  normal: 1.5,
+  relaxed: 1.625,
+  loose: 2
+);
+
+// Helper functions
+@function font-family($family) {
+  @return map.get($font-family, $family);
+}
+
+@function font-size($size) {
+  @return map.get($font-size, $size);
+}
+
+@function font-weight($weight) {
+  @return map.get($font-weight, $weight);
+}
+
+@function line-height($height) {
+  @return map.get($line-height, $height);
+}
+
+// Legacy font family variables for backwards compatibility
+$font-primary: map.get($font-family, primary);
+$font-secondary: map.get($font-family, secondary);
+$font-mono: map.get($font-family, mono);
+
+// Legacy font size variables for backwards compatibility
+$font-xs: map.get($font-size, xs);       // 12px
+$font-sm: map.get($font-size, sm);       // 14px
+$font-base: map.get($font-size, base);   // 16px
+$font-lg: map.get($font-size, lg);       // 18px
+$font-xl: map.get($font-size, xl);       // 20px
+$font-2xl: map.get($font-size, '2xl');   // 24px
+$font-3xl: map.get($font-size, '3xl');   // 30px
+$font-4xl: map.get($font-size, '4xl');   // 36px
+$font-5xl: map.get($font-size, '5xl');   // 48px
+$font-6xl: map.get($font-size, '6xl');   // 60px
+
+// Legacy font weight variables for backwards compatibility
+$font-thin: map.get($font-weight, thin);
+$font-extralight: map.get($font-weight, extralight);
+$font-light: map.get($font-weight, light);
+$font-normal: map.get($font-weight, normal);
+$font-medium: map.get($font-weight, medium);
+$font-semibold: map.get($font-weight, semibold);
+$font-bold: map.get($font-weight, bold);
+$font-extrabold: map.get($font-weight, extrabold);
+$font-black: map.get($font-weight, black);
+
+// Legacy line height variables for backwards compatibility
+$leading-none: map.get($line-height, none);
+$leading-tight: map.get($line-height, tight);
+$leading-snug: map.get($line-height, snug);
+$leading-normal: map.get($line-height, normal);
+$leading-relaxed: map.get($line-height, relaxed);
+$leading-loose: map.get($line-height, loose);
+
+// Typography placeholders for consistent text styles
+%heading-1 {
+  font-family: $font-primary;
+  font-size: $font-5xl;
+  font-weight: $font-bold;
+  line-height: $leading-tight;
+  letter-spacing: -0.025em;
+}
+
+%heading-2 {
+  font-family: $font-primary;
+  font-size: $font-4xl;
+  font-weight: $font-bold;
+  line-height: $leading-tight;
+  letter-spacing: -0.025em;
+}
+
+%heading-3 {
+  font-family: $font-primary;
+  font-size: $font-3xl;
+  font-weight: $font-semibold;
+  line-height: $leading-snug;
+}
+
+%heading-4 {
+  font-family: $font-primary;
+  font-size: $font-2xl;
+  font-weight: $font-semibold;
+  line-height: $leading-snug;
+}
+
+%heading-5 {
+  font-family: $font-primary;
+  font-size: $font-xl;
+  font-weight: $font-semibold;
+  line-height: $leading-snug;
+}
+
+%heading-6 {
+  font-family: $font-primary;
+  font-size: $font-lg;
+  font-weight: $font-semibold;
+  line-height: $leading-normal;
+}
+
+%heading-7 {
+    font-family: $font-primary;
+    font-size: $font-base;
+    font-weight: $font-semibold;
+    line-height: $leading-normal;
+}
+
+%heading-8 {
+    font-family: $font-primary;
+    font-size: $font-sm;
+    font-weight: $font-semibold;
+    line-height: $leading-normal;
+}
+
+%body-large {
+  font-family: $font-primary;
+  font-size: $font-lg;
+  font-weight: $font-normal;
+  line-height: $leading-relaxed;
+}
+
+%body-medium {
+  font-family: $font-primary;
+  font-size: $font-base;
+  font-weight: $font-normal;
+  line-height: $leading-normal;
+}
+
+%body-small {
+  font-family: $font-primary;
+  font-size: $font-sm;
+  font-weight: $font-normal;
+  line-height: $leading-normal;
+}
+
+%caption {
+  font-family: $font-primary;
+  font-size: $font-xs;
+  font-weight: $font-medium;
+  line-height: $leading-normal;
+  letter-spacing: 0.025em;
+}
+
+%overline {
+  font-family: $font-primary;
+  font-size: $font-xs;
+  font-weight: $font-semibold;
+  line-height: $leading-normal;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}

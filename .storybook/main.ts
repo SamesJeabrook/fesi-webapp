@@ -8,11 +8,11 @@ const config: StorybookConfig = {
     "../src/components/**/*.stories.@(js|jsx|mjs|ts|tsx)"
   ],
   "addons": [
-    "@chromatic-com/storybook",
     "@storybook/addon-docs",
     "@storybook/addon-a11y",
-    "@storybook/addon-vitest",
-    "msw-storybook-addon"
+    "@chromatic-com/storybook"
+    // Temporarily disabled: "msw-storybook-addon",
+    // Temporarily disabled: "@storybook/addon-vitest"
   ],
   "framework": {
     "name": "@storybook/nextjs-vite",

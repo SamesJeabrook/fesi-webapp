@@ -34,7 +34,7 @@ const meta: Meta<typeof MenuItemCard> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A comprehensive card component for displaying menu items with images, details, dietary information, and action buttons.',
+        component: 'A display card component for menu items with images, details, and dietary information. Clicking the card triggers the view details action.',
       },
     },
   },
@@ -43,25 +43,17 @@ const meta: Meta<typeof MenuItemCard> = {
       description: 'Menu item data',
       control: false,
     },
-    showAddButton: {
-      description: 'Show add to cart button',
-      control: 'boolean',
-    },
-    showQuantityControls: {
-      description: 'Show quantity increment/decrement controls',
-      control: 'boolean',
-    },
-    isLoading: {
-      description: 'Show loading state on add button',
-      control: 'boolean',
-    },
-    onAddToCart: {
-      description: 'Add to cart handler',
-      action: 'added to cart',
-    },
     onViewDetails: {
-      description: 'View details handler',
+      description: 'Handler called when card is clicked',
       action: 'view details',
+    },
+    hasOptions: {
+      description: 'Whether the menu item has customizable options',
+      control: 'boolean',
+    },
+    className: {
+      description: 'Additional CSS classes',
+      control: 'text',
     },
   },
   tags: ['autodocs'],
@@ -77,31 +69,31 @@ export const Default: Story = {
   },
 };
 
-export const WithQuantityControls: Story = {
+export const WithOptions: Story = {
   args: {
     menuItem: pizzaItem,
-    showQuantityControls: true,
+    hasOptions: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Menu item card with customizable options indicator.',
+      },
+    },
   },
 };
 
-export const Loading: Story = {
-  args: {
-    menuItem: pizzaItem,
-    isLoading: true,
-  },
-};
-
-export const WithoutAddButton: Story = {
-  args: {
-    menuItem: pizzaItem,
-    showAddButton: false,
-  },
-};
-
-export const WithViewDetails: Story = {
+export const Clickable: Story = {
   args: {
     menuItem: pizzaItem,
     onViewDetails: undefined, // Will be set by argTypes action
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Clickable menu item card that triggers view details action.',
+      },
+    },
   },
 };
 
@@ -109,7 +101,7 @@ export const WithViewDetails: Story = {
 export const VeganItem: Story = {
   args: {
     menuItem: veganItem,
-    showQuantityControls: true,
+    hasOptions: true,
   },
   parameters: {
     docs: {
@@ -127,7 +119,7 @@ export const UnavailableItem: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Menu item that is currently unavailable - add button is disabled and overlay shown.',
+        story: 'Menu item that is currently unavailable - card is disabled and overlay shown.',
       },
     },
   },
@@ -183,7 +175,7 @@ export const GridLayout: Story = {
       width: '100%'
     }}>
       <MenuItemCard menuItem={pizzaItem} />
-      <MenuItemCard menuItem={veganItem} showQuantityControls />
+      <MenuItemCard menuItem={veganItem} hasOptions />
       <MenuItemCard 
         menuItem={{
           ...mockMenuItems[2],
@@ -211,10 +203,6 @@ export const GridLayout: Story = {
 // Interactive example with state
 export const InteractiveExample: Story = {
   render: () => {
-    const handleAddToCart = (menuItem: MenuItem, quantity: number) => {
-      alert(`Added ${quantity}x ${menuItem.name} to cart`);
-    };
-
     const handleViewDetails = (menuItem: MenuItem) => {
       alert(`Viewing details for ${menuItem.name}`);
     };
@@ -223,13 +211,11 @@ export const InteractiveExample: Story = {
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
         <MenuItemCard
           menuItem={pizzaItem}
-          onAddToCart={handleAddToCart}
           onViewDetails={handleViewDetails}
-          showQuantityControls
+          hasOptions
         />
         <MenuItemCard
           menuItem={veganItem}
-          onAddToCart={handleAddToCart}
           onViewDetails={handleViewDetails}
         />
       </div>
@@ -238,7 +224,7 @@ export const InteractiveExample: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Interactive example with working add to cart and view details functionality.',
+        story: 'Interactive example with working view details functionality.',
       },
     },
   },
@@ -258,10 +244,10 @@ export const RestaurantMenu: Story = {
           <MenuItemCard
             key={item.id}
             menuItem={item}
-            onAddToCart={(menuItem, quantity) => 
-              console.log(`Added ${quantity}x ${menuItem.name}`)
+            onViewDetails={(menuItem) => 
+              console.log(`Viewing details for ${menuItem.name}`)
             }
-            showQuantityControls
+            hasOptions={item.id === mockMenuItems[0].id} // First item has options
           />
         ))}
       </div>

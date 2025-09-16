@@ -1,0 +1,49 @@
+// Design Tokens Index
+// Forward all design token modules - Now with SCSS maps from designTokens.ts
+
+@forward 'breakpoints';
+@forward 'colors';
+@forward 'spacing';
+@forward 'typography';
+@forward 'borders';
+@forward 'transitions';
+@forward 'shadows';
+
+/*
+Available SCSS Maps (converted from TypeScript designTokens.ts):
+
+Breakpoints:
+- $breakpoints: (sm: 640px, md: 768px, lg: 1024px, xl: 1280px, '2xl': 1536px)
+- Usage: @include respond-to(md) { ... }
+
+Colors:
+- $colors: (primary: $primary, secondary: $secondary, success: $success, ...)
+- Usage: color(primary, 500) or map.get($primary, 500)
+
+Spacing:
+- $spacing: (0: 0, 1: 4px, 2: 8px, 3: 12px, 4: 16px, ...)
+- Usage: space(4) or map.get($spacing, 4)
+
+Typography:
+- $font-family: (primary: 'Inter', secondary: 'Poppins', mono: 'JetBrains Mono')
+- $font-size: (xs: 12px, sm: 14px, base: 16px, lg: 18px, ...)
+- $font-weight: (thin: 100, light: 300, normal: 400, bold: 700, ...)
+- $line-height: (none: 1, tight: 1.25, normal: 1.5, ...)
+- Usage: font-size(lg) or map.get($font-size, lg)
+
+Borders:
+- $border-radius: (none: 0, sm: 2px, base: 4px, lg: 8px, ...)
+- $border-width: (0: 0, 1: 1px, 2: 2px, 4: 4px, 8: 8px)
+- Usage: border-radius(lg) or map.get($border-radius, lg)
+
+Shadows:
+- $shadows: (none: none, sm: '0 1px 2px...', base: '0 1px 3px...', ...)
+- Usage: shadow(md) or map.get($shadows, md)
+
+Transitions:
+- $animation-duration: (fast: 150ms, normal: 250ms, slow: 350ms)
+- $animation-easing: (ease: ease, easeIn: ease-in, custom: cubic-bezier(...))
+- Usage: duration(fast) or easing(custom)
+
+All legacy variables are maintained for backwards compatibility.
+*/

@@ -26,13 +26,13 @@ export const Card: React.FC<CardProps> = ({
     className
   );
 
-  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleClick = (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => {
     if (onClick) {
       onClick(event);
     }
   };
 
-  const CardElement = onClick ? 'div' : 'div';
+  const CardElement = onClick ? 'button' : 'div';
 
   return (
     <CardElement
@@ -55,3 +55,15 @@ export const Card: React.FC<CardProps> = ({
 };
 
 Card.displayName = 'Card';
+
+export interface CardProps {
+  children?: React.ReactNode;
+  variant?: 'default' | 'outlined' | 'elevated';
+  padding?: 'sm' | 'md' | 'lg';
+  hover?: boolean;
+  interactive?: boolean;
+  className?: string;
+  onClick?: (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement, MouseEvent>) => void;
+  'data-testid'?: string;
+  [key: string]: any;
+}

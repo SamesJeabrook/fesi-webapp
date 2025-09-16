@@ -1,0 +1,216 @@
+@use 'sass:math';
+
+@use '@/styles/mixins' as *;
+@use '@/styles/tokens/breakpoints' as bp;
+@use '@/styles/tokens/spacing' as sp;
+
+// Grid Container Styles
+.gridContainer {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  
+  // Gap variants with more precise gap compensation
+  // Formula: For N items in a row, total gap space = (N-1) * gap-size
+  // Each item should subtract: gap-space / N = (N-1) * gap-size / N
+  &.gap-xs {
+    gap: sp.$space-1;
+    --grid-gap-size: #{sp.$space-1};
+  }
+  
+  &.gap-sm {
+    gap: sp.$space-2;
+    --grid-gap-size: #{sp.$space-2};
+  }
+  
+  &.gap-md {
+    gap: sp.$space-4;
+    --grid-gap-size: #{sp.$space-4};
+  }
+  
+  &.gap-lg {
+    gap: sp.$space-6;
+    --grid-gap-size: #{sp.$space-6};
+  }
+  
+  &.gap-xl {
+    gap: sp.$space-8;
+    --grid-gap-size: #{sp.$space-8};
+  }
+  
+  // Justify Content
+  &.justify-start {
+    justify-content: flex-start;
+  }
+  
+  &.justify-end {
+    justify-content: flex-end;
+  }
+  
+  &.justify-center {
+    justify-content: center;
+  }
+  
+  &.justify-space-between {
+    justify-content: space-between;
+  }
+  
+  &.justify-space-around {
+    justify-content: space-around;
+  }
+  
+  &.justify-space-evenly {
+    justify-content: space-evenly;
+  }
+  
+  // Align Items
+  &.align-start {
+    align-items: flex-start;
+  }
+  
+  &.align-end {
+    align-items: flex-end;
+  }
+  
+  &.align-center {
+    align-items: center;
+  }
+  
+  &.align-stretch {
+    align-items: stretch;
+  }
+  
+  &.align-baseline {
+    align-items: baseline;
+  }
+  
+  // Direction
+  &.direction-row {
+    flex-direction: row;
+  }
+  
+  &.direction-column {
+    flex-direction: column;
+  }
+  
+  // Wrap
+  &.wrap {
+    flex-wrap: wrap;
+  }
+  
+  &.noWrap {
+    flex-wrap: nowrap;
+  }
+}
+
+// Grid Item Base Styles
+.gridItem {
+  box-sizing: border-box;
+  min-width: 0; // Prevent flex items from overflowing
+  
+  // Self alignment classes
+  &.align-self-auto {
+    align-self: auto;
+  }
+  
+  &.align-self-start {
+    align-self: flex-start;
+  }
+  
+  &.align-self-end {
+    align-self: flex-end;
+  }
+  
+  &.align-self-center {
+    align-self: center;
+  }
+  
+  &.align-self-stretch {
+    align-self: stretch;
+  }
+  
+  &.align-self-baseline {
+    align-self: baseline;
+  }
+}
+
+// Generate responsive column classes (1-16 columns)
+@mixin generate-columns($breakpoint: '') {
+  $prefix: if($breakpoint == '', 'col-', '#{$breakpoint}-');
+  
+  // Column spans (1-16)
+  @for $i from 1 through 16 {
+    .#{$prefix}#{$i} {
+      $base-width: math.percentage(math.div($i, 16));
+      
+      @if $i == 16 {
+        // Full width items (16 columns = 100%) don't need gap compensation
+        // since they take the entire row with no siblings
+        flex: 0 0 #{$base-width};
+        max-width: #{$base-width};
+        min-width: 0;
+        flex-shrink: 0;
+      } @else {
+        // Partial width items need gap compensation
+        flex: 0 0 calc(#{$base-width} - (var(--grid-gap-size, 0px) * 0.8));
+        max-width: calc(#{$base-width} - (var(--grid-gap-size, 0px) * 0.8));
+        min-width: 0;
+        flex-shrink: 0.1;
+      }
+    }
+  }
+  
+  // Offset classes (0-15)  
+  @for $i from 0 through 15 {
+    .#{$prefix}offset-#{$i} {
+      margin-left: #{math.percentage(math.div($i, 16))};
+    }
+  }
+}
+
+// Generate base column classes (mobile-first)
+@include generate-columns();
+
+// Generate responsive classes for each breakpoint using project breakpoints
+@each $breakpoint, $min-width in bp.$breakpoints {
+  $class-name: if($breakpoint == '2xl', 'xxl', $breakpoint);
+  
+  @media (min-width: #{$min-width}) {
+    @include generate-columns($class-name);
+  }
+}
+
+// Auto-sizing utility classes
+.gridItem {
+  // Auto width - takes remaining space
+  &.auto {
+    flex: 1 1 auto;
+  }
+  
+  // Auto width with no grow
+  &.auto-no-grow {
+    flex: 0 1 auto;
+  }
+  
+  // Fixed width - doesn't grow or shrink
+  &.fixed {
+    flex: 0 0 auto;
+  }
+}
+
+// Responsive utilities for hiding/showing
+@each $breakpoint, $min-width in bp.$breakpoints {
+  $class-name: if($breakpoint == '2xl', 'xxl', $breakpoint);
+  
+  @media (min-width: #{$min-width}) {
+    .hide-#{$class-name}-up {
+      display: none !important;
+    }
+  }
+  
+  @media (max-width: #{$min-width - 1px}) {
+    .hide-#{$class-name}-down {
+      display: none !important;
+    }
+  }
+}

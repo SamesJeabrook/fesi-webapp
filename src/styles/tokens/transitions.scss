@@ -1,0 +1,61 @@
+
+@use 'sass:map';
+// Transition Design Tokens - Converted from designTokens.ts
+// SCSS maps and variables for consistent animations and transitions
+
+// Animation duration map
+$animation-duration: (
+  fast: 150ms,
+  normal: 250ms,
+  slow: 350ms
+);
+
+// Animation easing map
+$animation-easing: (
+  ease: ease,
+  easeIn: ease-in,
+  easeOut: ease-out,
+  easeInOut: ease-in-out,
+  custom: cubic-bezier(0.4, 0, 0.2, 1)
+);
+
+// Additional common easing functions
+$easing-extended: (
+  linear: linear,
+  standard: cubic-bezier(0.4, 0, 0.2, 1),
+  accelerate: cubic-bezier(0.4, 0, 1, 1),
+  decelerate: cubic-bezier(0, 0, 0.2, 1)
+);
+
+// Helper functions
+@function duration($speed) {
+  @return map.get($animation-duration, $speed);
+}
+
+@function easing($curve) {
+  $value: map.get($animation-easing, $curve);
+  @if $value {
+    @return $value;
+  }
+  @return map.get($easing-extended, $curve);
+}
+
+// Legacy duration variables for backwards compatibility
+$duration-fast: map.get($animation-duration, fast);
+$duration-normal: map.get($animation-duration, normal);
+$duration-slow: map.get($animation-duration, slow);
+
+// Legacy easing variables for backwards compatibility
+$easing-linear: map.get($easing-extended, linear);
+$easing-ease: map.get($animation-easing, ease);
+$easing-ease-in: map.get($animation-easing, easeIn);
+$easing-ease-out: map.get($animation-easing, easeOut);
+$easing-ease-in-out: map.get($animation-easing, easeInOut);
+$easing-standard: map.get($animation-easing, custom);
+$easing-accelerate: map.get($easing-extended, accelerate);
+$easing-decelerate: map.get($easing-extended, decelerate);
+
+// Common transition combinations
+$transition-fast: all $duration-fast $easing-standard;
+$transition-normal: all $duration-normal $easing-standard;
+$transition-slow: all $duration-slow $easing-standard;

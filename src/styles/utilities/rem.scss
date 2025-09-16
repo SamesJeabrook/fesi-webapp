@@ -1,0 +1,53 @@
+// SCSS Utilities - Helper functions and mixins
+// Focused on conversion utilities and common helper functions
+
+// =============================================
+// PX TO REM CONVERSION UTILITIES
+// =============================================
+
+// Configuration
+$root-font-size: 16px !default;
+
+/**
+ * Convert px values to rem units
+ * @param {Number} $px-value - The pixel value to convert
+ * @returns {Number} - The rem equivalent
+ * 
+ * Usage:
+ * font-size: px-to-rem(24px); // Output: 1.5rem
+ * margin: px-to-rem(16); // Output: 1rem (handles unitless numbers)
+ */
+@function px-to-rem($px-value) {
+  @if type-of($px-value) == number {
+    @if unit($px-value) == px {
+      @return calc($px-value / $root-font-size) * 1rem;
+    } @else if unit($px-value) == '' and $px-value != 0 {
+      // Handle unitless numbers by treating them as px
+      @return calc($px-value / ($root-font-size / 1px)) * 1rem;
+    } @else if $px-value == 0 {
+      @return 0;
+    } @else {
+      @warn "Expected a px value, got #{$px-value}";
+      @return $px-value;
+    }
+  } @else {
+    @warn "Expected a number, got #{type-of($px-value)}";
+    @return $px-value;
+  }
+}
+
+/**
+ * Convert multiple px values to rem units (for lists)
+ * @param {List} $px-values - List of pixel values
+ * @returns {List} - List of rem equivalents
+ * 
+ * Usage:
+ * margin: px-list-to-rem(8px, 16px, 24px, 16px); // Output: 0.5rem 1rem 1.5rem 1rem
+ */
+@function rem($px-values...) {
+  $rem-values: ();
+  @each $value in $px-values {
+    $rem-values: append($rem-values, px-to-rem($value));
+  }
+  @return $rem-values;
+}

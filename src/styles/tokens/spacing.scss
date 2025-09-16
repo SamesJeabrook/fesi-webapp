@@ -1,0 +1,71 @@
+@use 'sass:map';
+// Spacing Design Tokens - Converted from designTokens.ts
+// SCSS map and variables for consistent spacing
+
+// Spacing map (using pixel values from design tokens)
+$spacing: (
+  0: 0,
+  1: 4px,
+  2: 8px,
+  3: 12px,
+  4: 16px,
+  5: 20px,
+  6: 24px,
+  8: 32px,
+  10: 40px,
+  12: 48px,
+  16: 64px,
+  20: 80px,
+  24: 96px,
+  32: 128px,
+  40: 160px,
+  48: 192px,
+  56: 224px,
+  64: 256px
+);
+
+// Helper function to get spacing values
+@function space($size) {
+  @if map-has-key($spacing, $size) {
+    @return map.get($spacing, $size);
+  }
+  @warn "Spacing size `#{$size}` not found in $spacing map.";
+  @return null;
+}
+
+// Legacy spacing variables for backwards compatibility
+$space-0: map.get($spacing, 0);
+$space-1: map.get($spacing, 1);   // 4px
+$space-2: map.get($spacing, 2);   // 8px
+$space-3: map.get($spacing, 3);   // 12px
+$space-4: map.get($spacing, 4);   // 16px
+$space-5: map.get($spacing, 5);   // 20px
+$space-6: map.get($spacing, 6);   // 24px
+$space-8: map.get($spacing, 8);   // 32px
+$space-10: map.get($spacing, 10); // 40px
+$space-12: map.get($spacing, 12); // 48px
+$space-16: map.get($spacing, 16); // 64px
+$space-20: map.get($spacing, 20); // 80px
+$space-24: map.get($spacing, 24); // 96px
+$space-32: map.get($spacing, 32); // 128px
+$space-40: map.get($spacing, 40); // 160px
+$space-48: map.get($spacing, 48); // 192px
+$space-56: map.get($spacing, 56); // 224px
+$space-64: map.get($spacing, 64); // 256px
+
+// Semantic spacing aliases
+$space-2xs: $space-1;  // 4px
+$space-xs: $space-2;   // 8px
+$space-sm: $space-3;   // 12px
+$space-md: $space-4;   // 16px
+$space-lg: $space-5;   // 20px
+$space-xl: $space-6;   // 24px
+$space-2xl: $space-8;  // 32px
+$space-3xl: $space-10; // 40px
+$space-4xl: $space-12; // 48px
+$space-5xl: $space-16; // 64px
+$space-6xl: $space-20; // 80px
+$space-7xl: $space-24; // 96px
+$space-8xl: $space-32; // 128px
+$space-9xl: $space-40; // 160px
+$space-10xl: $space-48; // 192px

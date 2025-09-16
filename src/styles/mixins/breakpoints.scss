@@ -1,0 +1,40 @@
+// SCSS Mixins for common design patterns
+@use 'sass:map';
+@use './tokens/breakpoints' as bp;
+
+// Responsive breakpoints
+@mixin mobile {
+  @media (max-width: 639px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: 640px) and (max-width: 1023px) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: 1024px) {
+    @content;
+  }
+}
+
+@mixin large-desktop {
+  @media (min-width: 1280px) {
+    @content;
+  }
+}
+
+// Custom breakpoint
+@mixin breakpoint($size) {
+   @if map.has-key(bp.$breakpoints, $size) {
+    $value: map.get(bp.$breakpoints, $size);
+    @media (min-width: $value) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint `#{$size}` not found in $breakpoints map.";
+  }
+}
