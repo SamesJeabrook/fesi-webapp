@@ -1,6 +1,6 @@
 @use 'sass:math';
 
-@use '@/styles/mixins' as *;
+@use '@/styles/mixins/index' as *;
 @use '@/styles/tokens/breakpoints' as bp;
 @use '@/styles/tokens/spacing' as sp;
 

@@ -1,5 +1,12 @@
 // Component exports organized by atomic design principles
 export * from './atoms';
 export * from './molecules';
-// export * from './organisms';  // Will be added later
-// export * from './templates';  // Will be added later
+
+// Organisms
+export { MenuCategory } from './organisms';
+export type { MenuCategoryProps } from './organisms';
+
+// Templates  
+export { MenuDisplay } from './templates';
+export type { MenuDisplayProps, Merchant } from './templates';
+export type { MenuCategory as MenuCategoryData } from './templates';

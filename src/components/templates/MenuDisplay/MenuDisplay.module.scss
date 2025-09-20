@@ -1,0 +1,144 @@
+@use '@/styles/mixins/index' as *;
+@use '@/styles/tokens/typography' as *;
+
+.menuDisplay {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-4);
+  
+  @include breakpoint(lg) {
+    padding: var(--spacing-6);
+  }
+}
+
+.merchantHeader {
+  margin-bottom: var(--spacing-8);
+  text-align: center;
+  
+  @include breakpoint(md) {
+    text-align: left;
+  }
+}
+
+.merchantName {
+  @extend %heading-1;
+  color: var(--color-neutral-900);
+  margin: 0 0 var(--spacing-2) 0;
+}
+
+.merchantDescription {
+  @extend %body-large;
+  color: var(--color-neutral-600);
+  margin: 0;
+  max-width: 600px;
+  
+  @include breakpoint(md) {
+    margin: 0;
+  }
+  
+  @include mobile {
+    text-align: center;
+    margin: 0 auto;
+  }
+}
+
+.merchantImage {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-4);
+  
+  @include breakpoint(md) {
+    height: 250px;
+  }
+}
+
+.menuContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-12);
+  text-align: center;
+  
+  .loadingText {
+    @extend %body-large;
+    color: var(--color-neutral-600);
+    margin-top: var(--spacing-4);
+  }
+}
+
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-12);
+  text-align: center;
+  background: var(--color-error-50);
+  border: 1px solid var(--color-error-200);
+  border-radius: var(--radius-lg);
+  
+  .errorIcon {
+    color: var(--color-error-500);
+    font-size: 3rem;
+    margin-bottom: var(--spacing-4);
+  }
+  
+  .errorTitle {
+    @extend %heading-3;
+    color: var(--color-error-700);
+    margin: 0 0 var(--spacing-2) 0;
+  }
+  
+  .errorMessage {
+    @extend %body-large;
+    color: var(--color-error-600);
+    margin: 0;
+  }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-12);
+  text-align: center;
+  
+  .emptyIcon {
+    color: var(--color-neutral-400);
+    font-size: 4rem;
+    margin-bottom: var(--spacing-4);
+  }
+  
+  .emptyTitle {
+    @extend %heading-3;
+    color: var(--color-neutral-600);
+    margin: 0 0 var(--spacing-2) 0;
+  }
+  
+  .emptyMessage {
+    @extend %body-large;
+    color: var(--color-neutral-500);
+    margin: 0;
+  }
+}
+
+// Responsive adjustments
+@include mobile {
+  .menuDisplay {
+    padding: var(--spacing-3);
+  }
+  
+  .merchantHeader {
+    margin-bottom: var(--spacing-6);
+  }
+}

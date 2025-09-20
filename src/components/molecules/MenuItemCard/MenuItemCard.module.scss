@@ -1,4 +1,4 @@
-@use '@/styles/mixins' as *;
+@use '@/styles/mixins/index' as *;
 @use '@/styles/tokens/typography' as *;
 
 .menuItemCard {
@@ -32,6 +32,7 @@
 }
 
 .content {
+  position: relative; // Required for absolute positioned add button
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -236,5 +237,61 @@
         height: 160px;
       }
     }
+  }
+}
+
+// Add button styles
+.addButton {
+  position: absolute;
+  bottom: var(--spacing-3);
+  right: var(--spacing-3);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-primary-500);
+  border: none;
+  color: var(--color-neutral-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--easing-ease-out);
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+  
+  &:hover {
+    background: var(--color-primary-600);
+    transform: scale(1.1);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &:focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+  }
+}
+
+.addIcon {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2.5;
+}
+
+// Responsive adjustments for add button
+@include mobile {
+  .addButton {
+    width: 36px;
+    height: 36px;
+    bottom: var(--spacing-2);
+    right: var(--spacing-2);
+  }
+  
+  .addIcon {
+    width: 18px;
+    height: 18px;
   }
 }

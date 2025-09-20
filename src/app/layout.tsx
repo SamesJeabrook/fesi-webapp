@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { fontVariables } from '@/styles/fonts';
 import '@/styles/globals.scss';
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={fontVariables}>
       <body>
         <div id="root">
           {children}

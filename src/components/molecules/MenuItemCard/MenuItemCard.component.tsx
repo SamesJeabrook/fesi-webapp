@@ -116,6 +116,38 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
             )}
           </div>
         )}
+
+        {/* Add Button - only show if item is available */}
+        {menuItem.isAvailable && (
+          <button
+            className={styles.addButton}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click when clicking add button
+              if (onViewDetails) {
+                onViewDetails(menuItem);
+              }
+            }}
+            aria-label={`Add ${menuItem.name} to cart`}
+            data-testid={`add-${menuItem.id}`}
+          >
+            <svg
+              className={styles.addIcon}
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 5V19M5 12H19"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        )}
       </div>
     </Card>
   );

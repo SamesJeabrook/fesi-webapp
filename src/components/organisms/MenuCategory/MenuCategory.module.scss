@@ -1,0 +1,86 @@
+@use '@/styles/mixins/index' as *;
+@use '@/styles/tokens/typography' as *;
+
+.menuCategory {
+  margin-bottom: var(--spacing-8);
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.header {
+  margin-bottom: var(--spacing-4);
+  padding-bottom: var(--spacing-2);
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.title {
+  @extend %heading-3;
+  color: var(--color-neutral-900);
+  margin: 0;
+}
+
+.itemsGrid {
+  display: grid;
+  gap: var(--spacing-4);
+  
+  // Default: single column on mobile
+  grid-template-columns: 1fr;
+  
+  // Tablet: 2 columns
+  @include breakpoint(md) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  // Desktop: 3 columns for better space utilization
+  @include breakpoint(lg) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  // Large desktop: 4 columns for very wide screens
+  @include breakpoint(xl) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.itemsContainer {
+  // Alternative layout option: flex with wrap
+  &.flexLayout {
+    .itemsGrid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-4);
+      
+      // Menu items should have consistent width
+      > * {
+        flex: 1;
+        min-width: 280px;
+        max-width: 320px;
+      }
+    }
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--spacing-8);
+  color: var(--color-neutral-500);
+  
+  @extend %body-large;
+}
+
+// Responsive adjustments
+@include mobile {
+  .menuCategory {
+    margin-bottom: var(--spacing-6);
+  }
+  
+  .header {
+    margin-bottom: var(--spacing-3);
+  }
+  
+  .itemsGrid {
+    gap: var(--spacing-3);
+  }
+}

@@ -1,10 +1,10 @@
-@use '@/styles/mixins' as *;
+@use '@/styles/mixins/index' as *;
 @use '@/styles/tokens/typography' as *;
 
 .container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--spacing-1);
   
   &.fullWidth {
     width: 100%;
@@ -18,7 +18,7 @@
   
   .required {
     color: var(--color-error-600);
-    margin-left: var(--space-1);
+    margin-left: var(--spacing-1);
   }
 }
 
@@ -104,15 +104,15 @@
   
   .input {
  @extend %body-small;
-    padding: var(--space-1) var(--space-3);
+    padding: var(--spacing-1) var(--spacing-3);
   }
   
   &.hasLeftElement .input {
-    padding-left: var(--space-8);
+    padding-left: var(--spacing-8);
   }
   
   &.hasRightElement .input {
-    padding-right: var(--space-8);
+    padding-right: var(--spacing-8);
   }
 }
 
@@ -121,15 +121,15 @@
   
   .input {
     
-    padding: var(--space-2) var(--space-3);
+    padding: var(--spacing-2) var(--spacing-3);
   }
   
   &.hasLeftElement .input {
-    padding-left: var(--space-10);
+    padding-left: var(--spacing-10);
   }
   
   &.hasRightElement .input {
-    padding-right: var(--space-10);
+    padding-right: var(--spacing-10);
   }
 }
 
@@ -138,15 +138,15 @@
   
   .input {
     @extend %body-large;
-    padding: var(--space-3) var(--space-4);
+    padding: var(--spacing-3) var(--spacing-4);
   }
   
   &.hasLeftElement .input {
-    padding-left: var(--space-12);
+    padding-left: var(--spacing-12);
   }
   
   &.hasRightElement .input {
-    padding-right: var(--space-12);
+    padding-right: var(--spacing-12);
   }
 }
 
@@ -169,11 +169,11 @@
 }
 
 .leftIcon {
-  left: var(--space-3);
+  left: var(--spacing-3);
 }
 
 .rightIcon {
-  right: var(--space-3);
+  right: var(--spacing-3);
 }
 
 // Addon containers
@@ -181,7 +181,7 @@
 .rightAddon {
   display: flex;
   align-items: center;
-  padding: 0 var(--space-3);
+  padding: 0 var(--spacing-3);
   background: var(--color-neutral-100);
   border-color: inherit;
   color: var(--color-neutral-600);
@@ -204,16 +204,16 @@
 .helperText {
   @extend %body-small;
   color: var(--color-neutral-600);
-  margin-top: var(--space-1);
+  margin-top: var(--spacing-1);
 }
 
 .errorMessage {
   @extend %body-small;
   color: var(--color-error-600);
-  margin-top: var(--space-1);
+  margin-top: var(--spacing-1);
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--spacing-1);
   
   &::before {
     content: '⚠';

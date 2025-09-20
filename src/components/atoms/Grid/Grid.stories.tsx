@@ -81,7 +81,7 @@ const DemoBox: React.FC<{
       backgroundColor: 'var(--color-brand-100, #e3f2fd)',
       border: '2px solid var(--color-brand-300, #90caf9)',
       borderRadius: 'var(--radius-md, 8px)',
-      padding: 'var(--space-4, 16px)',
+      padding: 'var(--spacing-4, 16px)',
       textAlign: 'center',
       minHeight: '60px',
       display: 'flex',

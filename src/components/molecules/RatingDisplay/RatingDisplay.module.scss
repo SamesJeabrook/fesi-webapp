@@ -1,6 +1,6 @@
 @use '../../../styles/tokens/colors';
 @use '../../../styles/tokens/spacing';
-@use '../../../styles/tokens/typography';
+@use '../../../styles/tokens/typography' as *;
 @use '../../../styles/tokens/borders';
 
 .ratingDisplay {
@@ -11,7 +11,7 @@
 
 .loading,
 .empty {
-  @include typography.body-medium;
+  @extend %body-medium;
   color: colors.$neutral-500;
   text-align: center;
   padding: spacing.$space-xl;
@@ -38,24 +38,24 @@
 }
 
 .date {
-  @include typography.body-small;
+  @extend %body-small;
   color: colors.$neutral-500;
 }
 
 .customerName {
-  @include typography.body-small;
+  @extend %body-small;
   color: colors.$neutral-600;
   font-weight: 500;
 }
 
 .ratingTitle {
-  @include typography.heading-5;
+  @extend %heading-5;
   color: colors.$neutral-900;
   margin-bottom: spacing.$space-xs;
 }
 
 .ratingComment {
-  @include typography.body-medium;
+  @extend %body-medium;
   color: colors.$neutral-700;
   line-height: 1.5;
   margin-bottom: spacing.$space-sm;
@@ -75,7 +75,7 @@
 }
 
 .aspectLabel {
-  @include typography.body-small;
+  @extend %body-small;
   color: colors.$neutral-600;
   font-weight: 500;
 }
@@ -87,7 +87,7 @@
 }
 
 .menuItemTitle {
-  @include typography.body-small;
+  @extend %body-small;
   color: colors.$neutral-700;
   font-weight: 600;
   text-transform: uppercase;
@@ -111,20 +111,20 @@
 }
 
 .menuItemName {
-  @include typography.body-small;
+  @extend %body-small;
   color: colors.$neutral-700;
   font-weight: 500;
 }
 
 .menuItemComment {
-  @include typography.body-small;
+  @extend %body-small;
   color: colors.$neutral-600;
   font-style: italic;
   margin-left: spacing.$space-sm;
 }
 
 .showMore {
-  @include typography.body-small;
+  @extend %body-small;
   color: colors.$primary-600;
   text-align: center;
   padding: spacing.$space-md;
@@ -142,7 +142,7 @@
 }
 
 .noStats {
-  @include typography.body-medium;
+  @extend %body-medium;
   color: colors.$neutral-500;
   text-align: center;
   padding: spacing.$space-lg;
@@ -164,19 +164,19 @@
 }
 
 .averageValue {
-  @include typography.heading-1;
+  @extend %heading-1;
   color: colors.$neutral-900;
   font-weight: 700;
 }
 
 .ratingLabel {
-  @include typography.body-medium;
+  @extend %body-medium;
   color: colors.$neutral-600;
   font-weight: 500;
 }
 
 .totalRatings {
-  @include typography.body-small;
+  @extend %body-small;
   color: colors.$neutral-500;
 }
 
@@ -196,7 +196,7 @@
 }
 
 .starLabel {
-  @include typography.body-small;
+  @extend %body-small;
   color: colors.$neutral-600;
   min-width: 50px;
 }
@@ -216,7 +216,7 @@
 }
 
 .percentage {
-  @include typography.body-small;
+  @extend %body-small;
   color: colors.$neutral-600;
   min-width: 35px;
   text-align: right;
@@ -228,7 +228,7 @@
 }
 
 .aspectTitle {
-  @include typography.body-medium;
+  @extend %body-medium;
   color: colors.$neutral-700;
   font-weight: 600;
   margin-bottom: spacing.$space-md;
@@ -245,7 +245,7 @@
   }
 
   .aspectLabel {
-    @include typography.body-small;
+    @extend %body-small;
     color: colors.$neutral-600;
     font-weight: 500;
   }

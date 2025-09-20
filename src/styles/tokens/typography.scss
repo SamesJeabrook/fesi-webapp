@@ -1,12 +1,16 @@
 @use 'sass:map';
+@use 'sass:string';
 // Typography Design Tokens - Converted from designTokens.ts
 // SCSS maps and variables for typography
 
 // Font families map
 $font-family: (
-  primary: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  secondary: '"Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  mono: '"JetBrains Mono", "Fira Code", Consolas, monospace'
+  heading: string.unquote('var(--font-poppins), "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'),
+  body: string.unquote('var(--font-quicksand), "Quicksand", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'),
+  mono: string.unquote('"JetBrains Mono", "Fira Code", Consolas, monospace'),
+  // Legacy aliases for backwards compatibility
+  primary: string.unquote('var(--font-poppins), "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'),
+  secondary: string.unquote('var(--font-quicksand), "Quicksand", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif')
 );
 
 // Font sizes map (using pixel values from design tokens)
@@ -64,9 +68,12 @@ $line-height: (
 }
 
 // Legacy font family variables for backwards compatibility
+$font-heading: map.get($font-family, heading);
+$font-body: map.get($font-family, body);
+$font-mono: map.get($font-family, mono);
+// Legacy aliases
 $font-primary: map.get($font-family, primary);
 $font-secondary: map.get($font-family, secondary);
-$font-mono: map.get($font-family, mono);
 
 // Legacy font size variables for backwards compatibility
 $font-xs: map.get($font-size, xs);       // 12px
@@ -101,7 +108,7 @@ $leading-loose: map.get($line-height, loose);
 
 // Typography placeholders for consistent text styles
 %heading-1 {
-  font-family: $font-primary;
+  font-family: $font-heading;
   font-size: $font-5xl;
   font-weight: $font-bold;
   line-height: $leading-tight;
@@ -109,7 +116,7 @@ $leading-loose: map.get($line-height, loose);
 }
 
 %heading-2 {
-  font-family: $font-primary;
+  font-family: $font-heading;
   font-size: $font-4xl;
   font-weight: $font-bold;
   line-height: $leading-tight;
@@ -117,70 +124,70 @@ $leading-loose: map.get($line-height, loose);
 }
 
 %heading-3 {
-  font-family: $font-primary;
+  font-family: $font-heading;
   font-size: $font-3xl;
   font-weight: $font-semibold;
   line-height: $leading-snug;
 }
 
 %heading-4 {
-  font-family: $font-primary;
+  font-family: $font-heading;
   font-size: $font-2xl;
   font-weight: $font-semibold;
   line-height: $leading-snug;
 }
 
 %heading-5 {
-  font-family: $font-primary;
+  font-family: $font-heading;
   font-size: $font-xl;
   font-weight: $font-semibold;
   line-height: $leading-snug;
 }
 
 %heading-6 {
-  font-family: $font-primary;
+  font-family: $font-heading;
   font-size: $font-lg;
   font-weight: $font-semibold;
   line-height: $leading-normal;
 }
 
 %heading-7 {
-    font-family: $font-primary;
+    font-family: $font-heading;
     font-size: $font-base;
     font-weight: $font-semibold;
     line-height: $leading-normal;
 }
 
 %heading-8 {
-    font-family: $font-primary;
+    font-family: $font-heading;
     font-size: $font-sm;
     font-weight: $font-semibold;
     line-height: $leading-normal;
 }
 
 %body-large {
-  font-family: $font-primary;
+  font-family: $font-body;
   font-size: $font-lg;
   font-weight: $font-normal;
   line-height: $leading-relaxed;
 }
 
 %body-medium {
-  font-family: $font-primary;
+  font-family: $font-body;
   font-size: $font-base;
   font-weight: $font-normal;
   line-height: $leading-normal;
 }
 
 %body-small {
-  font-family: $font-primary;
+  font-family: $font-body;
   font-size: $font-sm;
   font-weight: $font-normal;
   line-height: $leading-normal;
 }
 
 %caption {
-  font-family: $font-primary;
+  font-family: $font-body;
   font-size: $font-xs;
   font-weight: $font-medium;
   line-height: $leading-normal;
@@ -188,10 +195,18 @@ $leading-loose: map.get($line-height, loose);
 }
 
 %overline {
-  font-family: $font-primary;
+  font-family: $font-body;
   font-size: $font-xs;
   font-weight: $font-semibold;
   line-height: $leading-normal;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
+
+// Standard heading aliases for consistency
+%heading-h1 { @extend %heading-1; }
+%heading-h2 { @extend %heading-2; }
+%heading-h3 { @extend %heading-3; }
+%heading-h4 { @extend %heading-4; }
+%heading-h5 { @extend %heading-5; }
+%heading-h6 { @extend %heading-6; }

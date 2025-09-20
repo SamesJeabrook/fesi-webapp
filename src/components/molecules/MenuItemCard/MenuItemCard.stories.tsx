@@ -4,27 +4,56 @@ import { mockMenuItems } from '@/mocks';
 import type { MenuItem } from '@/types';
 
 // Sample menu items for different scenarios
-const pizzaItem: MenuItem = mockMenuItems.find(item => item.name === 'Margherita Pizza') || mockMenuItems[0];
+const pizzaItem: MenuItem = {
+  id: 'margherita-pizza',
+  merchantId: 'marios-pizzeria',
+  categoryId: 'pizza',
+  name: 'Margherita Pizza',
+  description: 'Fresh mozzarella, tomato sauce, and basil on our signature wood-fired crust',
+  price: '£12.99',
+  basePrice: 1299,
+  imageUrl: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?w=400&h=300&fit=crop',
+  isAvailable: true,
+  isPopular: true,
+  displayOrder: 1,
+  calories: 280,
+  preparationTime: 12,
+  createdAt: '2025-09-08T09:22:44.250Z',
+  updatedAt: '2025-09-08T09:22:44.250Z',
+};
+
 const veganItem: MenuItem = {
-  ...mockMenuItems[0],
-  id: 'vegan-item',
+  id: 'vegan-bowl',
+  merchantId: 'healthy-eats',
+  categoryId: 'bowls',
   name: 'Vegan Buddha Bowl',
   description: 'Quinoa, roasted vegetables, avocado, and tahini dressing',
   price: '£12.99',
-  imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+  basePrice: 1299,
+  imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop',
+  isAvailable: true,
+  displayOrder: 1,
   dietaryInfo: ['vegan', 'gluten-free'],
   allergens: ['sesame'],
-  isPopular: true,
   calories: 450,
   preparationTime: 15,
+  createdAt: '2025-09-08T09:22:44.250Z',
+  updatedAt: '2025-09-08T09:22:44.250Z',
 };
 
 const unavailableItem: MenuItem = {
-  ...mockMenuItems[0],
   id: 'unavailable-item',
+  merchantId: 'restaurant',
+  categoryId: 'specials',
   name: 'Seasonal Special',
-  description: 'Currently out of season ingredients',
+  description: 'Currently out of season ingredients - check back next week!',
+  price: '£15.99',
+  basePrice: 1599,
+  imageUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
   isAvailable: false,
+  displayOrder: 1,
+  createdAt: '2025-09-08T09:22:44.250Z',
+  updatedAt: '2025-09-08T09:22:44.250Z',
 };
 
 const meta: Meta<typeof MenuItemCard> = {
@@ -34,7 +63,7 @@ const meta: Meta<typeof MenuItemCard> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A display card component for menu items with images, details, and dietary information. Clicking the card triggers the view details action.',
+        component: 'A display card component for menu items with images, details, and dietary information. Features a floating add button for available items. Clicking the card or add button triggers the view details action.',
       },
     },
   },
@@ -119,7 +148,7 @@ export const UnavailableItem: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Menu item that is currently unavailable - card is disabled and overlay shown.',
+        story: 'Menu item that is currently unavailable - card is disabled, overlay shown, and add button is hidden.',
       },
     },
   },
