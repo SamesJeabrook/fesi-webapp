@@ -119,16 +119,8 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
 
         {/* Add Button - only show if item is available */}
         {menuItem.isAvailable && (
-          <button
+          <span
             className={styles.addButton}
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent card click when clicking add button
-              if (onViewDetails) {
-                onViewDetails(menuItem);
-              }
-            }}
-            aria-label={`Add ${menuItem.name} to cart`}
-            data-testid={`add-${menuItem.id}`}
           >
             <svg
               className={styles.addIcon}
@@ -146,7 +138,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
                 strokeLinejoin="round"
               />
             </svg>
-          </button>
+          </span>
         )}
       </div>
     </Card>
