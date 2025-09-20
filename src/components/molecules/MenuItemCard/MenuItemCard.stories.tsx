@@ -49,7 +49,7 @@ const unavailableItem: MenuItem = {
   description: 'Currently out of season ingredients - check back next week!',
   price: '£15.99',
   basePrice: 1599,
-  imageUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
+  imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop',
   isAvailable: false,
   displayOrder: 1,
   createdAt: '2025-09-08T09:22:44.250Z',

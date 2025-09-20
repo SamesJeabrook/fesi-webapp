@@ -101,19 +101,26 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
             <img
               src={menuItem.imageUrl}
               alt={menuItem.name}
-              className={styles.image}
+              className={classNames(styles.image, {
+                [styles.unavailable]: !menuItem.isAvailable
+              })}
               loading="lazy"
             />
-            {menuItem.isPopular && (
-              <div className={styles.popularBadge}>
-                Popular
-              </div>
-            )}
-            {!menuItem.isAvailable && (
-              <div className={styles.unavailableBadge}>
-                Unavailable
-              </div>
-            )}
+          </div>
+        )}
+
+        {/* Popular Star - positioned on the right side of the card */}
+        {menuItem.isPopular && menuItem.isAvailable && (
+          <div className={styles.popularStar}>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+            </svg>
           </div>
         )}
 
