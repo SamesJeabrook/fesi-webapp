@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { VendorService } from '@/services/vendorService';
+import { Typography } from '@/components/atoms/Typography';
 
 // This page shows all available vendors
 export default async function VendorsPage() {
@@ -43,20 +44,20 @@ export default async function VendorsPage() {
   return (
     <div className="min-h-screen bg-neutral-50">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-neutral-900 mb-8">
+        <Typography as="h1" variant="heading-2" className="mb-8 text-neutral-900">
           Mobile Food Stalls Near You
-        </h1>
+        </Typography>
         
         {error ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-            <p className="text-red-700">{error}</p>
+            <Typography variant="body-medium" className="text-red-700">{error}</Typography>
           </div>
         ) : (
           <>
             <div className="mb-8">
-              <p className="text-neutral-600">
+              <Typography variant="body-medium" className="text-neutral-600">
                 Discover delicious food from local mobile stalls and food trucks.
-              </p>
+              </Typography>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -77,30 +78,30 @@ export default async function VendorsPage() {
                   )}
                   
                   <div className="p-6">
-                    <h3 className="text-xl font-semibold text-neutral-900 mb-2">
+                    <Typography as="h3" variant="heading-4" className="mb-2 text-neutral-900">
                       {vendor.name}
-                    </h3>
+                    </Typography>
                     
                     {vendor.description && (
-                      <p className="text-neutral-600 mb-4">
+                      <Typography variant="body-medium" className="text-neutral-600 mb-4">
                         {vendor.description}
-                      </p>
+                      </Typography>
                     )}
 
-                    <div className="flex flex-wrap gap-3 text-sm">
+                    <div className="flex flex-wrap gap-3">
                       {vendor.average_wait_time_minutes && (
                         <div className="flex items-center gap-1">
-                          <span className="text-neutral-500">⏱️</span>
-                          <span className="text-neutral-700">
+                          <Typography as="span" variant="body-small" className="text-neutral-500">⏱️</Typography>
+                          <Typography as="span" variant="body-small" className="text-neutral-700">
                             {vendor.average_wait_time_minutes} min
-                          </span>
+                          </Typography>
                         </div>
                       )}
                       
                       {vendor.loyalty_enabled && (
                         <div className="flex items-center gap-1">
-                          <span className="text-neutral-500">🎯</span>
-                          <span className="text-neutral-700">Loyalty cards</span>
+                          <Typography as="span" variant="body-small" className="text-neutral-500">🎯</Typography>
+                          <Typography as="span" variant="body-small" className="text-neutral-700">Loyalty cards</Typography>
                         </div>
                       )}
                     </div>
@@ -111,12 +112,12 @@ export default async function VendorsPage() {
 
             {/* Development Note */}
             <div className="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-blue-900 mb-2">Development Status</h4>
-              <p className="text-sm text-blue-700">
+              <Typography as="h4" variant="body-small" className="text-blue-900 mb-2 font-semibold">Development Status</Typography>
+              <Typography variant="body-small" className="text-blue-700">
                 This page currently shows placeholder data. Once your API is running, you can implement 
                 <code className="bg-blue-100 px-1 rounded mx-1">VendorService.getAllVendors()</code> 
                 to fetch real vendor data.
-              </p>
+              </Typography>
             </div>
           </>
         )}

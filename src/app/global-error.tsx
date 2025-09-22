@@ -1,5 +1,7 @@
 'use client';
 
+import { Typography } from '@/components/atoms/Typography';
+
 export default function GlobalError({
   error,
   reset,
@@ -13,15 +15,15 @@ export default function GlobalError({
         <div className="min-h-screen flex items-center justify-center bg-neutral-50">
           <div className="max-w-md w-full mx-auto p-6">
             <div className="text-center">
-              <h1 className="text-6xl font-bold text-neutral-300 mb-4">
+              <Typography as="h1" variant="heading-1" className="text-neutral-300 mb-4">
                 Oops!
-              </h1>
-              <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
+              </Typography>
+              <Typography as="h2" variant="heading-3" className="text-neutral-900 mb-4">
                 Something went wrong
-              </h2>
-              <p className="text-neutral-600 mb-8">
+              </Typography>
+              <Typography variant="body-medium" className="text-neutral-600 mb-8">
                 We're sorry, but something unexpected happened. Please try again.
-              </p>
+              </Typography>
               <div className="space-y-4">
                 <button
                   onClick={reset}

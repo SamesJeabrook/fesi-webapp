@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { VendorMenuWrapper } from './components/VendorMenuWrapper';
 import { transformMenuResponse } from '@/utils/menu/menuTransformers';
 import { GridContainer, GridItem } from '@/components/atoms/Grid';
+import { Typography } from '@/components/atoms/Typography';
 
 // Generate metadata for the page
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -83,10 +84,10 @@ export default async function VendorPage({
         <GridContainer justifyContent="center" alignItems="center" className="min-h-screen">
           <GridItem md={8} lg={6} xl={4}>
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-neutral-900 mb-4">
+              <Typography as="h1" variant="heading-3" className="mb-4 text-neutral-900">
                 Unable to Load Vendor
-              </h1>
-              <p className="text-neutral-600 mb-8">{error}</p>
+              </Typography>
+              <Typography variant="body-medium" className="mb-8 text-neutral-600">{error}</Typography>
               <a
                 href="/vendors"
                 className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
@@ -107,10 +108,10 @@ export default async function VendorPage({
         <GridContainer justifyContent="center" alignItems="center" className="min-h-screen">
           <GridItem md={8} lg={6} xl={4}>
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-neutral-900 mb-4">
+              <Typography as="h1" variant="heading-3" className="mb-4 text-neutral-900">
                 Vendor Not Found
-              </h1>
-              <p className="text-neutral-600 mb-8">The vendor you are looking for could not be found.</p>
+              </Typography>
+              <Typography variant="body-medium" className="mb-8 text-neutral-600">The vendor you are looking for could not be found.</Typography>
               <a
                 href="/vendors"
                 className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
