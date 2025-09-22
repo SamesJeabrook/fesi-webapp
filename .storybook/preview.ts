@@ -109,6 +109,24 @@ const preview: Preview = {
         ],
       },
     },
+    options: {
+      storySort: {
+        order: [
+          'Introduction',
+          'Design System',
+          [
+            'Typography',
+            'Colors', 
+            'Spacing',
+          ],
+          'Atoms',
+          'Molecules',
+          'Organisms', 
+          'Templates',
+          '*'
+        ],
+      },
+    },
   },
   tags: ['autodocs'],
 };

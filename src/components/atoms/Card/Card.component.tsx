@@ -28,7 +28,10 @@ export const Card: React.FC<CardProps> = ({
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => {
     if (onClick) {
-      onClick(event);
+      if (CardElement === 'div') {
+        onClick(event as React.MouseEvent<HTMLDivElement>);
+      }
+      // Optionally, handle 'button' case if needed
     }
   };
 
@@ -55,15 +58,3 @@ export const Card: React.FC<CardProps> = ({
 };
 
 Card.displayName = 'Card';
-
-export interface CardProps {
-  children?: React.ReactNode;
-  variant?: 'default' | 'outlined' | 'elevated';
-  padding?: 'sm' | 'md' | 'lg';
-  hover?: boolean;
-  interactive?: boolean;
-  className?: string;
-  onClick?: (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement, MouseEvent>) => void;
-  'data-testid'?: string;
-  [key: string]: any;
-}

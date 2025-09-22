@@ -1,0 +1,152 @@
+import { Canvas, Meta, Story, ArgsTable, Description } from '@storybook/blocks';
+import { Typography } from './Typography.component';
+import * as TypographyStories from './Typography.stories';
+
+<Meta of={TypographyStories} />
+
+# Typography
+
+The Typography component provides a consistent way to apply design system typography styles while maintaining semantic HTML structure.
+
+<Description of={TypographyStories} />
+
+## Features
+
+- ✅ **Consistent styling** from design system typography tokens
+- ✅ **Semantic HTML** with flexible element choice via `as` prop
+- ✅ **Type safety** with comprehensive TypeScript support
+- ✅ **Accessible** markup with proper semantic structure
+- ✅ **Easy maintenance** - styles centralized in SCSS design tokens
+
+## Basic Usage
+
+The component defaults to rendering as a `<p>` element with the specified typography variant:
+
+<Canvas of={TypographyStories.Default} />
+
+## Typography Hierarchy
+
+All available heading variants from the design system:
+
+<Canvas of={TypographyStories.AllHeadings} />
+
+## Body Text Variants
+
+Different body text sizes for various content needs:
+
+<Canvas of={TypographyStories.AllBodyText} />
+
+## Special Variants
+
+Caption and overline styles for specific use cases:
+
+<Canvas of={TypographyStories.SpecialVariants} />
+
+## Semantic HTML Examples
+
+The `as` prop allows you to use any typography style with the appropriate HTML element:
+
+<Canvas of={TypographyStories.SemanticExamples} />
+
+## Custom Styling
+
+You can extend the component with custom classes and inline styles:
+
+<Canvas of={TypographyStories.WithCustomStyling} />
+
+## Props
+
+<ArgsTable of={Typography} />
+
+## Available Variants
+
+| Variant | Use Case | Font Family | Font Size | Font Weight |
+|---------|----------|-------------|-----------|-------------|
+| `heading-1` | Main page titles | Poppins | 48px | Bold |
+| `heading-2` | Section titles | Poppins | 36px | Bold |
+| `heading-3` | Subsection titles | Poppins | 30px | Semibold |
+| `heading-4` | Article titles | Poppins | 24px | Semibold |
+| `heading-5` | Card titles | Poppins | 20px | Semibold |
+| `heading-6` | Small titles | Poppins | 18px | Semibold |
+| `heading-7` | Tiny titles | Poppins | 16px | Semibold |
+| `heading-8` | Micro titles | Poppins | 14px | Semibold |
+| `body-large` | Intro paragraphs | Quicksand | 18px | Normal |
+| `body-medium` | Standard content | Quicksand | 16px | Normal |
+| `body-small` | Secondary info | Quicksand | 14px | Normal |
+| `caption` | Image captions | Quicksand | 12px | Medium |
+| `overline` | Labels/categories | Quicksand | 12px | Semibold |
+
+## Available HTML Elements (`as` prop)
+
+### Headings
+- `h1`, `h2`, `h3`, `h4`, `h5`, `h6`
+
+### Text Elements
+- `p` (default), `span`, `div`
+
+### Semantic Elements
+- `label`, `legend`, `figcaption`
+
+### Text Formatting
+- `small`, `strong`, `em`, `mark`, `del`, `ins`, `sub`, `sup`
+
+## Usage Examples
+
+```tsx
+import { Typography } from '@/components/atoms';
+
+// Basic usage (renders as <p>)
+<Typography variant="body-medium">
+  Regular paragraph text
+</Typography>
+
+// Semantic heading with custom style
+<Typography variant="heading-2" as="h1">
+  Page Title
+</Typography>
+
+// Form label with overline style
+<Typography variant="overline" as="label">
+  FIELD LABEL
+</Typography>
+
+// Caption text
+<Typography variant="caption" as="figcaption">
+  Image caption below a figure
+</Typography>
+
+// Custom styling
+<Typography 
+  variant="heading-3" 
+  as="h2" 
+  className="custom-class"
+  style={{ color: 'blue' }}
+>
+  Custom styled heading
+</Typography>
+```
+
+## Best Practices
+
+### ✅ Do's
+- Use semantic HTML elements that match the content purpose
+- Choose typography variants that reflect content hierarchy
+- Use `heading-1` through `heading-8` for actual headings
+- Use `body-*` variants for paragraph content
+- Use `caption` for image captions and secondary information
+- Use `overline` for labels and category indicators
+
+### ❌ Don'ts
+- Don't use heading variants for non-heading content just for styling
+- Don't skip heading levels in your document structure
+- Don't use typography variants that conflict with semantic meaning
+- Don't apply additional font-size styles that override the design system
+
+## Accessibility
+
+The Typography component promotes accessible markup by:
+
+- **Semantic HTML**: Encourages proper use of heading hierarchy
+- **Consistent styling**: Maintains visual hierarchy that matches semantic structure
+- **Flexible elements**: Allows choosing the right HTML element for the content
+- **Screen reader friendly**: Proper heading structure aids navigation

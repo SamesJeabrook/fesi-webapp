@@ -1,15 +1,15 @@
 import Link from 'next/link';
-import { EateryService } from '@/services/eateryService';
+import { VendorService } from '@/services/vendorService';
 
-// This page shows all available eateries
-export default async function EateriesPage() {
-  let eateries: any[] = [];
+// This page shows all available vendors
+export default async function VendorsPage() {
+  let vendors: any[] = [];
   let error: string | null = null;
 
   try {
-    // TODO: Implement EateryService.getAllEateries() method
+    // TODO: Implement VendorService.getAllVendors() method
     // For now, we'll create some placeholder data
-    eateries = [
+    vendors = [
       {
         id: '1',
         name: 'Mario\'s Mobile Pizzeria',
@@ -60,17 +60,17 @@ export default async function EateriesPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {eateries.map((eatery) => (
+              {vendors.map((vendor: any) => (
                 <Link
-                  key={eatery.id}
-                  href={`/eateries/${eatery.id}`}
+                  key={vendor.id}
+                  href={`/vendors/${vendor.id}`}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
-                  {eatery.image_url && (
+                  {vendor.image_url && (
                     <div className="h-48 bg-neutral-200 overflow-hidden">
                       <img
-                        src={eatery.image_url}
-                        alt={eatery.name}
+                        src={vendor.image_url}
+                        alt={vendor.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -78,26 +78,26 @@ export default async function EateriesPage() {
                   
                   <div className="p-6">
                     <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                      {eatery.name}
+                      {vendor.name}
                     </h3>
                     
-                    {eatery.description && (
+                    {vendor.description && (
                       <p className="text-neutral-600 mb-4">
-                        {eatery.description}
+                        {vendor.description}
                       </p>
                     )}
 
                     <div className="flex flex-wrap gap-3 text-sm">
-                      {eatery.average_wait_time_minutes && (
+                      {vendor.average_wait_time_minutes && (
                         <div className="flex items-center gap-1">
                           <span className="text-neutral-500">⏱️</span>
                           <span className="text-neutral-700">
-                            {EateryService.getWaitTimeDisplay(eatery.average_wait_time_minutes)}
+                            {vendor.average_wait_time_minutes} min
                           </span>
                         </div>
                       )}
                       
-                      {eatery.loyalty_enabled && (
+                      {vendor.loyalty_enabled && (
                         <div className="flex items-center gap-1">
                           <span className="text-neutral-500">🎯</span>
                           <span className="text-neutral-700">Loyalty cards</span>
@@ -114,8 +114,8 @@ export default async function EateriesPage() {
               <h4 className="text-sm font-semibold text-blue-900 mb-2">Development Status</h4>
               <p className="text-sm text-blue-700">
                 This page currently shows placeholder data. Once your API is running, you can implement 
-                <code className="bg-blue-100 px-1 rounded mx-1">EateryService.getAllEateries()</code> 
-                to fetch real eatery data.
+                <code className="bg-blue-100 px-1 rounded mx-1">VendorService.getAllVendors()</code> 
+                to fetch real vendor data.
               </p>
             </div>
           </>

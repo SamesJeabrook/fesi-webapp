@@ -1,0 +1,63 @@
+// Typography component styles
+@use '../../../styles/tokens/typography' as typo;
+
+// Typography variant classes
+.typography {
+  margin: 0; // Reset default margins
+  padding: 0; // Reset default padding
+}
+
+// Heading variants
+.heading-1 {
+  @extend %heading-1;
+}
+
+.heading-2 {
+  @extend %heading-2;
+}
+
+.heading-3 {
+  @extend %heading-3;
+}
+
+.heading-4 {
+  @extend %heading-4;
+}
+
+.heading-5 {
+  @extend %heading-5;
+}
+
+.heading-6 {
+  @extend %heading-6;
+}
+
+.heading-7 {
+  @extend %heading-7;
+}
+
+.heading-8 {
+  @extend %heading-8;
+}
+
+// Body variants
+.body-large {
+  @extend %body-large;
+}
+
+.body-medium {
+  @extend %body-medium;
+}
+
+.body-small {
+  @extend %body-small;
+}
+
+// Special variants
+.caption {
+  @extend %caption;
+}
+
+.overline {
+  @extend %overline;
+}

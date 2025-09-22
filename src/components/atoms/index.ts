@@ -4,3 +4,4 @@ export * from './Input';
 export * from './Card';
 export * from './StarRating';
 export * from './Grid';
+export * from './Typography';
