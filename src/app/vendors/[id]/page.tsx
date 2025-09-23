@@ -54,6 +54,7 @@ export default async function VendorPage({
   
   // Fetch vendor data on the server
   let menuData: any = null;
+  let activeEvent: boolean = false;
   let error: string | null = null;
 
   try {
@@ -66,6 +67,12 @@ export default async function VendorPage({
     }
     
     menuData = await response.json();
+
+    const activeEventResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/merchants/${menuData.data.merchant.id}/active-event`);
+    if (activeEventResponse.ok) {
+      const activeEventData = await activeEventResponse.json();
+      activeEvent = activeEventData.hasActiveEvent;
+    }
     console.log('Fetched menu data:', menuData ? 'Success' : 'No data');
   } catch (err) {
     console.error('Error fetching menu:', err);
@@ -80,15 +87,14 @@ export default async function VendorPage({
   // Handle error case
   if (error) {
     return (
-      <GridContainer justifyContent="center" alignItems="center" className="min-h-screen">
+      <GridContainer justifyContent="center" alignItems="center">
         <GridItem md={8} lg={6} xl={4}>
-            <Typography as="h1" variant="heading-3" className="mb-4 text-neutral-900">
+            <Typography as="h1" variant="heading-3">
               Unable to Load Vendor
             </Typography>
-            <Typography variant="body-medium" className="mb-8 text-neutral-600">{error}</Typography>
+            <Typography variant="body-medium">{error}</Typography>
             <a
               href="/vendors"
-              className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
             >
               Browse All Eateries
             </a>
@@ -100,15 +106,14 @@ export default async function VendorPage({
   // Handle case where menu data is not found
   if (!menuData || !menuData.success) {
     return (
-      <GridContainer justifyContent="center" alignItems="center" className="min-h-screen">
+      <GridContainer justifyContent="center" alignItems="center">
         <GridItem md={8} lg={6} xl={4}>
-            <Typography as="h1" variant="heading-3" className="mb-4 text-neutral-900">
+            <Typography as="h1" variant="heading-3">
               Vendor Not Found
             </Typography>
-            <Typography variant="body-medium" className="mb-8 text-neutral-600">The vendor you are looking for could not be found.</Typography>
+            <Typography variant="body-medium">The vendor you are looking for could not be found.</Typography>
             <a
               href="/vendors"
-              className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
             >
               Browse All Eateries
             </a>
@@ -122,6 +127,7 @@ export default async function VendorPage({
 
   return (
     <VendorMenuWrapper 
+      activeEvent={activeEvent}
       merchant={merchant}
       categories={transformedCategories}
     />

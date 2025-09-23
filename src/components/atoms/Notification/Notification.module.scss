@@ -1,0 +1,52 @@
+@use '@/styles/tokens/typography' as *;
+
+.notification {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0.5rem 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: background 0.2s, color 0.2s;
+}
+
+.success {
+  background: #e6f9ed;
+  color: #217a4a;
+  border: 1px solid #b7e4c7;
+}
+
+.warning {
+  background: #fffbe6;
+  color: #b38600;
+  border: 1px solid #ffe066;
+}
+
+.error {
+  background: #ffeaea;
+  color: #b00020;
+  border: 1px solid #ffb3b3;
+}
+
+.message {
+    @extend %body-large;
+    font-weight: bold;
+}
+
+.sub-message {
+    @extend %body-medium;
+}
+
+.closeButton {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  line-height: 1;
+}
