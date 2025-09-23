@@ -80,48 +80,40 @@ export default async function VendorPage({
   // Handle error case
   if (error) {
     return (
-      <div className="min-h-screen bg-neutral-50">
-        <GridContainer justifyContent="center" alignItems="center" className="min-h-screen">
-          <GridItem md={8} lg={6} xl={4}>
-            <div className="text-center">
-              <Typography as="h1" variant="heading-3" className="mb-4 text-neutral-900">
-                Unable to Load Vendor
-              </Typography>
-              <Typography variant="body-medium" className="mb-8 text-neutral-600">{error}</Typography>
-              <a
-                href="/vendors"
-                className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                Browse All Eateries
-              </a>
-            </div>
-          </GridItem>
-        </GridContainer>
-      </div>
+      <GridContainer justifyContent="center" alignItems="center" className="min-h-screen">
+        <GridItem md={8} lg={6} xl={4}>
+            <Typography as="h1" variant="heading-3" className="mb-4 text-neutral-900">
+              Unable to Load Vendor
+            </Typography>
+            <Typography variant="body-medium" className="mb-8 text-neutral-600">{error}</Typography>
+            <a
+              href="/vendors"
+              className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Browse All Eateries
+            </a>
+        </GridItem>
+      </GridContainer>
     );
   }
 
   // Handle case where menu data is not found
   if (!menuData || !menuData.success) {
     return (
-      <div className="min-h-screen bg-neutral-50">
-        <GridContainer justifyContent="center" alignItems="center" className="min-h-screen">
-          <GridItem md={8} lg={6} xl={4}>
-            <div className="text-center">
-              <Typography as="h1" variant="heading-3" className="mb-4 text-neutral-900">
-                Vendor Not Found
-              </Typography>
-              <Typography variant="body-medium" className="mb-8 text-neutral-600">The vendor you are looking for could not be found.</Typography>
-              <a
-                href="/vendors"
-                className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                Browse All Eateries
-              </a>
-            </div>
-          </GridItem>
-        </GridContainer>
-      </div>
+      <GridContainer justifyContent="center" alignItems="center" className="min-h-screen">
+        <GridItem md={8} lg={6} xl={4}>
+            <Typography as="h1" variant="heading-3" className="mb-4 text-neutral-900">
+              Vendor Not Found
+            </Typography>
+            <Typography variant="body-medium" className="mb-8 text-neutral-600">The vendor you are looking for could not be found.</Typography>
+            <a
+              href="/vendors"
+              className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Browse All Eateries
+            </a>
+        </GridItem>
+      </GridContainer>
     );
   }
 

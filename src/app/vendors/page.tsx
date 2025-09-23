@@ -42,86 +42,68 @@ export default async function VendorsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <div className="container mx-auto px-4 py-8">
-        <Typography as="h1" variant="heading-2" className="mb-8 text-neutral-900">
-          Mobile Food Stalls Near You
-        </Typography>
-        
-        {error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-            <Typography variant="body-medium" className="text-red-700">{error}</Typography>
-          </div>
-        ) : (
+    <>
+      <Typography as="h1" variant="heading-2" className="mb-8 text-neutral-900">
+        Mobile Food Stalls Near You
+      </Typography>
+      
+      {error ? (
+          <Typography variant="body-medium" className="text-red-700">{error}</Typography>
+      ) : (
           <>
-            <div className="mb-8">
-              <Typography variant="body-medium" className="text-neutral-600">
-                Discover delicious food from local mobile stalls and food trucks.
-              </Typography>
-            </div>
+            <Typography variant="body-medium" className="text-neutral-600">
+              Discover delicious food from local mobile stalls and food trucks.
+            </Typography>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {vendors.map((vendor: any) => (
-                <Link
-                  key={vendor.id}
-                  href={`/vendors/${vendor.id}`}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  {vendor.image_url && (
-                    <div className="h-48 bg-neutral-200 overflow-hidden">
-                      <img
-                        src={vendor.image_url}
-                        alt={vendor.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="p-6">
-                    <Typography as="h3" variant="heading-4" className="mb-2 text-neutral-900">
-                      {vendor.name}
+            {vendors.map((vendor: any) => (
+              <Link
+                key={vendor.id}
+                href={`/vendors/${vendor.id}`}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+              >
+                {vendor.image_url && (
+                  <img
+                    src={vendor.image_url}
+                    alt={vendor.name}
+                    className="w-full h-full object-cover" />
+                )}
+
+                <Typography as="h3" variant="heading-4" className="mb-2 text-neutral-900">
+                  {vendor.name}
+                </Typography>
+
+                {vendor.description && (
+                  <Typography variant="body-medium" className="text-neutral-600 mb-4">
+                    {vendor.description}
+                  </Typography>
+                )}
+
+                {vendor.average_wait_time_minutes && (
+                  <>
+                    <Typography as="span" variant="body-small" className="text-neutral-500">⏱️</Typography>
+                    <Typography as="span" variant="body-small" className="text-neutral-700">
+                      {vendor.average_wait_time_minutes} min
                     </Typography>
-                    
-                    {vendor.description && (
-                      <Typography variant="body-medium" className="text-neutral-600 mb-4">
-                        {vendor.description}
-                      </Typography>
-                    )}
+                  </>
+                )}
 
-                    <div className="flex flex-wrap gap-3">
-                      {vendor.average_wait_time_minutes && (
-                        <div className="flex items-center gap-1">
-                          <Typography as="span" variant="body-small" className="text-neutral-500">⏱️</Typography>
-                          <Typography as="span" variant="body-small" className="text-neutral-700">
-                            {vendor.average_wait_time_minutes} min
-                          </Typography>
-                        </div>
-                      )}
-                      
-                      {vendor.loyalty_enabled && (
-                        <div className="flex items-center gap-1">
-                          <Typography as="span" variant="body-small" className="text-neutral-500">🎯</Typography>
-                          <Typography as="span" variant="body-small" className="text-neutral-700">Loyalty cards</Typography>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            {/* Development Note */}
-            <div className="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <Typography as="h4" variant="body-small" className="text-blue-900 mb-2 font-semibold">Development Status</Typography>
-              <Typography variant="body-small" className="text-blue-700">
-                This page currently shows placeholder data. Once your API is running, you can implement 
-                <code className="bg-blue-100 px-1 rounded mx-1">VendorService.getAllVendors()</code> 
-                to fetch real vendor data.
-              </Typography>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+                {vendor.loyalty_enabled && (
+                  <>
+                    <Typography as="span" variant="body-small" className="text-neutral-500">🎯</Typography>
+                    <Typography as="span" variant="body-small" className="text-neutral-700">Loyalty cards</Typography>
+                  </>
+                )}
+              </Link>
+            ))}
+          {/* Development Note */}
+            <Typography as="h4" variant="body-small" className="text-blue-900 mb-2 font-semibold">Development Status</Typography>
+            <Typography variant="body-small" className="text-blue-700">
+              This page currently shows placeholder data. Once your API is running, you can implement
+              <code>VendorService.getAllVendors()</code>
+              to fetch real vendor data.
+            </Typography>
+        </>
+      )}
+    </>
   );
 }
