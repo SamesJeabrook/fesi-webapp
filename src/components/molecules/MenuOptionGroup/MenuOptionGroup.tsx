@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './MenuOptionGroup.module.scss';
 import type { MenuOptionGroupProps } from './MenuOptionGroup.types';
+import { formatPrice } from '@/utils/menu';
 
 const MenuOptionGroup: React.FC<MenuOptionGroupProps> = ({ group, selected, onChange, disabled }) => {
   const handleSelect = (id: string) => {
@@ -44,7 +45,7 @@ const MenuOptionGroup: React.FC<MenuOptionGroupProps> = ({ group, selected, onCh
             <span>{sub.name}</span>
             {sub.additional_price !== 0 && (
               <span className={styles.price}>
-                {sub.additional_price > 0 ? `+${sub.additional_price}` : sub.additional_price}
+                {sub.additional_price > 0 ? `+${formatPrice(sub.additional_price)}` : formatPrice(sub.additional_price)}
               </span>
             )}
           </div>

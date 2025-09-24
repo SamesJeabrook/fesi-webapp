@@ -20,5 +20,7 @@ export interface MenuItemDetailsProps {
   item: MenuItem | null;
   selectedOptions: Record<string, string[]>;
   onOptionsChange: (groupId: string, selected: string[]) => void;
+  onAddToOrder: () => void;
+  onCancel?: () => void;
   disabled?: boolean;
 }

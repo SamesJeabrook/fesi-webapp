@@ -47,17 +47,27 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
     }));
   };
 
+  const areCustomizationsEqual = (a?: CustomizationSelection[], b?: CustomizationSelection[]) => {
+    if (!a && !b) return true;
+    if (!a || !b) return false;
+    if (a.length !== b.length) return false;
+    // Compare arrays by sub_item_id and quantity
+    const sortFn = (x: CustomizationSelection, y: CustomizationSelection) => x.sub_item_id.localeCompare(y.sub_item_id);
+    const aSorted = [...a].sort(sortFn);
+    const bSorted = [...b].sort(sortFn);
+    return aSorted.every((c, i) => c.sub_item_id === bSorted[i].sub_item_id && c.quantity === bSorted[i].quantity);
+  };
+
   // Add item to order (increments quantity or adds new)
   const handleAddToOrder = (menuItemId: string) => {
-    // Flatten selectedOptions to customizations array
     const customizations: CustomizationSelection[] = Object.values(selectedOptions).flat().map(sub_item_id => ({ sub_item_id, quantity: 1 }));
     setOrderSelections(prev => {
-      const idx = prev.findIndex(sel => sel.menu_item_id === menuItemId);
+      // Find if an identical item (id + customizations) exists
+      const idx = prev.findIndex(sel => sel.menu_item_id === menuItemId && areCustomizationsEqual(sel.customizations, customizations));
       if (idx !== -1) {
-        // Increment quantity and update customizations
+        // Increment quantity for this unique combination
         const updated = [...prev];
         updated[idx].quantity += 1;
-        updated[idx].customizations = customizations;
         return updated;
       } else {
         // Add new item with quantity 1 and customizations
