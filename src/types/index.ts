@@ -92,7 +92,7 @@ export interface MenuItem extends BaseEntity {
   calories?: number;
   allergens?: string[];
   dietaryInfo?: ('vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free' | 'nut-free')[];
-  options?: MenuItemOption[];
+  option?: MenuItemOption[];
   displayOrder: number;
 }
 

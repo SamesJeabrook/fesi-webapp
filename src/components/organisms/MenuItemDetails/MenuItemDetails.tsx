@@ -2,9 +2,20 @@ import React from 'react';
 import styles from './MenuItemDetails.module.scss';
 import type { MenuItemDetailsProps } from './MenuItemDetails.types';
 import MenuOptionGroup from '../../molecules/MenuOptionGroup/MenuOptionGroup';
-import { Typography } from '@/components/atoms';
+import { Button, Typography } from '@/components/atoms';
 
-const MenuItemDetails: React.FC<MenuItemDetailsProps> = ({ item, selectedOptions, onOptionsChange, disabled }) => {
+interface MenuItemDetailsProps {
+  item: any;
+  selectedOptions: Record<string, string[]>;
+  onOptionsChange: (groupId: string, selected: string[]) => void;
+  onAddToOrder: () => void;
+  onCancel?: () => void;
+  disabled?: boolean;
+}
+
+const MenuItemDetails: React.FC<MenuItemDetailsProps> = ({ item, selectedOptions, onOptionsChange, onAddToOrder, onCancel, disabled }) => {
+  if (!item) return (<Typography variant='heading-2' as='h2'>No item selected</Typography>)
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -26,10 +37,18 @@ const MenuItemDetails: React.FC<MenuItemDetailsProps> = ({ item, selectedOptions
             key={group.id}
             group={group}
             selected={selectedOptions[group.id] || []}
-            onChange={selected => onOptionsChange(group.id, selected)}
+            onChange={customizations => onOptionsChange(group.id, customizations)}
             disabled={disabled}
           />
         ))}
+      </div>
+      <div className={styles.actions}>
+        <Button variant='primary' className={styles.addButton} onClick={onAddToOrder} isDisabled={disabled}>
+          Add to Order
+        </Button>
+        <Button variant='secondary' className={styles.cancelButton} onClick={onCancel}>
+          Cancel
+        </Button>
       </div>
     </div>
   );

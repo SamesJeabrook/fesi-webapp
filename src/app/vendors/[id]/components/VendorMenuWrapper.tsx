@@ -1,9 +1,14 @@
 'use client'
 
+import { useState, useEffect } from 'react';
 import Notification from '@/components/atoms/Notification/Notification';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
 import type { Merchant, MenuCategory } from '@/components/templates/MenuDisplay/MenuDisplay.types';
 import type { MenuItem } from '@/types';
+import { MenuItem as VendorServiceItem } from '@/services/vendorService';
+import { MenuSubGroup, VendorService } from '@/services/vendorService';
+import MenuItemDetails from '@/components/organisms/MenuItemDetails/MenuItemDetails';
+import FullscreenTransition from '@/components/atoms/FullscreenTransition/FullscreenTransition';
 
 interface VendorMenuWrapperProps {
   activeEvent: Boolean;
@@ -11,10 +16,66 @@ interface VendorMenuWrapperProps {
   categories: MenuCategory[];
 }
 
+// Define types for order selections matching backend, using string for menu_item_id (UUID)
+interface CustomizationSelection {
+  sub_item_id: string;
+  quantity: number;
+}
+
+interface OrderSelection {
+  menu_item_id: string;
+  quantity: number;
+  customizations?: CustomizationSelection[];
+}
+
 export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorMenuWrapperProps) {
-  // Handle click events for menu items
-  const handleItemClick = (menuItem: MenuItem) => {
-    console.log('Item clicked:', menuItem.id);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<VendorServiceItem | null>(null);
+  // Track all selections for each menu item as an array
+  const [orderSelections, setOrderSelections] = useState<OrderSelection[]>([]);
+  // Track option group selections for the currently selected menu item
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
+
+  useEffect(() => {
+    console.log(orderSelections)
+  }, [orderSelections])
+
+  // Handle option group selection changes for the modal
+  const handleOptionsChange = (groupId: string, selected: string[]) => {
+    setSelectedOptions(prev => ({
+      ...prev,
+      [groupId]: selected,
+    }));
+  };
+
+  // Add item to order (increments quantity or adds new)
+  const handleAddToOrder = (menuItemId: string) => {
+    // Flatten selectedOptions to customizations array
+    const customizations: CustomizationSelection[] = Object.values(selectedOptions).flat().map(sub_item_id => ({ sub_item_id, quantity: 1 }));
+    setOrderSelections(prev => {
+      const idx = prev.findIndex(sel => sel.menu_item_id === menuItemId);
+      if (idx !== -1) {
+        // Increment quantity and update customizations
+        const updated = [...prev];
+        updated[idx].quantity += 1;
+        updated[idx].customizations = customizations;
+        return updated;
+      } else {
+        // Add new item with quantity 1 and customizations
+        return [...prev, { menu_item_id: menuItemId, quantity: 1, customizations }];
+      }
+    });
+    setSelectedMenuItem(null); // Close details after adding
+    setSelectedOptions({}); // Reset modal selections
+  };
+
+  const handleItemClick = async (menuItem: MenuItem) => {
+    try {
+      const itemData = await VendorService.getMenuSubGroups(menuItem.id);
+      // Merge menuItem with itemData to ensure all MenuItem properties are present
+      setSelectedMenuItem(itemData);
+    } catch (error) {
+      console.error('Failed to fetch sub-groups:', error);
+    }
     // TODO: Navigate to item detail page or open modal
   };
 
@@ -26,6 +87,20 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
         categories={categories}
         onItemClick={handleItemClick}
       />
+      <FullscreenTransition
+        open={!!selectedMenuItem}
+        onClose={() => { setSelectedMenuItem(null); setSelectedOptions({}); }}
+      >
+        {selectedMenuItem && (
+          <MenuItemDetails
+            item={selectedMenuItem}
+            selectedOptions={selectedOptions}
+            onOptionsChange={handleOptionsChange}
+            onAddToOrder={() => handleAddToOrder(selectedMenuItem.id)}
+            onCancel={() => { setSelectedMenuItem(null); setSelectedOptions({}); }}
+          />
+        )}
+      </FullscreenTransition>
     </>
   );
 }

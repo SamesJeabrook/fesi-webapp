@@ -28,10 +28,9 @@ export const Card: React.FC<CardProps> = ({
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement | HTMLButtonElement>) => {
     if (onClick) {
-      if (CardElement === 'div') {
+      if (CardElement === 'button') {
         onClick(event as React.MouseEvent<HTMLDivElement>);
       }
-      // Optionally, handle 'button' case if needed
     }
   };
 

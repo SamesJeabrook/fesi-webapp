@@ -17,7 +17,7 @@ export interface MenuItem {
 }
 
 export interface MenuItemDetailsProps {
-  item: MenuItem;
+  item: MenuItem | null;
   selectedOptions: Record<string, string[]>;
   onOptionsChange: (groupId: string, selected: string[]) => void;
   disabled?: boolean;

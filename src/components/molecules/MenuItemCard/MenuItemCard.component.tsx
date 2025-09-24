@@ -17,6 +17,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
 
   const handleViewDetails = () => {
     if (onViewDetails) {
+      console.log(menuItem)
       onViewDetails(menuItem);
     }
   };
