@@ -16,9 +16,15 @@ export interface MenuOptionGroup {
   sub_items: MenuSubItem[];
 }
 
+export interface SelectedOptionDetail {
+  id: string;
+  name: string;
+  price: number;
+}
+
 export interface MenuOptionGroupProps {
   group: MenuOptionGroup;
-  selected: string[];
-  onChange: (selected: string[]) => void;
+  selected: SelectedOptionDetail[];
+  onChange: (selected: SelectedOptionDetail[]) => void;
   disabled?: boolean;
 }

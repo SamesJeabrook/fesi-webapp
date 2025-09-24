@@ -1,6 +1,20 @@
-import type { MenuOptionGroup } from '../../molecules/MenuOptionGroup/MenuOptionGroup.types';
+export interface MenuSubItem {
+  id: string;
+  name: string;
+  additional_price: number;
+  display_order: number;
+}
 
-export interface MenuItem {
+export interface MenuOptionGroup {
+  id: string;
+  name: string;
+  selection_type: 'single' | 'multiple';
+  is_required: boolean;
+  max_selections?: number | null;
+  sub_items: MenuSubItem[];
+}
+
+export interface LegacyMenuItem {
   id: string;
   merchant_id: string;
   category_id: string;
@@ -16,11 +30,17 @@ export interface MenuItem {
   option_groups: MenuOptionGroup[];
 }
 
+export interface SelectedOptionDetail {
+  id: string;
+  name: string;
+  price: number;
+}
+
 export interface MenuItemDetailsProps {
-  item: MenuItem | null;
-  selectedOptions: Record<string, string[]>;
-  onOptionsChange: (groupId: string, selected: string[]) => void;
-  onAddToOrder: () => void;
+  item: LegacyMenuItem | null;
+  selectedOptions: Record<string, SelectedOptionDetail[]>;
+  onOptionsChange: (groupId: string, selected: SelectedOptionDetail[]) => void;
+  onAddToOrder: (quantity: number) => void;
   onCancel?: () => void;
   disabled?: boolean;
 }

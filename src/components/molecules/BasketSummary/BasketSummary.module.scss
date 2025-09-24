@@ -1,0 +1,30 @@
+@use '@/styles/tokens/colors' as colors;
+
+.container {
+  padding: 16px;
+  border-top: 1px solid colors.$neutral-200;
+  background: colors.$white;
+  position: fixed;
+  bottom: 0;
+  z-index: 999;
+  width: 100%;
+}
+
+.items {
+    max-height: 0;
+    overflow: hidden;
+    transition: .5s;
+    
+    &--open {
+        transition: .5s;
+        max-height: 100vh;
+    }
+}
+
+.mainItem {
+  font-weight: 700;
+}
+
+.subItems {
+  margin-left: var(--spacing-4);
+}

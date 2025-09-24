@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import Notification from '@/components/atoms/Notification/Notification';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
-import type { Merchant, MenuCategory } from '@/components/templates/MenuDisplay/MenuDisplay.types';
-import type { MenuItem } from '@/types';
+import type { Merchant, } from '@/components/templates/MenuDisplay/MenuDisplay.types';
+import type { MenuItem, MenuCategory } from '@/types';
 import { MenuItem as VendorServiceItem } from '@/services/vendorService';
 import { MenuSubGroup, VendorService } from '@/services/vendorService';
 import MenuItemDetails from '@/components/organisms/MenuItemDetails/MenuItemDetails';
 import FullscreenTransition from '@/components/atoms/FullscreenTransition/FullscreenTransition';
+import BasketSummary from '@/components/molecules/BasketSummary/BasketSummary';
 
 interface VendorMenuWrapperProps {
   activeEvent: Boolean;
@@ -19,13 +20,18 @@ interface VendorMenuWrapperProps {
 // Define types for order selections matching backend, using string for menu_item_id (UUID)
 interface CustomizationSelection {
   sub_item_id: string;
+  sub_item_name: string;
+  price_modifier: number;
   quantity: number;
 }
 
 interface OrderSelection {
   menu_item_id: string;
+  menu_item_name: string;
   quantity: number;
   customizations?: CustomizationSelection[];
+  item_total: number;
+  item_base_price: number;
 }
 
 export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorMenuWrapperProps) {
@@ -33,17 +39,37 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
   // Track all selections for each menu item as an array
   const [orderSelections, setOrderSelections] = useState<OrderSelection[]>([]);
   // Track option group selections for the currently selected menu item
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
+  interface SelectedOptionDetail {
+    id: string;
+    name: string;
+    price: number;
+  }
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, SelectedOptionDetail[]>>({});
 
   useEffect(() => {
     console.log(orderSelections)
   }, [orderSelections])
 
   // Handle option group selection changes for the modal
-  const handleOptionsChange = (groupId: string, selected: string[]) => {
+  const handleOptionsChange = (groupId: string, selected: string[], menuItem?: MenuItem) => {
+    // If menuItem is provided, map selected IDs to details
+    let details: SelectedOptionDetail[] = [];
+    if (menuItem && menuItem.option_groups) {
+      for (const sub_item_id of selected) {
+        for (const group of menuItem.option_groups) {
+          const sub = group.sub_items.find((s: any) => s.id === sub_item_id);
+          if (sub) {
+            details.push({ id: sub.id, name: sub.name, price: sub.additional_price });
+          }
+        }
+      }
+    } else {
+      // fallback: just record id
+      details = selected.map(id => ({ id, name: id, price: 0 }));
+    }
     setSelectedOptions(prev => ({
       ...prev,
-      [groupId]: selected,
+      [groupId]: details,
     }));
   };
 
@@ -58,25 +84,153 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
     return aSorted.every((c, i) => c.sub_item_id === bSorted[i].sub_item_id && c.quantity === bSorted[i].quantity);
   };
 
+  // Transform service MenuItem to unified MenuItem type
+  const transformMenuItem = (item: any): MenuItem => {
+    console.log('transformMenuItem: item.option_groups', item.option_groups);
+    const option = item.option_groups ? item.option_groups.map((group: any) => ({
+      id: group.id,
+      menuItemId: item.id,
+      name: group.name,
+      type: group.selection_type,
+      required: group.is_required,
+      maxSelections: group.max_selections,
+      choices: group.sub_items.map((sub: any) => ({
+        id: sub.id,
+        optionId: group.id,
+        name: sub.name,
+        priceModifier: sub.additional_price,
+        isDefault: false,
+      }))
+    })) : [];
+    return {
+      id: item.id,
+      merchantId: item.merchant_id || item.merchantId,
+      categoryId: item.category_id || item.categoryId,
+      name: item.title || item.name,
+      description: item.description,
+      price: item.price || '',
+      basePrice: typeof item.base_price === 'number' ? item.base_price : item.basePrice,
+      imageUrl: item.image_url || item.imageUrl,
+      isAvailable: item.is_active ?? item.isAvailable,
+      isPopular: item.isPopular,
+      preparationTime: item.preparationTime,
+      calories: item.calories,
+      allergens: item.allergens,
+      dietaryInfo: item.dietaryInfo,
+      option,
+      displayOrder: item.display_order || item.displayOrder,
+      createdAt: item.created_at || item.createdAt || '',
+      updatedAt: item.updated_at || item.updatedAt || '',
+    };
+  };
+
+  // Helper to get menu item by id
+  const getMenuItemById = (id: string): MenuItem | undefined => {
+    for (const cat of categories) {
+      if (cat.items) {
+        const found = cat.items.find((item: any) => item.id === id);
+        if (found) return transformMenuItem(found);
+      }
+    }
+    if (selectedMenuItem && selectedMenuItem.id === id) {
+      return transformMenuItem(selectedMenuItem);
+    }
+    return undefined;
+  };
+
+  // Helper to get sub-item price
+  const getSubItemPrice = (menuItem: MenuItem, sub_item_id: string): number => {
+    if (!menuItem || !menuItem.option_groups) return 0;
+    for (const group of menuItem.option_groups) {
+      const sub = group.choices.find((s: any) => s.id === sub_item_id);
+      if (sub && typeof sub.priceModifier === 'number') return sub.priceModifier;
+    }
+    return 0;
+  };
+
+  // Helper to get sub-item details
+  const getSubItemDetails = (menuItem: MenuItem, sub_item_id: string) => {
+    if (!menuItem || !menuItem.option_groups) {
+      console.warn('getSubItemDetails: menuItem or option missing', menuItem);
+      return { name: sub_item_id, price: 0 };
+    }
+    for (const group of menuItem.option_groups) {
+      const sub = group.choices.find((s: any) => s.id === sub_item_id);
+      if (sub) {
+        console.log('getSubItemDetails: found sub-item', sub_item_id, sub.name, sub.priceModifier);
+        return { name: sub.name, price: sub.priceModifier };
+      }
+    }
+    console.warn('getSubItemDetails: sub-item not found', sub_item_id, menuItem.option_groups);
+    return { name: sub_item_id, price: 0 };
+  };
+
   // Add item to order (increments quantity or adds new)
-  const handleAddToOrder = (menuItemId: string) => {
-    const customizations: CustomizationSelection[] = Object.values(selectedOptions).flat().map(sub_item_id => ({ sub_item_id, quantity: 1 }));
+  const handleAddToOrder = (menuItemId: string, quantity: number = 1) => {
+    const menuItem = getMenuItemById(menuItemId);
+    if (!menuItem || typeof menuItem.basePrice !== 'number') return;
+    // Build customizations with sub_item_name and price_modifier
+    const customizations: CustomizationSelection[] = Object.values(selectedOptions).flat().map(opt => ({
+      sub_item_id: opt.id,
+      sub_item_name: opt.name,
+      price_modifier: opt.price,
+      quantity: 1,
+    }));
+    // Calculate total price for this item (base + all customizations * their quantity)
+    let customizationsTotal = 0;
+    for (const c of customizations) {
+      customizationsTotal += (typeof c.price_modifier === 'number' ? c.price_modifier : 0) * c.quantity;
+    }
+    const item_total = (menuItem.basePrice + customizationsTotal) * quantity;
+
     setOrderSelections(prev => {
       // Find if an identical item (id + customizations) exists
       const idx = prev.findIndex(sel => sel.menu_item_id === menuItemId && areCustomizationsEqual(sel.customizations, customizations));
       if (idx !== -1) {
-        // Increment quantity for this unique combination
+        // Set quantity and update item_total for this unique combination
         const updated = [...prev];
-        updated[idx].quantity += 1;
+        updated[idx].quantity += quantity;
+        updated[idx].item_total += item_total;
+        // Merge customizations names and price modifiers if missing
+        updated[idx].customizations = customizations;
         return updated;
       } else {
-        // Add new item with quantity 1 and customizations
-        return [...prev, { menu_item_id: menuItemId, quantity: 1, customizations }];
+        // Add new item with specified quantity, customizations, and item_total
+        return [...prev, {
+          menu_item_id: menuItemId,
+          menu_item_name: menuItem.name,
+          quantity,
+          customizations,
+          item_total,
+          item_base_price: menuItem.basePrice,
+        }];
       }
     });
     setSelectedMenuItem(null); // Close details after adding
     setSelectedOptions({}); // Reset modal selections
   };
+
+  // Basket summary calculation
+  const basketTotal = orderSelections.reduce((sum, item) => {
+    const itemTotal = typeof item.item_total === 'number' ? item.item_total : 0;
+    return sum + itemTotal;
+  }, 0);
+
+  // Prepare basket items for BasketSummary
+  const basketItems = orderSelections.map(item => {
+    return {
+      menu_item_id: item.menu_item_id,
+      quantity: item.quantity,
+      item_total: item.item_total,
+      title: item.menu_item_name || 'Item',
+      customizations: (item.customizations || []).map(c => ({
+        sub_item_id: c.sub_item_id,
+        sub_item_name: c.sub_item_name,
+        price_modifier: c.price_modifier,
+        quantity: c.quantity,
+      }))
+    };
+  });
 
   const handleItemClick = async (menuItem: MenuItem) => {
     try {
@@ -105,12 +259,14 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
           <MenuItemDetails
             item={selectedMenuItem}
             selectedOptions={selectedOptions}
-            onOptionsChange={handleOptionsChange}
-            onAddToOrder={() => handleAddToOrder(selectedMenuItem.id)}
+            onOptionsChange={(groupId, selected) => handleOptionsChange(groupId, selected.map(opt => opt.id), selectedMenuItem)}
+            onAddToOrder={(qty: number) => handleAddToOrder(selectedMenuItem.id, qty)}
             onCancel={() => { setSelectedMenuItem(null); setSelectedOptions({}); }}
           />
         )}
       </FullscreenTransition>
+      {/* Basket summary UI */}
+      <BasketSummary items={basketItems} total={basketTotal} />
     </>
   );
 }

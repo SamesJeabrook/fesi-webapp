@@ -37,7 +37,8 @@ export type TypographyElement =
   | 'del'
   | 'ins'
   | 'sub'
-  | 'sup';
+  | 'sup'
+  | 'li';
 
 export interface TypographyProps {
   /** Typography variant/style to apply */

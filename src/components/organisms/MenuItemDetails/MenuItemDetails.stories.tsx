@@ -61,7 +61,7 @@ type Story = StoryObj<typeof MenuItemDetails>;
 export const Default: Story = {
   render: (args) => {
     const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
-    return (
+  return (
       <MenuItemDetails
         {...args}
         selectedOptions={selectedOptions}
