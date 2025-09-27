@@ -1,0 +1,19 @@
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  overflow: auto;
+}
+
+@media (min-width: 768px) {
+  .summary {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 3rem;
+  }
+}

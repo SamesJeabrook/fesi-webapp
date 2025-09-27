@@ -6,7 +6,7 @@
   background: colors.$white;
   position: fixed;
   bottom: 0;
-  z-index: 999;
+  z-index: 10;
   width: 100%;
 }
 
@@ -26,5 +26,5 @@
 }
 
 .subItems {
-  margin-left: var(--spacing-4);
+  margin-left: var(--spacing-5);
 }

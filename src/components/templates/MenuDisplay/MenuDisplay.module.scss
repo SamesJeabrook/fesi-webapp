@@ -3,7 +3,7 @@
 
 .menuDisplay {
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 0 auto var(--spacing-20) auto;
   padding: var(--spacing-4);
   
   @include breakpoint(lg) {

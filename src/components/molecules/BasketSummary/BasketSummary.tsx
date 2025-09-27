@@ -22,14 +22,12 @@ const BasketSummary: React.FC<BasketSummaryProps> = ({ items, total }) => {
                                 {item.customizations.map((sub, subIdx) => (
                                     <li key={subIdx} className={styles.subItem}>
                                         <Typography variant='body-small' as='span'>{sub.sub_item_name}</Typography>
-                                        <span>
-                                            {sub.price_modifier !== 0 && (
-                                                <span className={styles.price}>
-                                                    {sub.price_modifier > 0 ? '+' : ''}{formatPrice(sub.price_modifier)}
-                                                </span>
-                                            )}
-                                            {sub.quantity > 1 ? ` x${sub.quantity}` : ''}
-                                        </span>
+                                        {sub.price_modifier !== 0 && (
+                                            <Typography variant='body-small' as='span'>
+                                                {sub.price_modifier > 0 ? '+' : ''}{formatPrice(sub.price_modifier)}
+                                            </Typography>
+                                        )}
+                                        {sub.quantity > 1 ? ` x${sub.quantity}` : ''}
                                     </li>
                                 ))}
                             </ul>

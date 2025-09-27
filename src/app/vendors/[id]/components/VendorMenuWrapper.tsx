@@ -10,6 +10,10 @@ import { MenuSubGroup, VendorService } from '@/services/vendorService';
 import MenuItemDetails from '@/components/organisms/MenuItemDetails/MenuItemDetails';
 import FullscreenTransition from '@/components/atoms/FullscreenTransition/FullscreenTransition';
 import BasketSummary from '@/components/molecules/BasketSummary/BasketSummary';
+import CheckoutButtonWrapper from '@/components/atoms/CheckoutButtonWrapper/CheckoutButtonWrapper';
+import { Button } from '@/components';
+import OrderSummary from '@/components/organisms/OrderSummary/OrderSummary';
+import { paymentConfig } from '@/config/paymentConfig';
 
 interface VendorMenuWrapperProps {
   activeEvent: Boolean;
@@ -45,6 +49,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
     price: number;
   }
   const [selectedOptions, setSelectedOptions] = useState<Record<string, SelectedOptionDetail[]>>({});
+  const [checkoutDisplay, setCheckoutDisplay] = useState(false);
 
   useEffect(() => {
     console.log(orderSelections)
@@ -210,19 +215,27 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
     setSelectedOptions({}); // Reset modal selections
   };
 
+  // Handler to remove item from basket
+  const handleRemoveOrderItem = (menu_item_id: string) => {
+    setOrderSelections(prev => prev.filter(item => item.menu_item_id !== menu_item_id));
+  };
+
   // Basket summary calculation
   const basketTotal = orderSelections.reduce((sum, item) => {
-    const itemTotal = typeof item.item_total === 'number' ? item.item_total : 0;
+    // Calculate total for this item: (base + sum of sub-item modifiers) * quantity
+    const customizationsTotal = (item.customizations || []).reduce((acc, c) => acc + (typeof c.price_modifier === 'number' ? c.price_modifier : 0) * c.quantity, 0);
+    const itemTotal = (item.item_base_price + customizationsTotal) * item.quantity;
     return sum + itemTotal;
   }, 0);
 
-  // Prepare basket items for BasketSummary
+  // Prepare basket items for BasketSummary and OrderSummary
   const basketItems = orderSelections.map(item => {
     return {
       menu_item_id: item.menu_item_id,
+      menu_item_name: item.menu_item_name || 'Item',
+      title: item.menu_item_name || 'Item',
       quantity: item.quantity,
       item_total: item.item_total,
-      title: item.menu_item_name || 'Item',
       customizations: (item.customizations || []).map(c => ({
         sub_item_id: c.sub_item_id,
         sub_item_name: c.sub_item_name,
@@ -231,6 +244,47 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
       }))
     };
   });
+
+  // Prepare basket items for OrderSummary
+  // Use paymentConfig for cost breakdown
+  const {
+    platformFeePercentage,
+    stripeFeePct,
+    stripeFeeFixed,
+    minimumPlatformProfit,
+    minimumOrderValue,
+    smallOrderThreshold,
+    currency,
+  } = paymentConfig;
+
+  const subtotal = basketItems.reduce((sum, item) => sum + item.item_total, 0);
+  // Calculate base platform fee
+  const basePlatformFee = subtotal * platformFeePercentage;
+  // Stripe fee estimate
+  const stripeFeeEstimate = (subtotal * stripeFeePct) + stripeFeeFixed;
+  // Required platform fee
+  const requiredPlatformFee = stripeFeeEstimate + minimumPlatformProfit;
+  // Small order fee logic
+  let smallOrderFee = 0;
+  if (basePlatformFee < requiredPlatformFee) {
+    smallOrderFee = requiredPlatformFee - basePlatformFee;
+    smallOrderFee = Math.ceil(smallOrderFee * 10) / 10;
+  }
+  const totalPlatformFee = basePlatformFee + smallOrderFee;
+  const merchantAmount = subtotal;
+  const totalOrderAmount = subtotal + totalPlatformFee;
+  const smallOrderProtectionApplied = smallOrderFee > 0;
+
+  const costBreakdown = {
+    subtotal: Math.round(subtotal * 100) / 100,
+    basePlatformFee: Math.round(basePlatformFee * 100) / 100,
+    smallOrderFee: Math.round(smallOrderFee * 100) / 100,
+    totalPlatformFee: Math.round(totalPlatformFee * 100) / 100,
+    merchantAmount: Math.round(merchantAmount * 100) / 100,
+    totalOrderAmount: Math.round(totalOrderAmount * 100) / 100,
+    minimumOrderValue,
+    smallOrderProtectionApplied
+  };
 
   const handleItemClick = async (menuItem: MenuItem) => {
     try {
@@ -251,6 +305,10 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
         categories={categories}
         onItemClick={handleItemClick}
       />
+      <BasketSummary items={basketItems} total={basketTotal} />
+      <CheckoutButtonWrapper>
+        <Button variant="primary" onClick={() => setCheckoutDisplay(true)}>Checkout</Button>
+      </CheckoutButtonWrapper>
       <FullscreenTransition
         open={!!selectedMenuItem}
         onClose={() => { setSelectedMenuItem(null); setSelectedOptions({}); }}
@@ -265,8 +323,12 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
           />
         )}
       </FullscreenTransition>
-      {/* Basket summary UI */}
-      <BasketSummary items={basketItems} total={basketTotal} />
+      <FullscreenTransition
+        open={checkoutDisplay}
+        onClose={() => setCheckoutDisplay(false)}
+      >
+        <OrderSummary items={basketItems} costBreakdown={costBreakdown} onRemoveItem={handleRemoveOrderItem} />
+      </FullscreenTransition>
     </>
   );
 }

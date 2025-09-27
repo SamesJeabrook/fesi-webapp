@@ -1,0 +1,21 @@
+.wrapper {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 11;
+}
+
+@media (min-width: 768px) {
+  .wrapper {
+    left: auto;
+    right: 0;
+    top: 0;
+    bottom: auto;
+    width: auto;
+    justify-content: flex-end;
+    padding: 2rem;
+  }
+}
