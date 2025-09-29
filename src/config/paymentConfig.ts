@@ -1,11 +1,12 @@
 // Shared payment configuration for both frontend and backend
+// All monetary values are in pence (integer)
 
 export const paymentConfig = {
   platformFeePercentage: 0.10, // 10% platform fee
-  minimumOrderValue: 3.00, // £3 minimum
+  minimumOrderValue: 300, // 300 pence = £3.00
   stripeFeePct: 0.029, // 2.9%
-  stripeFeeFixed: 0.30, // £0.30
-  minimumPlatformProfit: 0.20, // Minimum £0.20 profit per order
-  smallOrderThreshold: 10.00, // £10 threshold for small order fees
+  stripeFeeFixed: 30, // 30 pence = £0.30
+  minimumPlatformProfit: 20, // 20 pence = £0.20
+  smallOrderThreshold: 1000, // 1000 pence = £10.00
   currency: 'gbp',
 };

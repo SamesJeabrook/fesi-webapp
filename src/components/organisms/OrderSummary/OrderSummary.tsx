@@ -3,6 +3,7 @@ import OrderItemList, { OrderItem } from '@/components/molecules/OrderItemList/O
 import OrderCostBreakdown, { OrderCostBreakdownProps } from '@/components/molecules/OrderCostBreakdown/OrderCostBreakdown';
 import OrderPaymentForm from '@/components/molecules/OrderPaymentForm/OrderPaymentForm';
 import styles from './OrderSummary.module.scss';
+import EmptyBasketNotice from '@/components/molecules/EmptyBasketNotice/EmptyBasketNotice';
 
 export interface OrderSummaryProps {
   items: OrderItem[];
@@ -15,13 +16,19 @@ export interface OrderSummaryProps {
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRemoveItem, clientSecret, onPaymentSuccess, onPaymentError }) => (
   <div className={styles.summary}>
-    <OrderItemList items={items} onRemoveItem={onRemoveItem} />
-    <OrderCostBreakdown {...costBreakdown} />
-    <OrderPaymentForm
-      clientSecret={clientSecret}
-      onPaymentSuccess={onPaymentSuccess}
-      onPaymentError={onPaymentError}
-    />
+    {items.length === 0 ? (
+        <EmptyBasketNotice/>
+    ) : (
+        <>
+            <OrderItemList items={items} onRemoveItem={onRemoveItem} />
+            <OrderCostBreakdown {...costBreakdown} />
+            <OrderPaymentForm
+            clientSecret={clientSecret}
+            onPaymentSuccess={onPaymentSuccess}
+            onPaymentError={onPaymentError}
+            />
+        </>
+    )}
   </div>
 );
 
