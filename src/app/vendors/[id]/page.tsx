@@ -55,6 +55,7 @@ export default async function VendorPage({
   // Fetch vendor data on the server
   let menuData: any = null;
   let activeEvent: boolean = false;
+  let eventData: any = null;
   let error: string | null = null;
 
   try {
@@ -72,6 +73,9 @@ export default async function VendorPage({
     if (activeEventResponse.ok) {
       const activeEventData = await activeEventResponse.json();
       activeEvent = activeEventData.hasActiveEvent;
+      if (activeEvent) {
+        eventData = activeEventData.event;
+      }
     }
     console.log('Fetched menu data:', menuData ? 'Success' : 'No data');
   } catch (err) {
@@ -128,6 +132,7 @@ export default async function VendorPage({
   return (
     <VendorMenuWrapper 
       activeEvent={activeEvent}
+      eventData={eventData}
       merchant={merchant}
       categories={transformedCategories}
     />

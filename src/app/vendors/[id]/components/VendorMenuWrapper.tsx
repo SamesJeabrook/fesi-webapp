@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Notification from '@/components/atoms/Notification/Notification';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
 import type { Merchant, } from '@/components/templates/MenuDisplay/MenuDisplay.types';
-import type { MenuItem, MenuCategory } from '@/types';
+import type { MenuItem, MenuCategory, Event } from '@/types';
 import { MenuItem as VendorServiceItem } from '@/services/vendorService';
 import { MenuSubGroup, VendorService } from '@/services/vendorService';
 import MenuItemDetails from '@/components/organisms/MenuItemDetails/MenuItemDetails';
@@ -19,6 +19,7 @@ interface VendorMenuWrapperProps {
   activeEvent: Boolean;
   merchant: Merchant;
   categories: MenuCategory[];
+  eventData: Event;
 }
 
 // Define types for order selections matching backend, using string for menu_item_id (UUID)
@@ -38,7 +39,7 @@ interface OrderSelection {
   item_base_price: number;
 }
 
-export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorMenuWrapperProps) {
+export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData }: VendorMenuWrapperProps) {
   const [selectedMenuItem, setSelectedMenuItem] = useState<VendorServiceItem | null>(null);
   // Track all selections for each menu item as an array
   const [orderSelections, setOrderSelections] = useState<OrderSelection[]>([]);
@@ -305,10 +306,14 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
         categories={categories}
         onItemClick={handleItemClick}
       />
-      <BasketSummary items={basketItems} total={basketTotal} />
-      <CheckoutButtonWrapper>
-        <Button variant="primary" onClick={() => setCheckoutDisplay(true)}>Checkout</Button>
-      </CheckoutButtonWrapper>
+      {activeEvent && (
+        <>
+          <BasketSummary items={basketItems} total={basketTotal} />
+          <CheckoutButtonWrapper>
+            <Button variant="primary" onClick={() => setCheckoutDisplay(true)}>Checkout</Button>
+          </CheckoutButtonWrapper>
+        </>
+      )}
       <FullscreenTransition
         open={!!selectedMenuItem}
         onClose={() => { setSelectedMenuItem(null); setSelectedOptions({}); }}
@@ -316,6 +321,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
         {selectedMenuItem && (
           <MenuItemDetails
             item={selectedMenuItem}
+            disabled={!activeEvent}
             selectedOptions={selectedOptions}
             onOptionsChange={(groupId, selected) => handleOptionsChange(groupId, selected.map(opt => opt.id), selectedMenuItem)}
             onAddToOrder={(qty: number) => handleAddToOrder(selectedMenuItem.id, qty)}
@@ -323,12 +329,14 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent }: VendorM
           />
         )}
       </FullscreenTransition>
-      <FullscreenTransition
-        open={checkoutDisplay}
-        onClose={() => setCheckoutDisplay(false)}
-      >
-        <OrderSummary items={basketItems} costBreakdown={costBreakdown} onRemoveItem={handleRemoveOrderItem} />
-      </FullscreenTransition>
+      {activeEvent && (
+        <FullscreenTransition
+          open={checkoutDisplay}
+          onClose={() => setCheckoutDisplay(false)}
+        >
+          <OrderSummary items={basketItems} costBreakdown={costBreakdown} onRemoveItem={handleRemoveOrderItem} event={eventData} />
+        </FullscreenTransition>
+      )}
     </>
   );
 }

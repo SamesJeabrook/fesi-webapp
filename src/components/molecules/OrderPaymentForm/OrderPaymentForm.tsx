@@ -1,32 +1,52 @@
 import React, { useEffect, useState } from 'react';
 import { loadStripe, PaymentRequest } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, CardElement, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
+import { Event } from '@/types';
 import { Typography } from '@/components/atoms';
+import PaymentHoldingNotice from '@/components/molecules/PaymentHoldingNotice/PaymentHoldingNotice';
 import styles from './OrderPaymentForm.module.scss';
 
 export interface OrderPaymentFormProps {
-  clientSecret: string;
+  basketItems: any[];
+  costBreakdown: any;
   onPaymentSuccess: (paymentIntentId: string) => void;
   onPaymentError?: (error: any) => void;
+  eventData: Event;
 }
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
-const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ clientSecret, onPaymentSuccess, onPaymentError }) => {
+const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBreakdown, onPaymentSuccess, onPaymentError, eventData }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [paymentRequest, setPaymentRequest] = useState<PaymentRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [holding, setHolding] = useState(false);
+  const [pollingStatus, setPollingStatus] = useState<string>('');
+  // Guest info state
+  const [guestInfo, setGuestInfo] = useState({
+    email: '',
+    first_name: '',
+    last_name: '',
+    phone: ''
+  });
+  // Simulate auth state (replace with your actual auth logic)
+  const isLoggedIn = false; // TODO: Replace with real auth check
+  const customer_id = undefined; // TODO: Replace with real customer id if logged in
+  const event_id = costBreakdown.event_id || '';
+  const notes = '';
 
   useEffect(() => {
-    if (stripe) {
+    if (stripe && clientSecret) {
       const pr = stripe.paymentRequest({
         country: 'GB',
         currency: 'gbp',
         total: {
           label: 'Order Total',
-          amount: 1000, // Replace with actual amount in pence
+          amount: costBreakdown.totalOrderAmount,
         },
         requestPayerName: true,
         requestPayerEmail: true,
@@ -35,28 +55,91 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ clientSecret, onPay
         if (result) setPaymentRequest(pr);
       });
     }
-  }, [stripe]);
+  }, [stripe, clientSecret, costBreakdown.totalOrderAmount]);
+
+  // Poll for order status after payment details are submitted
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (holding && orderId) {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/orders/${orderId}`);
+          const data = await res.json();
+          setPollingStatus(data.status);
+          if (data.status === 'accepted') {
+            setHolding(false);
+            onPaymentSuccess(data.payment_intent_id);
+            clearInterval(interval);
+          } else if (data.status === 'cancelled' || data.status === 'rejected') {
+            setHolding(false);
+            setError('Order was not accepted. You have not been charged.');
+            clearInterval(interval);
+          }
+        } catch (err) {
+          // ignore polling errors
+        }
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [holding, orderId, onPaymentSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    if (!stripe || !elements) return;
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) return;
-    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: {
-        card: cardElement,
-      },
-    });
-    setLoading(false);
-    if (error) {
-      setError(error.message || 'Payment failed');
-      onPaymentError && onPaymentError(error);
-    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      onPaymentSuccess(paymentIntent.id);
+    try {
+        console.log(basketItems)
+
+      // 1. Create order
+      const orderPayload: any = {
+        event_id: eventData.id,
+        items: basketItems,
+        notes
+      };
+      if (isLoggedIn && customer_id) {
+        orderPayload.customer_id = customer_id;
+      } else {
+        orderPayload.guest_info = guestInfo;
+      }
+      const orderRes = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok || !orderData.id) throw new Error(orderData.error || 'Order creation failed');
+      setOrderId(orderData.id);
+
+      // 2. Create payment intent
+      const paymentRes = await fetch(`/api/orders/${orderData.id}/payment-intent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const paymentData = await paymentRes.json();
+      if (!paymentRes.ok || !paymentData.clientSecret) throw new Error(paymentData.error || 'Payment intent creation failed');
+      setClientSecret(paymentData.clientSecret);
+
+      // 3. Collect payment details
+      if (!stripe || !elements) throw new Error('Stripe not loaded');
+      const cardElement = elements.getElement(CardElement);
+      if (!cardElement) throw new Error('Card element not found');
+      const { error, paymentIntent } = await stripe.confirmCardPayment(paymentData.clientSecret, {
+        payment_method: { card: cardElement },
+      });
+      if (error) throw error;
+      // 4. Show holding screen and start polling
+      setHolding(true);
+      setLoading(false);
+    } catch (err: any) {
+      setLoading(false);
+      setError(err.message || 'Payment failed');
+      onPaymentError && onPaymentError(err);
     }
   };
+
+  if (holding) {
+    return <PaymentHoldingNotice />;
+  }
 
   return (
     <div className={styles.formWrapper}>
@@ -67,18 +150,49 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ clientSecret, onPay
         </div>
       )}
       <form onSubmit={handleSubmit} className={styles.form}>
+        {/* Guest info fields for anonymous checkout */}
+        {!isLoggedIn && (
+          <div className={styles.guestFields}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={guestInfo.email}
+              onChange={e => setGuestInfo({ ...guestInfo, email: e.target.value })}
+              required
+            />
+            <input
+              type="text"
+              placeholder="First Name"
+              value={guestInfo.first_name}
+              onChange={e => setGuestInfo({ ...guestInfo, first_name: e.target.value })}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Last Name"
+              value={guestInfo.last_name}
+              onChange={e => setGuestInfo({ ...guestInfo, last_name: e.target.value })}
+            />
+            <input
+              type="tel"
+              placeholder="Phone"
+              value={guestInfo.phone}
+              onChange={e => setGuestInfo({ ...guestInfo, phone: e.target.value })}
+            />
+          </div>
+        )}
         <CardElement options={{ style: { base: { fontSize: '18px' } } }} />
         <button type="submit" className={styles.payBtn} disabled={loading}>
           {loading ? 'Processing...' : 'Pay Now'}
         </button>
       </form>
-  {error && <Typography variant="body-small">{error}</Typography>}
+      {error && <Typography variant="body-small">{error}</Typography>}
     </div>
   );
 };
 
 const OrderPaymentForm: React.FC<OrderPaymentFormProps> = (props) => (
-  <Elements stripe={stripePromise} options={{ clientSecret: props.clientSecret }}>
+  <Elements stripe={stripePromise}>
     <PaymentFormInner {...props} />
   </Elements>
 );

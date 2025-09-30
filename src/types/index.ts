@@ -112,6 +112,17 @@ export interface MenuItemChoice extends BaseEntity {
   isDefault?: boolean;
 }
 
+export interface Event extends BaseEntity {
+    merchant_id: string,
+    group_event_id: string | null,
+    name: string,
+    latitude: string,
+    longitude: string,
+    is_open: boolean,
+    start_time: string,
+    end_time: string,
+  }
+
 export interface Order extends BaseEntity {
   customerId: string;
   merchantId: string;

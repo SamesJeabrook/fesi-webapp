@@ -1,0 +1,22 @@
+.holdingWrapper {
+  background: var(--color-primary-100);
+  border: 1px solid var(--color-primary-300);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  margin: 2rem auto;
+  max-width: 400px;
+}
+
+.holdingWrapper h2 {
+  color: var(--color-info-main);
+  margin-bottom: 0.5rem;
+}
+
+.holdingWrapper p {
+  color: var(--color-secondary-600);
+}
+
+.icon {
+    font-size: 5rem;
+}

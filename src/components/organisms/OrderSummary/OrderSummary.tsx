@@ -4,6 +4,7 @@ import OrderCostBreakdown, { OrderCostBreakdownProps } from '@/components/molecu
 import OrderPaymentForm from '@/components/molecules/OrderPaymentForm/OrderPaymentForm';
 import styles from './OrderSummary.module.scss';
 import EmptyBasketNotice from '@/components/molecules/EmptyBasketNotice/EmptyBasketNotice';
+import { Event } from '@/types';
 
 export interface OrderSummaryProps {
   items: OrderItem[];
@@ -12,9 +13,10 @@ export interface OrderSummaryProps {
   clientSecret: string;
   onPaymentSuccess: (paymentIntentId: string) => void;
   onPaymentError?: (error: any) => void;
+  event: Event;
 }
 
-const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRemoveItem, clientSecret, onPaymentSuccess, onPaymentError }) => (
+const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRemoveItem, clientSecret, onPaymentSuccess, onPaymentError, event }) => (
   <div className={styles.summary}>
     {items.length === 0 ? (
         <EmptyBasketNotice/>
@@ -23,9 +25,12 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRem
             <OrderItemList items={items} onRemoveItem={onRemoveItem} />
             <OrderCostBreakdown {...costBreakdown} />
             <OrderPaymentForm
-            clientSecret={clientSecret}
-            onPaymentSuccess={onPaymentSuccess}
-            onPaymentError={onPaymentError}
+                clientSecret={clientSecret}
+                onPaymentSuccess={onPaymentSuccess}
+                onPaymentError={onPaymentError}
+                costBreakdown={costBreakdown}
+                eventData={event}
+                basketItems={items}
             />
         </>
     )}
