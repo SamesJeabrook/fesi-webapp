@@ -63,7 +63,7 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
     if (holding && orderId) {
       interval = setInterval(async () => {
         try {
-          const res = await fetch(`/api/orders/${orderId}`);
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${orderId}`);
           const data = await res.json();
           setPollingStatus(data.status);
           if (data.status === 'accepted') {
@@ -101,7 +101,7 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
       } else {
         orderPayload.guest_info = guestInfo;
       }
-      const orderRes = await fetch('/api/orders', {
+      const orderRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderPayload),
@@ -111,7 +111,7 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
       setOrderId(orderData.id);
 
       // 2. Create payment intent
-      const paymentRes = await fetch(`/api/orders/${orderData.id}/payment-intent`, {
+      const paymentRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${orderData.id}/payment-intent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -144,11 +144,6 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   return (
     <div className={styles.formWrapper}>
       <Typography variant="heading-5">Payment Details</Typography>
-      {paymentRequest && (
-        <div className={styles.prButton}>
-          <PaymentRequestButtonElement options={{ paymentRequest }} />
-        </div>
-      )}
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Guest info fields for anonymous checkout */}
         {!isLoggedIn && (
@@ -186,6 +181,11 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
           {loading ? 'Processing...' : 'Pay Now'}
         </button>
       </form>
+      {paymentRequest && (
+        <div className={styles.prButton}>
+          <PaymentRequestButtonElement options={{ paymentRequest }} />
+        </div>
+      )}
       {error && <Typography variant="body-small">{error}</Typography>}
     </div>
   );
