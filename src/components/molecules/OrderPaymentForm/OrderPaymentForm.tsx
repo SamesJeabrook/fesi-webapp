@@ -26,6 +26,8 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [holding, setHolding] = useState(false);
   const [pollingStatus, setPollingStatus] = useState<string>('');
+  const [restoredBasketItems, setRestoredBasketItems] = useState<any[] | null>(null);
+  const [restoredCostBreakdown, setRestoredCostBreakdown] = useState<any | null>(null);
   // Guest info state
   const [guestInfo, setGuestInfo] = useState({
     email: '',
@@ -38,6 +40,21 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   const customer_id = undefined; // TODO: Replace with real customer id if logged in
   const event_id = costBreakdown.event_id || '';
   const notes = '';
+
+  useEffect(() => {
+    const savedOrderId = localStorage.getItem('orderId');
+    const savedClientSecret = localStorage.getItem('clientSecret');
+    const savedHolding = localStorage.getItem('holding');
+    const savedBasketItems = localStorage.getItem('basketItems');
+    const savedCostBreakdown = localStorage.getItem('costBreakdown');
+    if (savedOrderId && savedClientSecret && savedHolding === 'true' && savedBasketItems && savedCostBreakdown) {
+      setOrderId(savedOrderId);
+      setClientSecret(savedClientSecret);
+      setHolding(true);
+      setRestoredBasketItems(JSON.parse(savedBasketItems));
+      setRestoredCostBreakdown(JSON.parse(savedCostBreakdown));
+    }
+  }, []);
 
   useEffect(() => {
     if (stripe && clientSecret) {
@@ -69,10 +86,12 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
           if (data.status === 'accepted') {
             setHolding(false);
             onPaymentSuccess(data.payment_intent_id);
+            resetLocalStorage();
             clearInterval(interval);
           } else if (data.status === 'cancelled' || data.status === 'rejected') {
             setHolding(false);
             setError('Order was not accepted. You have not been charged.');
+            resetLocalStorage();
             clearInterval(interval);
           }
         } catch (err) {
@@ -82,6 +101,14 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
     }
     return () => clearInterval(interval);
   }, [holding, orderId, onPaymentSuccess]);
+
+  const resetLocalStorage = () => {
+    localStorage.removeItem('orderId');
+    localStorage.removeItem('clientSecret');
+    localStorage.removeItem('holding');
+    localStorage.removeItem('basketItems');
+    localStorage.removeItem('costBreakdown');
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +157,11 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
       // 4. Show holding screen and start polling
       setHolding(true);
       setLoading(false);
+      localStorage.setItem('orderId', orderData.id);
+      localStorage.setItem('basketItems', JSON.stringify(basketItems));
+      localStorage.setItem('costBreakdown', JSON.stringify(costBreakdown));
+      localStorage.setItem('clientSecret', paymentData.clientSecret);
+      localStorage.setItem('holding', 'true');
     } catch (err: any) {
       setLoading(false);
       setError(err.message || 'Payment failed');

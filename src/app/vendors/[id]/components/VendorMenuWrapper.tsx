@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Notification from '@/components/atoms/Notification/Notification';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
 import type { Merchant, } from '@/components/templates/MenuDisplay/MenuDisplay.types';
@@ -51,6 +51,29 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   }
   const [selectedOptions, setSelectedOptions] = useState<Record<string, SelectedOptionDetail[]>>({});
   const [checkoutDisplay, setCheckoutDisplay] = useState(false);
+
+  // Restore basket and cost breakdown from localStorage on mount
+  useEffect(() => {
+    const savedBasketItems = localStorage.getItem('basketItems');
+    const savedCostBreakdown = localStorage.getItem('costBreakdown');
+    const savedHolding = localStorage.getItem('holding');
+    if (savedBasketItems && savedCostBreakdown && savedHolding === 'true') {
+      try {
+        const parsedBasket = JSON.parse(savedBasketItems);
+        setOrderSelections(parsedBasket.map((item: any) => ({
+          menu_item_id: item.menu_item_id,
+          menu_item_name: item.menu_item_name,
+          quantity: item.quantity,
+          customizations: item.customizations,
+          item_total: item.item_total,
+          item_base_price: item.item_base_price,
+        })));
+      } catch (e) {
+        // ignore parse errors
+      }
+      setCheckoutDisplay(true);
+    }
+  }, []);
 
   useEffect(() => {
     console.log(orderSelections)
@@ -221,13 +244,21 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     setOrderSelections(prev => prev.filter(item => item.menu_item_id !== menu_item_id));
   };
 
-  // Basket summary calculation
-  const basketTotal = orderSelections.reduce((sum, item) => {
-    // Calculate total for this item: (base + sum of sub-item modifiers) * quantity
-    const customizationsTotal = (item.customizations || []).reduce((acc, c) => acc + (typeof c.price_modifier === 'number' ? c.price_modifier : 0) * c.quantity, 0);
-    const itemTotal = (item.item_base_price + customizationsTotal) * item.quantity;
-    return sum + itemTotal;
-  }, 0);
+  // Basket summary calculation (useMemo for restoration)
+  const basketTotal = React.useMemo(() => {
+    return orderSelections.reduce((sum, item) => {
+      // Ensure all values are numbers
+      const basePrice = typeof item.item_total === 'number' ? item.item_total : 0;
+      const quantity = typeof item.quantity === 'number' ? item.quantity : 0;
+      const customizationsTotal = (item.customizations || []).reduce((acc, c) => {
+        const price = typeof c.price_modifier === 'number' ? c.price_modifier : 0;
+        const qty = typeof c.quantity === 'number' ? c.quantity : 0;
+        return acc + price * qty;
+      }, 0);
+      const itemTotal = (basePrice + customizationsTotal) * quantity;
+      return sum + itemTotal;
+    }, 0);
+  }, [orderSelections]);
 
   // Prepare basket items for BasketSummary and OrderSummary
   const basketItems = orderSelections.map(item => {

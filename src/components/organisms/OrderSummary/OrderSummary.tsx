@@ -16,25 +16,27 @@ export interface OrderSummaryProps {
   event: Event;
 }
 
-const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRemoveItem, clientSecret, onPaymentSuccess, onPaymentError, event }) => (
-  <div className={styles.summary}>
-    {items.length === 0 ? (
+
+const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRemoveItem, clientSecret, onPaymentSuccess, onPaymentError, event }) => {
+  return (
+    <div className={styles.summary}>
+      {items.length === 0 ? (
         <EmptyBasketNotice/>
-    ) : (
+      ) : (
         <>
-            <OrderItemList items={items} onRemoveItem={onRemoveItem} />
-            <OrderCostBreakdown {...costBreakdown} />
-            <OrderPaymentForm
-                clientSecret={clientSecret}
-                onPaymentSuccess={onPaymentSuccess}
-                onPaymentError={onPaymentError}
-                costBreakdown={costBreakdown}
-                eventData={event}
-                basketItems={items}
-            />
+          <OrderItemList items={items} onRemoveItem={onRemoveItem} />
+          <OrderCostBreakdown {...costBreakdown} />
+          <OrderPaymentForm
+            onPaymentSuccess={onPaymentSuccess}
+            onPaymentError={onPaymentError}
+            costBreakdown={costBreakdown}
+            eventData={event}
+            basketItems={items}
+          />
         </>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
+};
 
 export default OrderSummary;
