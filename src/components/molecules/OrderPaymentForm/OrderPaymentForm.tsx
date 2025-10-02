@@ -12,11 +12,17 @@ export interface OrderPaymentFormProps {
   onPaymentSuccess: (paymentIntentId: string) => void;
   onPaymentError?: (error: any) => void;
   eventData: Event;
+  onOrderAccepted?: (order: {
+    id: string;
+    status: string;
+    items: any[];
+    total: number;
+  }) => void;
 }
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
-const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBreakdown, onPaymentSuccess, onPaymentError, eventData }) => {
+const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBreakdown, onPaymentSuccess, onPaymentError, eventData, onOrderAccepted }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [paymentRequest, setPaymentRequest] = useState<PaymentRequest | null>(null);
@@ -86,6 +92,14 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
           if (data.status === 'accepted') {
             setHolding(false);
             onPaymentSuccess(data.payment_intent_id);
+            if (typeof onOrderAccepted === 'function') {
+              onOrderAccepted({
+                id: data.id,
+                status: data.status,
+                items: data.items,
+                total: data.total
+              });
+            }
             resetLocalStorage();
             clearInterval(interval);
           } else if (data.status === 'cancelled' || data.status === 'rejected') {

@@ -13,6 +13,7 @@
   transition: opacity 0.3s, transform 0.3s;
   opacity: 1;
   pointer-events: auto;
+  overflow: auto;
 }
 
 .closed {
@@ -29,7 +30,7 @@
 
 .closeButton {
   position: absolute;
-  top: 2rem;
+  top: var(--spacing-1);
   right: 2rem;
   background: none;
   border: none;

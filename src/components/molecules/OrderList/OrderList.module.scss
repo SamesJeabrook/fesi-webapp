@@ -1,0 +1,41 @@
+.orderList {
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+.orderItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+.orderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.orderStatus {
+  font-size: 0.95rem;
+  color: #2a7b2a;
+  font-weight: 500;
+}
+.orderStatus.pending {
+  color: #e6b800;
+}
+.orderStatus.rejected {
+  color: #c00;
+}
+.orderSummary {
+  font-size: 0.98rem;
+  color: #444;
+}
+.orderTotal {
+  font-weight: 600;
+  color: #222;
+  margin-top: 0.5rem;
+}

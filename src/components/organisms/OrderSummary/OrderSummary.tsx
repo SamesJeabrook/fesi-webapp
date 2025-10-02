@@ -10,10 +10,16 @@ export interface OrderSummaryProps {
   items: OrderItem[];
   costBreakdown: OrderCostBreakdownProps;
   onRemoveItem?: (menu_item_id: string) => void;
-  clientSecret: string;
-  onPaymentSuccess: (paymentIntentId: string) => void;
+  clientSecret?: string;
+  onPaymentSuccess?: (paymentIntentId: string) => void;
   onPaymentError?: (error: any) => void;
   event: Event;
+  onOrderAccepted?: (order: {
+    id: string;
+    status: string;
+    items: any[];
+    total: number;
+  }) => void;
 }
 
 
@@ -27,11 +33,12 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRem
           <OrderItemList items={items} onRemoveItem={onRemoveItem} />
           <OrderCostBreakdown {...costBreakdown} />
           <OrderPaymentForm
-            onPaymentSuccess={onPaymentSuccess}
+            onPaymentSuccess={onPaymentSuccess ?? (() => {})}
             onPaymentError={onPaymentError}
             costBreakdown={costBreakdown}
             eventData={event}
             basketItems={items}
+            onOrderAccepted={typeof onOrderAccepted === 'function' ? onOrderAccepted : undefined}
           />
         </>
       )}

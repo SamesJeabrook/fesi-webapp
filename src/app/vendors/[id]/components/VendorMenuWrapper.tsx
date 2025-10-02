@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Notification from '@/components/atoms/Notification/Notification';
+import OrderList, { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
 import type { Merchant, } from '@/components/templates/MenuDisplay/MenuDisplay.types';
 import type { MenuItem, MenuCategory, Event } from '@/types';
@@ -14,6 +15,7 @@ import CheckoutButtonWrapper from '@/components/atoms/CheckoutButtonWrapper/Chec
 import { Button } from '@/components';
 import OrderSummary from '@/components/organisms/OrderSummary/OrderSummary';
 import { paymentConfig } from '@/config/paymentConfig';
+import Tabs from '@/components/molecules/Tabs/Tabs';
 
 interface VendorMenuWrapperProps {
   activeEvent: Boolean;
@@ -40,6 +42,15 @@ interface OrderSelection {
 }
 
 export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData }: VendorMenuWrapperProps) {
+  // Track all completed/accepted orders
+  const [orders, setOrders] = useState<OrderListItem[]>(() => {
+    // Restore from localStorage if available
+    try {
+      const saved = localStorage.getItem('acceptedOrders');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [];
+  });
   const [selectedMenuItem, setSelectedMenuItem] = useState<VendorServiceItem | null>(null);
   // Track all selections for each menu item as an array
   const [orderSelections, setOrderSelections] = useState<OrderSelection[]>([]);
@@ -51,6 +62,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   }
   const [selectedOptions, setSelectedOptions] = useState<Record<string, SelectedOptionDetail[]>>({});
   const [checkoutDisplay, setCheckoutDisplay] = useState(false);
+  const [activeCheckoutTab, setActiveCheckoutTab] = useState('summary');
 
   // Restore basket and cost breakdown from localStorage on mount
   useEffect(() => {
@@ -318,6 +330,48 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     smallOrderProtectionApplied
   };
 
+  const orderTabs = [
+    { key: 'summary', label: 'Summary'},
+    { key: 'orders', label: 'Orders'},
+  ]
+
+  // Callback for when an order is accepted
+  const handleOrderAccepted = (order: {
+    id: string;
+    status: string;
+    items: any[];
+    total: number;
+  }) => {
+    setOrders(prev => {
+      const updated = [order, ...prev];
+      localStorage.setItem('acceptedOrders', JSON.stringify(updated));
+      return updated;
+    });
+    setActiveCheckoutTab('orders'); // Switch to orders tab
+  };
+
+  // Poll for status updates for all tracked orders
+  useEffect(() => {
+    if (!orders.length) return;
+    const interval = setInterval(async () => {
+      try {
+        const updatedOrders = await Promise.all(orders.map(async (order) => {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${order.id}`);
+          const data = await res.json();
+          return {
+            ...order,
+            status: data.status || order.status,
+            items: data.items || order.items,
+            total: typeof data.total === 'number' ? data.total : order.total,
+          };
+        }));
+        setOrders(updatedOrders);
+        localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
+      } catch {}
+    }, 5000); // Poll every 5 seconds
+    return () => clearInterval(interval);
+  }, [orders]);
+
   const handleItemClick = async (menuItem: MenuItem) => {
     try {
       const itemData = await VendorService.getMenuSubGroups(menuItem.id);
@@ -365,7 +419,21 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
           open={checkoutDisplay}
           onClose={() => setCheckoutDisplay(false)}
         >
-          <OrderSummary items={basketItems} costBreakdown={costBreakdown} onRemoveItem={handleRemoveOrderItem} event={eventData} />
+          <Tabs tabs={orderTabs} activeTab={activeCheckoutTab} onTabChange={setActiveCheckoutTab}>
+            {/* Tab content passed as children, no tabKey prop */}
+            {activeCheckoutTab === 'summary' && (
+              <OrderSummary
+                items={basketItems}
+                costBreakdown={costBreakdown}
+                onRemoveItem={handleRemoveOrderItem}
+                event={eventData}
+                onOrderAccepted={handleOrderAccepted}
+              />
+            )}
+            {activeCheckoutTab === 'orders' && (
+              <OrderList orders={orders} />
+            )}
+          </Tabs>
         </FullscreenTransition>
       )}
     </>
