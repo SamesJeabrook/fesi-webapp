@@ -23,7 +23,7 @@ export interface OrderSummaryProps {
 }
 
 
-const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRemoveItem, clientSecret, onPaymentSuccess, onPaymentError, event }) => {
+const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRemoveItem, clientSecret, onPaymentSuccess, onPaymentError, event, onOrderAccepted }) => {
   return (
     <div className={styles.summary}>
       {items.length === 0 ? (

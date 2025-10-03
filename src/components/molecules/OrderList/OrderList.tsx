@@ -1,15 +1,21 @@
 import React from 'react';
+import { formatPrice } from '@/utils/menu';
+import { Typography } from '@/components/atoms/Typography/Typography.component';
 import styles from './OrderList.module.scss';
 
 export interface OrderListItem {
-  id: string;
-  status: string;
-  items: Array<{
-    menu_item_name: string;
-    quantity: number;
-    customizations?: Array<{ sub_item_name: string; price_modifier: number; quantity: number }>;
-  }>;
-  total: number;
+    id: string;
+    status: string;
+    items: Array<{
+        menu_item_title: string;
+        quantity: number;
+        customizations?: Array<{ sub_item_name: string; price_modifier: number; quantity: number }>;
+    }>;
+    order_number: number;
+    longitude: number;
+    latitude: number;
+    merchant_name: string;
+    total: number;
 }
 
 export interface OrderListProps {
@@ -17,36 +23,50 @@ export interface OrderListProps {
 }
 
 const OrderList: React.FC<OrderListProps> = ({ orders }) => {
-  if (!orders.length) return <div className={styles.orderList}>No orders yet.</div>;
+    console.log(orders);
+  if (!orders.length) return (
+    <div className={styles.orderList}>
+      <Typography variant="body-medium" as="p">No orders yet.</Typography>
+    </div>
+  );
   return (
     <div className={styles.orderList}>
       {orders.map(order => (
         <div key={order.id} className={styles.orderItem}>
           <div className={styles.orderHeader}>
-            <span>Order #{order.id}</span>
-            <span className={
-              `${styles.orderStatus} ` +
-              (order.status === 'accepted' ? '' : order.status === 'pending' ? styles.pending : styles.rejected)
-            }>
+            <Typography variant="heading-5" as="h3">{order.merchant_name}</Typography>
+            <Typography variant="heading-6" as="span">Order #{order.order_number}</Typography>
+            <Typography 
+              variant="caption" 
+              as="span" 
+              className={
+                `${styles.orderStatus} ` +
+                (order.status === 'accepted' ? '' : order.status === 'pending' ? styles.pending : styles.rejected)
+              }
+            >
               {order.status}
-            </span>
+            </Typography>
           </div>
           <div className={styles.orderSummary}>
             {order.items.map((item, idx) => (
               <div key={idx}>
-                {item.menu_item_name} x{item.quantity}
+                <Typography variant="body-small" as="span">
+                  {item.quantity} x {item.menu_item_title}
+                </Typography>
                 {(item.customizations?.length ?? 0) > 0 && (
-                  <span> (
+                  <Typography variant="caption" as="span"> (
                     {(item.customizations ?? []).map((c, i) => (
                       <span key={i}>{c.sub_item_name}{c.price_modifier ? ` (+${c.price_modifier})` : ''}{i < (item.customizations?.length ?? 0) - 1 ? ', ' : ''}</span>
                     ))}
-                  )</span>
+                  )</Typography>
                 )}
               </div>
             ))}
           </div>
           <div className={styles.orderTotal}>
-            Total: £{(order.total / 100).toFixed(2)}
+            <Typography variant="body-medium" as="span">
+              Total: {formatPrice(order.total)}
+            </Typography>
           </div>
         </div>
       ))}

@@ -1,6 +1,15 @@
 import React from 'react';
 import styles from './Tabs.module.scss';
 
+export interface TabProps {
+  tabKey: string;
+  children: React.ReactNode;
+}
+
+export const Tab: React.FC<TabProps> = ({ tabKey, children }) => {
+  return <>{children}</>;
+};
+
 export interface TabConfig {
   key: string;
   label: string;
@@ -38,11 +47,14 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onTabChange, children, cla
         ))}
       </div>
       <div className={styles.tabPanel}>
-        {/* Render only the children for the active tab */}
+        {/* Render only the Tab child for the active tab */}
         {React.Children.map(children, child => {
           if (!React.isValidElement(child)) return null;
-          const el = child as React.ReactElement<any>;
-          return el.props.tabKey === activeTab ? el : null;
+          // Only render Tab components with matching tabKey
+          if (child.type === Tab && child.props.tabKey === activeTab) {
+            return child;
+          }
+          return null;
         })}
       </div>
     </div>

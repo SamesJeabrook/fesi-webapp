@@ -15,7 +15,7 @@ import CheckoutButtonWrapper from '@/components/atoms/CheckoutButtonWrapper/Chec
 import { Button } from '@/components';
 import OrderSummary from '@/components/organisms/OrderSummary/OrderSummary';
 import { paymentConfig } from '@/config/paymentConfig';
-import Tabs from '@/components/molecules/Tabs/Tabs';
+import Tabs, { Tab } from '@/components/molecules/Tabs/Tabs';
 
 interface VendorMenuWrapperProps {
   activeEvent: Boolean;
@@ -305,14 +305,14 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   // Calculate base platform fee
   const basePlatformFee = subtotal * platformFeePercentage;
   // Stripe fee estimate
-  const stripeFeeEstimate = (subtotal * stripeFeePct) + stripeFeeFixed;
+  const stripeFeeEstimate = Math.round((subtotal * stripeFeePct) + stripeFeeFixed);
   // Required platform fee
   const requiredPlatformFee = stripeFeeEstimate + minimumPlatformProfit;
   // Small order fee logic
   let smallOrderFee = 0;
   if (basePlatformFee < requiredPlatformFee) {
     smallOrderFee = requiredPlatformFee - basePlatformFee;
-    smallOrderFee = Math.ceil(smallOrderFee * 10) / 10;
+    smallOrderFee = Math.round(smallOrderFee * 100) / 100; // round to nearest penny
   }
   const totalPlatformFee = basePlatformFee + smallOrderFee;
   const merchantAmount = subtotal;
@@ -347,7 +347,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
       localStorage.setItem('acceptedOrders', JSON.stringify(updated));
       return updated;
     });
-    setActiveCheckoutTab('orders'); // Switch to orders tab
+    setActiveCheckoutTab('orders'); 
   };
 
   // Poll for status updates for all tracked orders
@@ -421,7 +421,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
         >
           <Tabs tabs={orderTabs} activeTab={activeCheckoutTab} onTabChange={setActiveCheckoutTab}>
             {/* Tab content passed as children, no tabKey prop */}
-            {activeCheckoutTab === 'summary' && (
+            <Tab tabKey='summary'>
               <OrderSummary
                 items={basketItems}
                 costBreakdown={costBreakdown}
@@ -429,10 +429,10 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
                 event={eventData}
                 onOrderAccepted={handleOrderAccepted}
               />
-            )}
-            {activeCheckoutTab === 'orders' && (
+            </Tab>
+            <Tab tabKey='orders'>
               <OrderList orders={orders} />
-            )}
+            </Tab>
           </Tabs>
         </FullscreenTransition>
       )}

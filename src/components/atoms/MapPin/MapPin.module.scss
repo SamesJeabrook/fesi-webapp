@@ -1,0 +1,35 @@
+.mapPin {
+  width: 100%;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  .mapContainer {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+  }
+
+  // Loading state
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-neutral-100);
+    color: var(--color-neutral-600);
+    min-height: 300px;
+  }
+
+  // Error state
+  .error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-error-50);
+    color: var(--color-error-600);
+    min-height: 300px;
+    padding: 1rem;
+    text-align: center;
+  }
+}

@@ -10,6 +10,7 @@
   background: #fafafa;
   position: fixed;
   top: 0;
+  width: 100%;
 }
 
 .tab {
@@ -35,5 +36,4 @@
 
 .tabPanel {
   padding: 1.5rem 0 0 0;
-  margin-top: var(--spacing-40);
 }

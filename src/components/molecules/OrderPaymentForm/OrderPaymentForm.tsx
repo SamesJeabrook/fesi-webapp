@@ -17,6 +17,10 @@ export interface OrderPaymentFormProps {
     status: string;
     items: any[];
     total: number;
+    order_number: number;
+    longitude: number;
+    latitude: number;
+    merchant_name: string;
   }) => void;
 }
 
@@ -95,9 +99,13 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
             if (typeof onOrderAccepted === 'function') {
               onOrderAccepted({
                 id: data.id,
+                order_number: data.order_number,
                 status: data.status,
                 items: data.items,
-                total: data.total
+                total: data.total_amount,
+                latitude: data.latitude,
+                longitude: data.longitude,
+                merchant_name: data.merchant_name
               });
             }
             resetLocalStorage();

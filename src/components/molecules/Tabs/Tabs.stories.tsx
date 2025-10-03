@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Tabs, { TabConfig } from './Tabs';
+import { Tab } from './Tabs';
 
 export default {
   title: 'Molecules/Tabs',
@@ -26,9 +27,9 @@ export const Default = () => {
         Toggle Tab Three
       </button>
       <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab}>
-        <div tabKey="tab1">Content for Tab One</div>
-        <div tabKey="tab2">Content for Tab Two</div>
-        <div tabKey="tab3">Content for Tab Three</div>
+        <Tab tabKey="tab1">Content for Tab One</Tab>
+        <Tab tabKey="tab2">Content for Tab Two</Tab>
+        <Tab tabKey="tab3">Content for Tab Three</Tab>
       </Tabs>
       <button onClick={() => setActiveTab('tab2')} style={{ marginTop: 16 }}>
         Programmatically Switch to Tab Two
