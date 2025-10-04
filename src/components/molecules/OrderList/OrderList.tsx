@@ -6,7 +6,7 @@ import { MapPin } from '@/components/atoms';
 
 export interface OrderListItem {
     id: string;
-    status: string;
+    status: 'pending' | 'accepted' | 'preparing' | 'ready' | 'complete' | 'cancelled';
     items: Array<{
         menu_item_title: string;
         quantity: number;
@@ -42,7 +42,12 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
               as="span" 
               className={
                 `${styles.orderStatus} ` +
-                (order.status === 'accepted' ? '' : order.status === 'pending' ? styles.pending : styles.rejected)
+                (order.status === 'accepted' ? '' : 
+                 order.status === 'pending' ? styles.pending : 
+                 order.status === 'preparing' ? styles.preparing :
+                 order.status === 'ready' ? styles.ready :
+                 order.status === 'complete' ? styles.complete :
+                 styles.rejected)
               }
             >
               {order.status}
@@ -69,8 +74,13 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
               Total: {formatPrice(order.total)}
             </Typography>
           </div>
-          {(order.status === 'preparing' || order.status === 'complete') && (
-            <MapPin lat={order.latitude} lng={order.longitude} showUserLocation={order.status === 'complete'} />
+          {(order.status === 'preparing' || order.status === 'ready') && (
+            <MapPin
+                lat={order.latitude}
+                lng={order.longitude}
+                showUserLocation={order.status === 'ready'}
+                height={order.status === 'preparing' ? '200px' : '300px'}
+            />
           )} 
         </div>
       ))}

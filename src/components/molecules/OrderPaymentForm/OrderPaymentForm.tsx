@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { loadStripe, PaymentRequest } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, CardElement, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 import { Event } from '@/types';
-import { Typography } from '@/components/atoms';
+import { Typography, Input } from '@/components/atoms';
 import PaymentHoldingNotice from '@/components/molecules/PaymentHoldingNotice/PaymentHoldingNotice';
 import styles from './OrderPaymentForm.module.scss';
 
@@ -202,31 +202,47 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
         {/* Guest info fields for anonymous checkout */}
         {!isLoggedIn && (
           <div className={styles.guestFields}>
-            <input
+            <Input
+              id="guest-email"
               type="email"
-              placeholder="Email"
+              label="Email Address"
+              placeholder="Enter your email"
               value={guestInfo.email}
               onChange={e => setGuestInfo({ ...guestInfo, email: e.target.value })}
-              required
+              isRequired
+              autoComplete="email"
+              fullWidth
             />
-            <input
+            <Input
+              id="guest-first-name"
               type="text"
-              placeholder="First Name"
+              label="First Name"
+              placeholder="Enter your first name"
               value={guestInfo.first_name}
               onChange={e => setGuestInfo({ ...guestInfo, first_name: e.target.value })}
-              required
+              isRequired
+              autoComplete="given-name"
+              fullWidth
             />
-            <input
+            <Input
+              id="guest-last-name"
               type="text"
-              placeholder="Last Name"
+              label="Last Name"
+              placeholder="Enter your last name"
               value={guestInfo.last_name}
               onChange={e => setGuestInfo({ ...guestInfo, last_name: e.target.value })}
+              autoComplete="family-name"
+              fullWidth
             />
-            <input
+            <Input
+              id="guest-phone"
               type="tel"
-              placeholder="Phone"
+              label="Phone Number (Optional)"
+              placeholder="Enter your phone number"
               value={guestInfo.phone}
               onChange={e => setGuestInfo({ ...guestInfo, phone: e.target.value })}
+              autoComplete="tel"
+              fullWidth
             />
           </div>
         )}

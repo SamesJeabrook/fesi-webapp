@@ -6,3 +6,5 @@ export * from './StarRating';
 export * from './Grid';
 export * from './Typography';
 export * from './MapPin';
+export * from './OrderCard';
+export * from './StatusColumn';

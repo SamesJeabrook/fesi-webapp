@@ -31,8 +31,8 @@ const OrderCostBreakdown: React.FC<OrderCostBreakdownProps> = ({
     {smallOrderProtectionApplied && (
       <div className={styles.row}><span>Small Order Fee:</span> <span>{formatPrice(smallOrderFee)}</span></div>
     )}
-    <div className={styles.row}><span>Total Platform Fee:</span> <span>{formatPrice(totalPlatformFee)}</span></div>
-    <div className={styles.row}><span>Merchant Receives:</span> <span>{formatPrice(merchantAmount)}</span></div>
+    {/* <div className={styles.row}><span>Total Platform Fee:</span> <span>{formatPrice(totalPlatformFee)}</span></div>
+    <div className={styles.row}><span>Merchant Receives:</span> <span>{formatPrice(merchantAmount)}</span></div> */}
     <div className={styles.row}><span>Total to Pay:</span> <span>{formatPrice(totalOrderAmount)}</span></div>
     <div className={styles.note}>
       <Typography variant="body-small">

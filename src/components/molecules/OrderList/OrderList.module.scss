@@ -21,14 +21,23 @@
 }
 .orderStatus {
   font-size: 0.95rem;
-  color: #2a7b2a;
+  color: #2a7b2a; // accepted (default green)
   font-weight: 500;
 }
 .orderStatus.pending {
-  color: #e6b800;
+  color: #e6b800; // yellow/amber
+}
+.orderStatus.preparing {
+  color: #f97316; // orange
+}
+.orderStatus.ready {
+  color: #10b981; // green (ready for pickup)
+}
+.orderStatus.complete {
+  color: #059669; // darker green (collected)
 }
 .orderStatus.rejected {
-  color: #c00;
+  color: #c00; // red
 }
 .orderSummary {
   font-size: 0.98rem;

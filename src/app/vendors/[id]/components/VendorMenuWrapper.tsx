@@ -139,7 +139,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
             });
 
             // Show notification for ready orders
-            if (updatedOrder.status === 'complete') {
+            if (updatedOrder.status === 'ready') {
               // Use a better notification system than alert in production
               if ('Notification' in window && (window as any).Notification.permission === 'granted') {
                 new (window as any).Notification(`Order ${updatedOrder.order_number || updatedOrder.id} is ready for collection!`);
@@ -483,6 +483,18 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
       localStorage.setItem('acceptedOrders', JSON.stringify(updated));
       return updated;
     });
+    
+    // Clear the basket for a new order
+    setOrderSelections([]);
+    setSelectedOptions({});
+    
+    // Clear any stored basket data from localStorage
+    localStorage.removeItem('basketItems');
+    localStorage.removeItem('costBreakdown');
+    localStorage.removeItem('orderId');
+    localStorage.removeItem('clientSecret');
+    localStorage.removeItem('holding');
+    
     setActiveCheckoutTab('orders'); 
   };
 
