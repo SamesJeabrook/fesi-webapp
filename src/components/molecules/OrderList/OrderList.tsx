@@ -2,6 +2,7 @@ import React from 'react';
 import { formatPrice } from '@/utils/menu';
 import { Typography } from '@/components/atoms/Typography/Typography.component';
 import styles from './OrderList.module.scss';
+import { MapPin } from '@/components/atoms';
 
 export interface OrderListItem {
     id: string;
@@ -68,6 +69,9 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
               Total: {formatPrice(order.total)}
             </Typography>
           </div>
+          {(order.status === 'preparing' || order.status === 'complete') && (
+            <MapPin lat={order.latitude} lng={order.longitude} showUserLocation={order.status === 'complete'} />
+          )} 
         </div>
       ))}
     </div>

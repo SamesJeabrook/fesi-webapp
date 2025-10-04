@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import type { MapPinProps } from './MapPin.types';
 import styles from './MapPin.module.scss';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 // Create a data URL for the fork icon
 const createForkMarkerDataURL = () => {
@@ -22,10 +24,12 @@ export const MapPin: React.FC<MapPinProps> = ({
   className,
   accessToken,
   mapStyle = 'mapbox://styles/mapbox/streets-v12',
+  showUserLocation = false,
   'data-testid': dataTestId,
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
+  const userMarker = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -103,6 +107,43 @@ export const MapPin: React.FC<MapPinProps> = ({
           console.log('Map loaded successfully');
           setIsLoading(false);
           setError(null);
+          
+          // Get user's location after map is loaded (only if showUserLocation is true)
+          if (showUserLocation) {
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const userLocation: [number, number] = [position.coords.longitude, position.coords.latitude];
+
+                  // Add user marker to the map
+                  const markerElement = document.createElement('div');
+                  markerElement.style.width = '30px';
+                  markerElement.style.height = '30px';
+                  markerElement.style.backgroundColor = '#007AFF';
+                  markerElement.style.borderRadius = '50%';
+                  markerElement.style.border = '2px solid white';
+                  markerElement.style.boxShadow = '0 0 5px rgba(0, 0, 0, 0.5)';
+
+                  userMarker.current = new mapboxgl.default.Marker(markerElement)
+                    .setLngLat(userLocation)
+                    .addTo(map.current);
+
+                  // Fit map bounds to include both the pin and the user's location
+                  const bounds = new mapboxgl.default.LngLatBounds();
+                  bounds.extend([lng, lat]); // Pin location
+                  bounds.extend(userLocation); // User location
+
+                  map.current.fitBounds(bounds, { padding: 50 });
+                },
+                (error) => {
+                  console.error('Error fetching user location:', error);
+                  alert('Unable to fetch your location. Please ensure location services are enabled.');
+                }
+              );
+            } else {
+              alert('Geolocation is not supported by your browser.');
+            }
+          }
         });
 
         // Handle map errors
@@ -127,8 +168,11 @@ export const MapPin: React.FC<MapPinProps> = ({
         map.current.remove();
         map.current = null;
       }
+      if (userMarker.current) {
+        userMarker.current = null;
+      }
     };
-  }, [lat, lng, zoom, accessToken, mapStyle]);
+  }, [lat, lng, zoom, accessToken, mapStyle, showUserLocation]);
 
   const mapClasses = classNames(styles.mapPin, className);
   

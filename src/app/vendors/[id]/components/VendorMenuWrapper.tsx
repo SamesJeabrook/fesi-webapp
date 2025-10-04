@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Notification from '@/components/atoms/Notification/Notification';
 import OrderList, { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
@@ -64,6 +64,8 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   const [checkoutDisplay, setCheckoutDisplay] = useState(false);
   const [activeCheckoutTab, setActiveCheckoutTab] = useState('summary');
 
+  const socket = useRef<WebSocket | null>(null);
+
   // Restore basket and cost breakdown from localStorage on mount
   useEffect(() => {
     const savedBasketItems = localStorage.getItem('basketItems');
@@ -90,6 +92,140 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   useEffect(() => {
     console.log(orderSelections)
   }, [orderSelections])
+
+  // Initialize WebSocket connection with fallback polling
+  useEffect(() => {
+    if (!orders.length) return;
+
+    let wsConnected = false;
+    let pollInterval: NodeJS.Timeout | null = null;
+
+    // Try to establish WebSocket connection
+    const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}/orders`;
+    
+    try {
+      socket.current = new WebSocket(wsUrl);
+
+      socket.current.onopen = () => {
+        console.log('WebSocket connection established');
+        wsConnected = true;
+        
+        // Subscribe to all order updates
+        const orderIds = orders.map(order => order.id);
+        if (orderIds.length > 0) {
+          socket.current?.send(JSON.stringify({
+            type: 'SUBSCRIBE_ORDERS',
+            orderIds
+          }));
+        }
+      };
+
+      socket.current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'ORDER_STATUS_UPDATE') {
+            const updatedOrder = data.payload;
+            
+            setOrders((prevOrders) => {
+              const index = prevOrders.findIndex((order) => order.id === updatedOrder.id);
+              if (index !== -1) {
+                const updatedOrders = [...prevOrders];
+                updatedOrders[index] = { ...updatedOrders[index], status: updatedOrder.status };
+                localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
+                return updatedOrders;
+              }
+              return prevOrders;
+            });
+
+            // Show notification for ready orders
+            if (updatedOrder.status === 'complete') {
+              // Use a better notification system than alert in production
+              if ('Notification' in window && (window as any).Notification.permission === 'granted') {
+                new (window as any).Notification(`Order ${updatedOrder.order_number || updatedOrder.id} is ready for collection!`);
+              } else {
+                alert(`Order ${updatedOrder.order_number || updatedOrder.id} is ready for collection!`);
+              }
+            }
+          } else if (data.type === 'SUBSCRIBED_MULTIPLE') {
+            console.log(`Subscribed to ${data.orderIds.length} order updates`);
+          }
+        } catch (error) {
+          console.error('Error parsing WebSocket message:', error);
+        }
+      };
+
+      socket.current.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        wsConnected = false;
+      };
+
+      socket.current.onclose = () => {
+        console.log('WebSocket connection closed');
+        wsConnected = false;
+      };
+
+    } catch (error) {
+      console.error('Failed to create WebSocket connection:', error);
+      wsConnected = false;
+    }
+
+    // Fallback polling mechanism
+    const startPolling = () => {
+      if (pollInterval) clearInterval(pollInterval);
+      
+      pollInterval = setInterval(async () => {
+        if (wsConnected) {
+          // If WebSocket is connected, don't poll
+          return;
+        }
+        
+        try {
+          // Use batch API for efficiency
+          const orderIds = orders.map(order => order.id);
+          if (orderIds.length === 0) return;
+
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/batch`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderIds }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const updatedOrders = orders.map(order => {
+              const serverOrder = data.orders.find((o: any) => o.id === order.id);
+              return serverOrder ? { ...order, status: serverOrder.status } : order;
+            });
+
+            setOrders(updatedOrders);
+            localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
+          }
+        } catch (error) {
+          console.error('Polling failed:', error);
+        }
+      }, wsConnected ? 30000 : 10000); // Poll every 30s if WS connected, 10s if not
+    };
+
+    // Start polling after a short delay to allow WebSocket to connect
+    const pollTimeout = setTimeout(startPolling, 2000);
+
+    // Cleanup function
+    return () => {
+      if (socket.current) {
+        socket.current.close();
+        socket.current = null;
+      }
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+      if (pollTimeout) {
+        clearTimeout(pollTimeout);
+      }
+    };
+  }, [orders]);
 
   // Handle option group selection changes for the modal
   const handleOptionsChange = (groupId: string, selected: string[], menuItem?: MenuItem) => {
@@ -349,28 +485,6 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     });
     setActiveCheckoutTab('orders'); 
   };
-
-  // Poll for status updates for all tracked orders
-  useEffect(() => {
-    if (!orders.length) return;
-    const interval = setInterval(async () => {
-      try {
-        const updatedOrders = await Promise.all(orders.map(async (order) => {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${order.id}`);
-          const data = await res.json();
-          return {
-            ...order,
-            status: data.status || order.status,
-            items: data.items || order.items,
-            total: typeof data.total === 'number' ? data.total : order.total,
-          };
-        }));
-        setOrders(updatedOrders);
-        localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
-      } catch {}
-    }, 5000); // Poll every 5 seconds
-    return () => clearInterval(interval);
-  }, [orders]);
 
   const handleItemClick = async (menuItem: MenuItem) => {
     try {

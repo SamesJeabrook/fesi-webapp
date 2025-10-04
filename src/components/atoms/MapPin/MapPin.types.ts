@@ -15,6 +15,8 @@ export interface MapPinProps {
   accessToken?: string;
   /** Optional map style (default: 'mapbox://styles/mapbox/streets-v12') */
   mapStyle?: string;
+  /** Whether to show user's current location on the map (default: false) */
+  showUserLocation?: boolean;
   /** Test ID for testing purposes */
   'data-testid'?: string;
 }

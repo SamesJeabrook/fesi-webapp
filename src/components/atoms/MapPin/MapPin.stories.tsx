@@ -45,6 +45,10 @@ const meta: Meta<typeof MapPin> = {
       ],
       description: 'Mapbox map style',
     },
+    showUserLocation: {
+      control: { type: 'boolean' },
+      description: 'Whether to show user\'s current location on the map',
+    },
   },
   tags: ['autodocs'],
 };
@@ -173,6 +177,25 @@ export const ErrorState: Story = {
     docs: {
       description: {
         story: 'Error state when Mapbox access token is missing or invalid.',
+      },
+    },
+  },
+};
+
+// User location story
+export const UserLocation: Story = {
+  args: {
+    lat: 51.5074, // Default pin location (London)
+    lng: -0.1278,
+    zoom: 14,
+    width: '100%',
+    height: '400px',
+    showUserLocation: true, 
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Demonstrates the user location functionality by showing the user marker alongside the pin. Set showUserLocation to true to enable this feature.',
       },
     },
   },
