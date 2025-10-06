@@ -17,8 +17,12 @@ export interface MerchantOrderDashboardProps {
   onOrderStatusChange?: (orderId: string, newStatus: string) => void;
   /** Handler for refreshing orders */
   onRefresh?: () => void;
+  /** Function to get authentication token */
+  getToken?: () => Promise<string>;
   /** Additional CSS classes */
   className?: string;
   /** Test ID for testing purposes */
   'data-testid'?: string;
+  /** Polling interval in milliseconds for WebSocket fallback (default: 30000) */
+  pollingInterval?: number;
 }

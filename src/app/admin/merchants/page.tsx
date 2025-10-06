@@ -5,13 +5,25 @@ import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { MerchantOrderDashboard } from '@/components/templates/MerchantOrderDashboard/MerchantOrderDashboard.component';
 import MerchantSelector from '@/components/admin/MerchantSelector';
+import { useAdmin } from '@/components/providers/AdminProvider';
 import { Typography } from '@/components/atoms';
 
-interface Merchant {
+interface AdminMerchant {
   id: string;
   business_name: string;
-  name: string; // For MerchantOrderDashboard compatibility
+  name: string;
   email: string;
+  username: string;
+  phone: string;
+  status: string;
+  created_at: string;
+}
+
+// Interface for MerchantSelector component
+interface Merchant {
+  id: string;
+  name: string;
+  username: string;
   phone: string;
   status: string;
   created_at: string;
@@ -41,12 +53,14 @@ interface Order {
 }
 
 export default function AdminMerchantDashboard() {
-  const { user } = useAuth0();
-  const [selectedMerchant, setSelectedMerchant] = useState<Merchant | null>(null);
+  const { user, getAccessTokenSilently } = useAuth0();
+  const { selectedMerchant: adminSelectedMerchant, setSelectedMerchant: setAdminSelectedMerchant, isAdmin } = useAdmin();
+  const [selectedMerchant, setSelectedMerchant] = useState<AdminMerchant | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [roleLoading, setRoleLoading] = useState(true);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Fetch user role from database
   useEffect(() => {
@@ -54,7 +68,11 @@ export default function AdminMerchantDashboard() {
       if (!user) return;
       
       try {
-        const token = localStorage.getItem('auth-token');
+        const token = await getAccessTokenSilently({
+          authorizationParams: {
+            audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+          },
+        });
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -74,7 +92,7 @@ export default function AdminMerchantDashboard() {
     };
 
     fetchUserRole();
-  }, [user]);
+  }, [user, getAccessTokenSilently]);
 
   // Check if user is admin
   const userRoles = user?.['https://fesi.app/roles'] || [];
@@ -84,12 +102,23 @@ export default function AdminMerchantDashboard() {
   console.log('🔍 User role from database:', userRole);
   
   // Use database role as fallback if Auth0 custom claims aren't working
-  const isAdmin = userRoles.includes('admin') || userRole === 'admin';
+  const isAdminFromToken = userRoles.includes('admin') || userRole === 'admin';
+  const finalIsAdmin = isAdmin || isAdminFromToken;
 
   const fetchMerchantOrders = async (merchantId: string) => {
     try {
       setOrdersLoading(true);
-      const token = localStorage.getItem('auth-token');
+      console.log('🔄 Fetching orders for merchant:', merchantId);
+      
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+        },
+      });
+      
+      console.log('🎫 Got token for API call (first 50 chars):', token.substring(0, 50) + '...');
+      console.log('🎫 Token length:', token.length);
+      console.log('🎯 API URL:', `${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/orders`);
       
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/orders`,
@@ -101,8 +130,13 @@ export default function AdminMerchantDashboard() {
         }
       );
 
+      console.log('📡 API Response status:', response.status);
+      console.log('📡 API Response headers:', Object.fromEntries(response.headers.entries()));
+
       if (!response.ok) {
-        throw new Error('Failed to fetch orders');
+        const errorText = await response.text();
+        console.error('❌ API Error:', response.status, errorText);
+        throw new Error(`Failed to fetch orders: ${response.status} ${errorText}`);
       }
 
       const data = await response.json();
@@ -115,17 +149,59 @@ export default function AdminMerchantDashboard() {
     }
   };
 
-  const handleMerchantSelect = (merchant: Merchant) => {
-    // Ensure merchant has name property for MerchantOrderDashboard
-    const merchantWithName = {
-      ...merchant,
-      name: merchant.business_name
-    };
-    setSelectedMerchant(merchantWithName);
-    if (merchant) {
+  const handleMerchantSelect = async (merchant: Merchant) => {
+    try {
+      // Fetch full merchant details from the API
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+        },
+      });
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/merchants/${merchant.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch merchant details');
+      }
+
+      const merchantDetails = await response.json();
+      
+      // Create AdminMerchant from the API response
+      const adminMerchant: AdminMerchant = {
+        id: merchantDetails.data.id,
+        business_name: merchantDetails.data.business_name || merchant.name,
+        name: merchantDetails.data.name || merchant.name, // For MerchantOrderDashboard compatibility
+        email: merchantDetails.data.email || '',
+        username: merchantDetails.data.username || '',
+        phone: merchantDetails.data.phone || merchant.phone,
+        status: merchantDetails.data.status || merchant.status,
+        created_at: merchantDetails.data.created_at || merchant.created_at,
+      };
+
+      setSelectedMerchant(adminMerchant);
+      setAdminSelectedMerchant(adminMerchant);
+      console.log('Selected merchant set:', adminMerchant);
       fetchMerchantOrders(merchant.id);
-    } else {
-      setOrders([]);
+    } catch (error) {
+      console.error('Error selecting merchant:', error);
+      // Fallback - create AdminMerchant from available data
+      const fallbackMerchant: AdminMerchant = {
+        id: merchant.id,
+        business_name: merchant.name,
+        name: merchant.name,
+        email: '',
+        username: merchant.username,
+        phone: merchant.phone,
+        status: merchant.status,
+        created_at: merchant.created_at,
+      };
+      setSelectedMerchant(fallbackMerchant);
+      setAdminSelectedMerchant(fallbackMerchant);
+      fetchMerchantOrders(merchant.id);
     }
   };
 
@@ -135,7 +211,11 @@ export default function AdminMerchantDashboard() {
       const currentOrder = orders.find(order => order.id === orderId);
       const currentVersion = currentOrder?.version || 0;
       
-      const token = localStorage.getItem('auth-token');
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+        },
+      });
       
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/status/merchant`,
@@ -168,9 +248,21 @@ export default function AdminMerchantDashboard() {
   };
 
   const handleRefresh = () => {
-    if (selectedMerchant) {
+    if (selectedMerchant?.id) {
+      console.log('Refreshing orders for merchant:', selectedMerchant.id);
       fetchMerchantOrders(selectedMerchant.id);
+    } else {
+      console.warn('handleRefresh called but selectedMerchant or selectedMerchant.id is undefined:', selectedMerchant);
     }
+  };
+
+  // Wrapper function to include audience in token requests
+  const getApiToken = async () => {
+    return await getAccessTokenSilently({
+      authorizationParams: {
+        audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+      },
+    });
   };
 
   return (
@@ -193,7 +285,7 @@ export default function AdminMerchantDashboard() {
             </Typography>
           </div>
 
-          {!isAdmin ? (
+          {!finalIsAdmin ? (
             <div className="admin-merchant-dashboard__error">
               <Typography variant="heading-4" style={{ color: 'var(--color-error)' }}>
                 Access Denied
@@ -214,7 +306,7 @@ export default function AdminMerchantDashboard() {
             <div className="admin-merchant-dashboard__content">
               <div className="admin-merchant-dashboard__merchant-info">
                 <Typography variant="heading-3">
-                  Managing: {selectedMerchant.business_name}
+                  Managing: {selectedMerchant.name}
                 </Typography>
                 <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
                   {selectedMerchant.email} • {selectedMerchant.phone}
@@ -228,11 +320,17 @@ export default function AdminMerchantDashboard() {
               </div>
 
               <MerchantOrderDashboard
-                merchant={selectedMerchant}
+                merchant={{
+                  id: selectedMerchant.id,
+                  name: selectedMerchant.name,
+                  email: selectedMerchant.email
+                }}
                 orders={orders}
                 isLoading={ordersLoading}
                 onOrderStatusChange={handleOrderStatusChange}
                 onRefresh={handleRefresh}
+                getToken={getApiToken}
+                pollingInterval={300000} // 5 minutes for admin context
               />
             </div>
           )}

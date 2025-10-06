@@ -134,3 +134,49 @@
     align-items: stretch;
   }
 }
+
+.connectionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.connectionStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  
+  &.connected {
+    background-color: #10b981; // Green for live connection
+  }
+  
+  &.polling {
+    background-color: #f59e0b; // Amber for polling
+  }
+  
+  &.connecting {
+    background-color: #6b7280; // Gray for connecting
+    animation: pulse 2s infinite;
+  }
+  
+  &.disconnected {
+    background-color: #ef4444; // Red for disconnected
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

@@ -12,16 +12,28 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
   error = null,
   onOrderStatusChange,
   onRefresh,
+  getToken,
+  pollingInterval = 30000, // Default 30 seconds
   className,
   'data-testid': dataTestId,
 }) => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'polling' | 'disconnected'>('connecting');
   const socket = useRef<WebSocket | null>(null);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   const dashboardClasses = classNames(styles.merchantOrderDashboard, className);
 
+  console.log('MerchantOrderDashboard mounted with merchant:', merchant);
+
   // WebSocket connection for real-time order updates
   useEffect(() => {
+    // Don't start WebSocket connection if merchant ID is not available
+    if (!merchant?.id) {
+      console.warn('MerchantOrderDashboard: merchant.id is undefined, skipping WebSocket connection');
+      return;
+    }
+
     const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}/orders`;
     
     try {
@@ -29,12 +41,23 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
       socket.current.onopen = () => {
         console.log('Merchant WebSocket connection established');
+        setConnectionStatus('connected');
+        
+        // Clear any existing polling when WebSocket connects
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+        }
         
         // Subscribe to merchant's orders
-        socket.current?.send(JSON.stringify({
-          type: 'SUBSCRIBE_MERCHANT_ORDERS',
-          merchantId: merchant.id
-        }));
+        if (merchant.id) {
+          socket.current?.send(JSON.stringify({
+            type: 'SUBSCRIBE_MERCHANT_ORDERS',
+            merchantId: merchant.id
+          }));
+        } else {
+          console.error('Cannot subscribe: merchant.id is undefined');
+        }
       };
 
       socket.current.onmessage = (event) => {
@@ -64,6 +87,7 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
       socket.current.onerror = (error) => {
         console.error('Merchant WebSocket error:', error);
+        setConnectionStatus('polling');
         // Fall back to polling on WebSocket error
         console.log('Falling back to polling due to WebSocket error');
         startPolling();
@@ -71,6 +95,7 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
       socket.current.onclose = () => {
         console.log('Merchant WebSocket connection closed');
+        setConnectionStatus('polling');
         // Fall back to polling when connection closes
         console.log('Falling back to polling due to WebSocket close');
         startPolling();
@@ -78,18 +103,23 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
     } catch (error) {
       console.error('Failed to create merchant WebSocket connection:', error);
+      setConnectionStatus('polling');
       // Fall back to polling if WebSocket creation fails
       startPolling();
     }
 
     // Fallback polling function
     function startPolling() {
-      const interval = setInterval(() => {
+      // Clear any existing polling
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+      }
+      
+      setConnectionStatus('polling');
+      pollingRef.current = setInterval(() => {
         onRefresh?.();
         setLastUpdated(new Date());
-      }, 30000);
-
-      return () => clearInterval(interval);
+      }, pollingInterval);
     }
 
     return () => {
@@ -97,13 +127,17 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
         socket.current.close();
         socket.current = null;
       }
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
     };
-  }, [merchant.id, onRefresh]);
+  }, [merchant.id, onRefresh, pollingInterval]);
 
   const handleOrderStatusChange = async (orderId: string, newStatus: string) => {
     try {
       // Get auth token
-      const token = localStorage.getItem('auth-token');
+      const token = getToken ? await getToken() : localStorage.getItem('auth-token');
       if (!token) {
         throw new Error('No authentication token found');
       }
@@ -213,10 +247,20 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
         </div>
         
         <div className={styles.headerActions}>
-          <div className={styles.lastUpdated}>
-            <Typography variant="caption">
-              Last updated: {lastUpdated.toLocaleTimeString()}
-            </Typography>
+          <div className={styles.connectionInfo}>
+            <div className={styles.connectionStatus}>
+              <span className={`${styles.statusIndicator} ${styles[connectionStatus]}`} />
+              <Typography variant="caption">
+                {connectionStatus === 'connected' ? 'Live' : 
+                 connectionStatus === 'polling' ? `Polling (${Math.floor(pollingInterval / 60000)}m)` :
+                 connectionStatus === 'connecting' ? 'Connecting...' : 'Disconnected'}
+              </Typography>
+            </div>
+            <div className={styles.lastUpdated}>
+              <Typography variant="caption">
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </Typography>
+            </div>
           </div>
           <Button 
             variant="secondary" 

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { MerchantOrderDashboard } from '@/components/templates';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { useAdmin } from '@/components/providers/AdminProvider';
 
 // Environment configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
@@ -132,18 +133,29 @@ function useMerchantOrders(merchantId: string | null) {
 
 export default function MerchantAdminPage() {
   const { user, isLoading: authLoading, getAccessTokenSilently } = useAuth0();
+  const { selectedMerchant, isImpersonating, isAdmin } = useAdmin();
   
-  // Extract merchant_id from Auth0 user
-  const merchantId = user?.['https://fesi.app/merchant_id'] || null;
+  // If admin is impersonating, use selectedMerchant, otherwise use user's merchant_id
+  const merchantId = isImpersonating 
+    ? selectedMerchant?.id 
+    : user?.['https://fesi.app/merchant_id'] || null;
   
   const { orders, isLoading: ordersLoading, refetch } = useMerchantOrders(merchantId);
 
-  // Create merchant object from Auth0 user data
-  const merchant: Merchant | null = user ? {
-    id: merchantId || user.sub,
-    name: user.name || user.nickname || 'Unknown Merchant',
-    email: user.email || 'unknown@merchant.com'
-  } : null;
+  // Create merchant object - use selectedMerchant if impersonating, otherwise use Auth0 user data
+  const merchant: Merchant | null = isImpersonating && selectedMerchant
+    ? {
+        id: selectedMerchant.id,
+        name: selectedMerchant.business_name,
+        email: selectedMerchant.email
+      }
+    : user 
+      ? {
+          id: merchantId || user.sub,
+          name: user.name || user.nickname || 'Unknown Merchant',
+          email: user.email || 'unknown@merchant.com'
+        }
+      : null;
 
   const handleOrderStatusChange = async (orderId: string, newStatus: string) => {
     try {
