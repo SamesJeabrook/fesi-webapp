@@ -8,3 +8,5 @@ export * from './Typography';
 export * from './MapPin';
 export * from './OrderCard';
 export * from './StatusColumn';
+export * from './AdminBadge';
+export * from './MerchantCard';

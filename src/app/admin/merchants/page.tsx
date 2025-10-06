@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { MerchantOrderDashboard } from '@/components/templates/MerchantOrderDashboard/MerchantOrderDashboard.component';
-import MerchantSelector from '@/components/admin/MerchantSelector';
+import { MerchantSelector } from '@/components/molecules/MerchantSelector';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { Typography } from '@/components/atoms';
 
@@ -61,6 +61,14 @@ export default function AdminMerchantDashboard() {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [roleLoading, setRoleLoading] = useState(true);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+
+  // Sync local selectedMerchant with admin context
+  useEffect(() => {
+    if (!adminSelectedMerchant) {
+      // If admin context cleared the selected merchant, clear local state too
+      setSelectedMerchant(null);
+    }
+  }, [adminSelectedMerchant]);
 
   // Fetch user role from database
   useEffect(() => {
@@ -312,7 +320,10 @@ export default function AdminMerchantDashboard() {
                   {selectedMerchant.email} • {selectedMerchant.phone}
                 </Typography>
                 <button
-                  onClick={() => setSelectedMerchant(null)}
+                  onClick={() => {
+                    setSelectedMerchant(null);
+                    setAdminSelectedMerchant(null);
+                  }}
                   className="admin-merchant-dashboard__back-button"
                 >
                   ← Back to Merchant Selection

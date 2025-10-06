@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { fontVariables } from '@/styles/fonts';
 import AuthProvider from '@/components/providers/AuthProvider';
 import { AdminProvider } from '@/components/providers/AdminProvider';
-import Navigation from '@/components/auth/Navigation';
-import AdminHeader from '@/components/admin/AdminHeader';
+import { Navigation, AdminHeader } from '@/components/molecules';
 import '@/styles/globals.scss';
 
 export const metadata: Metadata = {

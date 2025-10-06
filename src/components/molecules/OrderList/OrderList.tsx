@@ -38,7 +38,6 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
     return true; // Show all non-completed orders or completed orders without timestamp
   });
   
-  console.log(orders);
   if (!filteredOrders.length) return (
     <div className={styles.orderList}>
       <Typography variant="body-medium" as="p">No orders yet.</Typography>

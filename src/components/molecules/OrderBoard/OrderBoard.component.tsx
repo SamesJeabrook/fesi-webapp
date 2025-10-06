@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useRef } from 'react';
 import classNames from 'classnames';
 import { OrderCard } from '@/components/atoms/OrderCard';

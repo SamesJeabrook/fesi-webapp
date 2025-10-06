@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { RatingFormProps, RatingFormData, MenuItemRating } from './RatingForm.types';
 import { StarRating } from '../../atoms/StarRating';

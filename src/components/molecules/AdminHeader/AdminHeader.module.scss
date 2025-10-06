@@ -1,0 +1,61 @@
+.adminHeader {
+  background: var(--color-neutral-100);
+  border-bottom: 2px solid var(--color-warning);
+  padding: 0.75rem 2rem;
+  position: sticky;
+  top: 60px; /* Below main navigation */
+  z-index: 90;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &__container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  &__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__impersonation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__impersonationInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  &__normal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0.5rem 1rem;
+    
+    &__impersonation,
+    &__normal {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    &__actions {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+}
