@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { StarRatingProps } from './StarRating.types';
 import styles from './StarRating.module.scss';

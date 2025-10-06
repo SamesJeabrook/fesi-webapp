@@ -22,7 +22,7 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
   // WebSocket connection for real-time order updates
   useEffect(() => {
-    const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}/merchant-orders`;
+    const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}/orders`;
     
     try {
       socket.current = new WebSocket(wsUrl);
@@ -41,7 +41,7 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
         try {
           const data = JSON.parse(event.data);
           
-          if (data.type === 'NEW_ORDER' || data.type === 'ORDER_UPDATE') {
+          if (data.type === 'NEW_ORDER' || data.type === 'ORDER_STATUS_UPDATE') {
             // Refresh orders when new order comes in or order is updated
             onRefresh?.();
             setLastUpdated(new Date());
@@ -52,6 +52,10 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
                 new (window as any).Notification(`New order received: #${data.payload.order_number}`);
               }
             }
+          } else if (data.type === 'SUBSCRIBED_MERCHANT') {
+            console.log(`Subscribed to merchant orders: ${data.merchantId}`);
+          } else if (data.type === 'ERROR') {
+            console.error('WebSocket error:', data.message);
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
@@ -60,14 +64,32 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
       socket.current.onerror = (error) => {
         console.error('Merchant WebSocket error:', error);
+        // Fall back to polling on WebSocket error
+        console.log('Falling back to polling due to WebSocket error');
+        startPolling();
       };
 
       socket.current.onclose = () => {
         console.log('Merchant WebSocket connection closed');
+        // Fall back to polling when connection closes
+        console.log('Falling back to polling due to WebSocket close');
+        startPolling();
       };
 
     } catch (error) {
       console.error('Failed to create merchant WebSocket connection:', error);
+      // Fall back to polling if WebSocket creation fails
+      startPolling();
+    }
+
+    // Fallback polling function
+    function startPolling() {
+      const interval = setInterval(() => {
+        onRefresh?.();
+        setLastUpdated(new Date());
+      }, 30000);
+
+      return () => clearInterval(interval);
     }
 
     return () => {
@@ -80,17 +102,37 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
   const handleOrderStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      // Update order status via API
+      // Get auth token
+      const token = localStorage.getItem('auth-token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      console.log('Updating order status:', { orderId, newStatus, token: token.substring(0, 20) + '...' });
+
+      // Update order status via API (let API handle version automatically)
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${orderId}/status`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ 
+          status: newStatus
+          // Removed version - let API fetch current version automatically
+        }),
       });
 
+      console.log('Response status:', response.status, response.statusText);
+
       if (!response.ok) {
-        throw new Error('Failed to update order status');
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
+        
+        if (response.status === 409) {
+          throw new Error('Order was modified by another process. Please refresh and try again.');
+        }
+        throw new Error(`Failed to update order status: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       // Call the parent handler
@@ -99,7 +141,8 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
     } catch (error) {
       console.error('Error updating order status:', error);
-      // You might want to show an error notification here
+      // Show user-friendly error message
+      alert(error instanceof Error ? error.message : 'Failed to update order status. Please try again.');
     }
   };
 

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { fontVariables } from '@/styles/fonts';
+import AuthProvider from '@/components/providers/AuthProvider';
+import Navigation from '@/components/auth/Navigation';
 import '@/styles/globals.scss';
 
 export const metadata: Metadata = {
@@ -22,9 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={fontVariables}>
       <body>
-        <div id="root">
-          {children}
-        </div>
+        <AuthProvider>
+          <Navigation />
+          <div id="root">
+            {children}
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -9,6 +9,7 @@
   transition: all 0.3s ease;
   width: 280px;
   min-width: 280px;
+  overflow-x: auto;
 
   &.acceptsDrops {
     &:hover {

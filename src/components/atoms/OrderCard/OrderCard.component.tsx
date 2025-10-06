@@ -71,11 +71,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({
         <Typography variant="body-medium" className={styles.customerName}>
           {order.customer_name}
         </Typography>
-        {order.customer_email && (
-          <Typography variant="body-small" className={styles.customerEmail}>
-            {order.customer_email}
-          </Typography>
-        )}
       </div>
 
       <div className={styles.items}>
@@ -90,16 +85,11 @@ export const OrderCard: React.FC<OrderCardProps> = ({
               </Typography>
               {item.customizations && item.customizations.length > 0 && (
                 <div className={styles.customizations}>
-                  {item.customizations.slice(0, 2).map((custom, customIndex) => (
+                  {item.customizations.map((custom, customIndex) => (
                     <Typography key={customIndex} variant="caption" className={styles.customization}>
                       + {custom.sub_item_name}
                     </Typography>
                   ))}
-                  {item.customizations.length > 2 && (
-                    <Typography variant="caption" className={styles.customization}>
-                      +{item.customizations.length - 2} more
-                    </Typography>
-                  )}
                 </div>
               )}
             </div>

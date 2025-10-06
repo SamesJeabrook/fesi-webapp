@@ -1,10 +1,17 @@
+export interface OrderItem {
+  /** Name of the menu item */
+  name: string;
+  /** Quantity ordered */
+  quantity: number;
+}
+
 export interface OrderQRCodeProps {
   /** Order ID for QR code generation */
   orderId: string;
   /** Order number to display */
   orderNumber: string;
-  /** Customer ID for verification */
-  customerId: string;
+  /** List of items in the order (without customizations) */
+  orderItems: OrderItem[];
   /** Optional merchant ID */
   merchantId?: string;
   /** Size of the QR code in pixels */

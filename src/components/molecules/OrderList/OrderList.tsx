@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { formatPrice } from '@/utils/menu';
-import { Typography } from '@/components/atoms/Typography/Typography.component';
+import { Typography, Button } from '@/components/atoms';
+import { OrderQRCode } from '@/components/atoms/OrderQRCode';
 import styles from './OrderList.module.scss';
 import { MapPin } from '@/components/atoms';
 
@@ -17,6 +18,7 @@ export interface OrderListItem {
     latitude: number;
     merchant_name: string;
     total: number;
+    completed_at?: string; // ISO timestamp when order was completed
 }
 
 export interface OrderListProps {
@@ -24,15 +26,27 @@ export interface OrderListProps {
 }
 
 const OrderList: React.FC<OrderListProps> = ({ orders }) => {
-    console.log(orders);
-  if (!orders.length) return (
+  const [qrModalOrder, setQrModalOrder] = useState<OrderListItem | null>(null);
+  
+  // Filter out orders that were completed more than 12 hours ago
+  const filteredOrders = orders.filter(order => {
+    if (order.status === 'complete' && order.completed_at) {
+      const completedTime = new Date(order.completed_at).getTime();
+      const twelveHoursAgo = Date.now() - (12 * 60 * 60 * 1000); // 12 hours in milliseconds
+      return completedTime > twelveHoursAgo;
+    }
+    return true; // Show all non-completed orders or completed orders without timestamp
+  });
+  
+  console.log(orders);
+  if (!filteredOrders.length) return (
     <div className={styles.orderList}>
       <Typography variant="body-medium" as="p">No orders yet.</Typography>
     </div>
   );
   return (
     <div className={styles.orderList}>
-      {orders.map(order => (
+      {filteredOrders.map(order => (
         <div key={order.id} className={styles.orderItem}>
           <div className={styles.orderHeader}>
             <Typography variant="heading-5" as="h3">{order.merchant_name}</Typography>
@@ -73,6 +87,16 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
             <Typography variant="body-medium" as="span">
               Total: {formatPrice(order.total)}
             </Typography>
+            {order.status === 'ready' && (
+              <Button 
+                variant="primary" 
+                size="sm"
+                onClick={() => setQrModalOrder(order)}
+                className={styles.qrButton}
+              >
+                Show QR Code
+              </Button>
+            )}
           </div>
           {(order.status === 'preparing' || order.status === 'ready') && (
             <MapPin
@@ -84,6 +108,43 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
           )} 
         </div>
       ))}
+      
+      {/* Fullscreen QR Code Modal */}
+      {qrModalOrder && (
+        <div className={styles.qrModal}>
+          <div className={styles.qrModalContent}>
+            <button 
+              className={styles.closeButton}
+              onClick={() => setQrModalOrder(null)}
+              aria-label="Close QR Code"
+            >
+              ×
+            </button>
+            
+            <div className={styles.qrModalHeader}>
+              <Typography variant="heading-4" as="h2">
+                Order Ready for Pickup
+              </Typography>
+              <Typography variant="body-medium" as="p">
+                Show this QR code to {qrModalOrder.merchant_name}
+              </Typography>
+            </div>
+            
+            <div className={styles.qrCodeContainer}>
+              <OrderQRCode
+                orderId={qrModalOrder.id}
+                orderNumber={qrModalOrder.order_number.toString()}
+                orderItems={qrModalOrder.items.map(item => ({
+                  name: item.menu_item_title,
+                  quantity: item.quantity
+                }))}
+                size={300}
+                showOrderInfo={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

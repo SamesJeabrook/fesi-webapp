@@ -22,9 +22,9 @@ const meta: Meta<typeof OrderQRCode> = {
       control: 'text',
       description: 'Human-readable order number'
     },
-    customerId: {
-      control: 'text',
-      description: 'Customer identifier for verification'
+    orderItems: {
+      control: 'object',
+      description: 'List of items in the order'
     },
     merchantId: {
       control: 'text',
@@ -54,7 +54,11 @@ export const Default: Story = {
   args: {
     orderId: 'order_123456789',
     orderNumber: 'ORD-2025-001',
-    customerId: 'customer_123',
+    orderItems: [
+      { name: 'Margherita Pizza', quantity: 1 },
+      { name: 'Caesar Salad', quantity: 2 },
+      { name: 'Coca Cola', quantity: 3 }
+    ],
     merchantId: 'merchant_456',
     size: 200,
     showOrderInfo: true
@@ -90,7 +94,10 @@ export const DifferentOrder: Story = {
   args: {
     orderId: 'order_987654321',
     orderNumber: 'ORD-2025-042',
-    customerId: 'customer_789',
+    orderItems: [
+      { name: 'Fish & Chips', quantity: 1 },
+      { name: 'Mushy Peas', quantity: 1 }
+    ],
     merchantId: 'merchant_abc',
     size: 200,
     showOrderInfo: true
@@ -102,7 +109,11 @@ export const WithoutMerchantId: Story = {
   args: {
     orderId: 'order_111222333',
     orderNumber: 'ORD-2025-099',
-    customerId: 'customer_456',
+    orderItems: [
+      { name: 'Burger', quantity: 1 },
+      { name: 'Fries', quantity: 1 },
+      { name: 'Milkshake', quantity: 1 }
+    ],
     size: 200,
     showOrderInfo: true
   }
