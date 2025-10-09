@@ -127,7 +127,7 @@ export interface Order extends BaseEntity {
   customerId: string;
   merchantId: string;
   orderNumber: string;
-  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled' | 'accepted';
   items: OrderItem[];
   subtotal: number;
   deliveryFee: number;

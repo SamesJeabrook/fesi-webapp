@@ -10,3 +10,4 @@ export * from './OrderCard';
 export * from './StatusColumn';
 export * from './AdminBadge';
 export * from './MerchantCard';
+export * from './PublicOrderCard';

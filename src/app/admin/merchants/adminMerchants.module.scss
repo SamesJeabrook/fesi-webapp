@@ -1,0 +1,203 @@
+.merchants {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  padding: var(--spacing-8);
+  min-height: 100vh;
+  background-color: var(--color-neutral-50);
+
+  @media (max-width: 768px) {
+    padding: var(--spacing-6);
+    gap: var(--spacing-6);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    padding: var(--spacing-12);
+    background: var(--color-neutral-white);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+    text-align: center;
+
+    @media (max-width: 768px) {
+      padding: var(--spacing-8);
+    }
+  }
+
+  &__headerContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    max-width: 600px;
+  }
+
+  &__search {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-8);
+    background: var(--color-neutral-white);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+
+    @media (max-width: 768px) {
+      padding: var(--spacing-6);
+    }
+  }
+
+  &__searchInput {
+    width: 100%;
+    max-width: 500px;
+    padding: var(--spacing-3) var(--spacing-6);
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-base);
+    transition: border-color var(--duration-normal) var(--easing-ease);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+    }
+
+    &::placeholder {
+      color: var(--color-neutral-500);
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+  }
+
+  &__loading,
+  &__empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    padding: var(--spacing-12);
+    background: var(--color-neutral-white);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+    text-align: center;
+  }
+
+  &__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-6);
+    padding: var(--spacing-8);
+    background: var(--color-neutral-white);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+    text-decoration: none;
+    color: inherit;
+    transition: border-color var(--duration-normal) var(--easing-ease), 
+                box-shadow var(--duration-normal) var(--easing-ease), 
+                transform var(--duration-normal) var(--easing-ease);
+
+    &:hover {
+      border-color: var(--color-primary-500);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--spacing-3);
+      padding: var(--spacing-6);
+    }
+  }
+
+  &__itemContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    flex: 1;
+  }
+
+  &__itemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-6);
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--spacing-1);
+    }
+  }
+
+  &__itemDetails {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+  }
+
+  &__status {
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &--active {
+      background-color: var(--color-success-light);
+      color: var(--color-success-dark);
+    }
+
+    &--inactive {
+      background-color: var(--color-warning-light);
+      color: var(--color-warning-dark);
+    }
+  }
+
+  &__itemActions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    @media (max-width: 768px) {
+      justify-content: flex-start;
+    }
+
+    button {
+      transition: transform var(--duration-normal) var(--easing-ease);
+
+      &:hover {
+        transform: translateX(4px);
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .merchants {
+    padding: var(--spacing-3);
+    gap: var(--spacing-3);
+
+    &__header {
+      padding: var(--spacing-6);
+    }
+
+    &__search {
+      padding: var(--spacing-3);
+    }
+
+    &__item {
+      padding: var(--spacing-3);
+    }
+  }
+}

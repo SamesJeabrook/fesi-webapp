@@ -1,0 +1,374 @@
+.subItems {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  padding: var(--spacing-8);
+  min-height: 100vh;
+  background-color: var(--color-neutral-50);
+
+  @media (max-width: 768px) {
+    padding: var(--spacing-6);
+    gap: var(--spacing-6);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-6);
+    padding: var(--spacing-8);
+    background: var(--color-neutral-white);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      padding: var(--spacing-6);
+      gap: var(--spacing-3);
+    }
+  }
+
+  &__headerContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    flex: 1;
+  }
+
+  &__backLink {
+    color: var(--color-primary-500);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-3);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__adminBadge {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+    margin-bottom: var(--spacing-1);
+  }
+
+  &__badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
+    color: white;
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    align-self: flex-start;
+  }
+
+  &__createButton {
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &__noItems {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    padding: var(--spacing-12);
+    background: var(--color-neutral-white);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+    text-align: center;
+  }
+
+  &__filters {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: var(--spacing-6);
+    padding: var(--spacing-8);
+    background: var(--color-neutral-white);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--spacing-3);
+      padding: var(--spacing-6);
+    }
+  }
+
+  &__itemFilter {
+    padding: var(--spacing-3);
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-base);
+    min-width: 250px;
+    transition: border-color var(--duration-normal) var(--easing-ease);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+    }
+
+    @media (max-width: 768px) {
+      width: 100%;
+      min-width: unset;
+    }
+  }
+
+  &__createForm {
+    background: var(--color-neutral-white);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+    padding: var(--spacing-8);
+
+    @media (max-width: 768px) {
+      padding: var(--spacing-6);
+    }
+  }
+
+  &__formRow {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: var(--spacing-6);
+    margin-bottom: var(--spacing-6);
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: var(--spacing-3);
+    }
+  }
+
+  &__formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+    margin-bottom: var(--spacing-6);
+    flex: 1;
+
+    label {
+      font-weight: var(--font-weight-medium);
+      color: var(--color-neutral-900);
+    }
+
+    &:last-of-type {
+      margin-bottom: var(--spacing-8);
+    }
+
+    .subItems__formRow & {
+      margin-bottom: 0;
+
+      &:last-child {
+        flex: 0 0 200px;
+
+        @media (max-width: 768px) {
+          flex: 1;
+        }
+      }
+    }
+  }
+
+  &__input,
+  &__textarea,
+  &__select {
+    padding: var(--spacing-3);
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-base);
+    transition: border-color var(--duration-normal) var(--easing-ease);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+    }
+
+    &::placeholder {
+      color: var(--color-neutral-500);
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+  }
+
+  &__formActions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--spacing-6);
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: var(--spacing-3);
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+  }
+
+  &__loading,
+  &__empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    padding: var(--spacing-12);
+    background: var(--color-neutral-white);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+    text-align: center;
+  }
+
+  &__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-6);
+    padding: var(--spacing-8);
+    background: var(--color-neutral-white);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+    transition: border-color var(--duration-normal) var(--easing-ease), 
+                box-shadow var(--duration-normal) var(--easing-ease);
+
+    &:hover {
+      border-color: var(--color-neutral-300);
+      box-shadow: var(--shadow-md);
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--spacing-3);
+      padding: var(--spacing-6);
+    }
+  }
+
+  &__itemContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    flex: 1;
+  }
+
+  &__itemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-6);
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--spacing-3);
+    }
+  }
+
+  &__itemTitle {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-1);
+  }
+
+  &__itemMeta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing-1);
+
+    @media (max-width: 768px) {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  &__status {
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &--available {
+      background-color: var(--color-success-light);
+      color: var(--color-success-dark);
+    }
+
+    &--unavailable {
+      background-color: var(--color-warning-light);
+      color: var(--color-warning-dark);
+    }
+  }
+
+  &__itemActions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--spacing-3);
+
+    @media (max-width: 768px) {
+      justify-content: flex-start;
+      gap: var(--spacing-1);
+
+      button {
+        flex: 1;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .subItems {
+    padding: var(--spacing-3);
+    gap: var(--spacing-3);
+
+    &__header {
+      padding: var(--spacing-3);
+    }
+
+    &__filters {
+      padding: var(--spacing-3);
+    }
+
+    &__createForm {
+      padding: var(--spacing-3);
+    }
+
+    &__item {
+      padding: var(--spacing-3);
+    }
+
+    &__itemActions {
+      flex-direction: column;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

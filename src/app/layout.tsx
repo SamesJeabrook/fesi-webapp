@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import { fontVariables } from '@/styles/fonts';
 import AuthProvider from '@/components/providers/AuthProvider';
 import { AdminProvider } from '@/components/providers/AdminProvider';
-import { Navigation, AdminHeader } from '@/components/molecules';
 import '@/styles/globals.scss';
 
 export const metadata: Metadata = {
@@ -27,8 +26,6 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <AdminProvider>
-            <Navigation />
-            <AdminHeader />
             <div id="root">
               {children}
             </div>

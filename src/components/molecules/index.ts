@@ -9,3 +9,4 @@ export * from './RatingDisplay';
 export * from './ImpersonationBar';
 export * from './MerchantGrid';
 export * from './MerchantSelector';
+export * from './PublicOrderBoard';

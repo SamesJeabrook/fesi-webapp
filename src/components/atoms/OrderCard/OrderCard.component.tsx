@@ -81,7 +81,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
           {order.items.slice(0, 3).map((item, index) => (
             <div key={index} className={styles.item}>
               <Typography variant="body-small">
-                {item.quantity}x {item.menu_item_name}
+                {item.quantity}x {item.menu_item_title}
               </Typography>
               {item.customizations && item.customizations.length > 0 && (
                 <div className={styles.customizations}>

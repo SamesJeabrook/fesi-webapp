@@ -1,0 +1,102 @@
+.publicOrderCard {
+  background: var(--color-background);
+  border: 2px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  &__number {
+    font-weight: 600;
+  }
+
+  &__icon {
+    font-size: 1.5rem;
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__status {
+    margin-bottom: 0.25rem;
+  }
+
+  &__statusText {
+    font-weight: 500;
+  }
+
+  &__time {
+    margin-top: auto;
+  }
+
+  &__timeText {
+    color: var(--color-text-secondary);
+    font-style: italic;
+  }
+
+  // Status variants
+  &--info {
+    border-color: var(--color-info-light);
+    background: linear-gradient(135deg, var(--color-background), var(--color-info-lightest));
+    
+    .publicOrderCard__statusText {
+      color: var(--color-info);
+    }
+  }
+
+  &--success {
+    border-color: var(--color-success-light);
+    background: linear-gradient(135deg, var(--color-background), var(--color-success-lightest));
+    
+    .publicOrderCard__statusText {
+      color: var(--color-success);
+    }
+  }
+
+  &--warning {
+    border-color: var(--color-warning-light);
+    background: linear-gradient(135deg, var(--color-background), var(--color-warning-lightest));
+    
+    .publicOrderCard__statusText {
+      color: var(--color-warning);
+    }
+  }
+
+  &--error {
+    border-color: var(--color-error-light);
+    background: linear-gradient(135deg, var(--color-background), var(--color-error-lightest));
+    
+    .publicOrderCard__statusText {
+      color: var(--color-error);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    min-height: 100px;
+    
+    &__icon {
+      font-size: 1.25rem;
+    }
+  }
+}

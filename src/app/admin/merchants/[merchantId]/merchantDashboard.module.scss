@@ -1,0 +1,237 @@
+.dashboard {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  &__header {
+    margin-bottom: 3rem;
+  }
+
+  &__headerContent {
+    max-width: 800px;
+  }
+
+  &__backLink {
+    display: inline-block;
+    color: var(--color-primary);
+    text-decoration: none;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__merchantInfo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  &__status {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+
+    &--active {
+      background: var(--color-success-lightest);
+      color: var(--color-success);
+    }
+
+    &--pending {
+      background: var(--color-warning-lightest);
+      color: var(--color-warning);
+    }
+
+    &--inactive {
+      background: var(--color-error-lightest);
+      color: var(--color-error);
+    }
+  }
+
+  &__loading,
+  &__error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  &__link {
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+    }
+  }
+
+  &__card {
+    padding: 2rem;
+    cursor: pointer;
+    border: 2px solid var(--color-border);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    min-height: 120px;
+
+    &:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    // Color variants
+    &--primary {
+      border-color: var(--color-primary-light);
+      background: linear-gradient(135deg, var(--color-background), var(--color-primary-lightest));
+      
+      &:hover {
+        border-color: var(--color-primary);
+      }
+    }
+
+    &--success {
+      border-color: var(--color-success-light);
+      background: linear-gradient(135deg, var(--color-background), var(--color-success-lightest));
+      
+      &:hover {
+        border-color: var(--color-success);
+      }
+    }
+
+    &--warning {
+      border-color: var(--color-warning-light);
+      background: linear-gradient(135deg, var(--color-background), var(--color-warning-lightest));
+      
+      &:hover {
+        border-color: var(--color-warning);
+      }
+    }
+
+    &--info {
+      border-color: var(--color-info-light);
+      background: linear-gradient(135deg, var(--color-background), var(--color-info-lightest));
+      
+      &:hover {
+        border-color: var(--color-info);
+      }
+    }
+
+    &--secondary {
+      border-color: var(--color-border);
+      background: linear-gradient(135deg, var(--color-background), var(--color-background-secondary));
+      
+      &:hover {
+        border-color: var(--color-text-secondary);
+      }
+    }
+  }
+
+  &__cardIcon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+  }
+
+  &__cardContent {
+    flex: 1;
+  }
+
+  &__cardTitle {
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+  }
+
+  &__cardDescription {
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+
+  &__cardArrow {
+    font-size: 1.5rem;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+
+    .dashboard__link:hover & {
+      transform: translateX(4px);
+    }
+  }
+
+  &__footer {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-warning-lightest);
+    margin: 0 -2rem -2rem -2rem;
+    padding: 1rem 2rem;
+    border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    &__header {
+      margin-bottom: 2rem;
+      
+      h2 {
+        font-size: 1.75rem;
+      }
+    }
+
+    &__merchantInfo {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    &__grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    &__card {
+      padding: 1.5rem;
+      flex-direction: column;
+      text-align: center;
+      min-height: auto;
+
+      &Icon {
+        font-size: 2rem;
+      }
+
+      &Arrow {
+        display: none;
+      }
+    }
+
+    &__footer {
+      margin: 0 -1rem -1rem -1rem;
+      padding: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.5rem;
+
+    &__card {
+      padding: 1rem;
+      gap: 1rem;
+    }
+  }
+}
