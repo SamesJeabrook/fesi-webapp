@@ -61,20 +61,14 @@ export default function AdminMenuItemsPage() {
       });
 
       // Fetch merchant, categories, and items in parallel
-      const [merchantResponse, categoriesResponse, itemsResponse] = await Promise.all([
+      const [merchantResponse, menuResponse] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/categories`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/items`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -87,14 +81,39 @@ export default function AdminMenuItemsPage() {
         setMerchant(merchantData.data);
       }
 
-      if (categoriesResponse.ok) {
-        const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData.categories || []);
-      }
+      if (menuResponse.ok) {
+        const menuData = await menuResponse.json();
+        // Extract categories and items from menu data
+        if (menuData.success && menuData.data && menuData.data.menu) {
+          // Extract categories
+          const categoryList = menuData.data.menu.map((category: any, index: number) => ({
+            id: category.name,
+            name: category.name
+          }));
+          setCategories(categoryList);
 
-      if (itemsResponse.ok) {
-        const itemsData = await itemsResponse.json();
-        setItems(itemsData.items || []);
+          // Extract all items from all categories
+          const allItems: MenuItem[] = [];
+          menuData.data.menu.forEach((category: any) => {
+            if (category.items && Array.isArray(category.items)) {
+              category.items.forEach((item: any) => {
+                allItems.push({
+                  id: item.id,
+                  name: item.title || item.name,
+                  description: item.description,
+                  base_price: item.base_price,
+                  category_id: category.name,
+                  category_name: category.name,
+                  is_available: item.is_active,
+                  display_order: item.display_order || 0,
+                  created_at: item.created_at || new Date().toISOString(),
+                  updated_at: item.updated_at || new Date().toISOString()
+                });
+              });
+            }
+          });
+          setItems(allItems);
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -113,17 +132,18 @@ export default function AdminMenuItemsPage() {
         },
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/items`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: newItem.name,
+          title: newItem.name,
           description: newItem.description,
-          price: parseFloat(newItem.price) * 100, // Convert to cents
+          price_pence: Math.round(parseFloat(newItem.price) * 100),
           category_id: newItem.category_id,
+          merchant_id: merchantId,
           display_order: items.length + 1,
         }),
       });
@@ -146,13 +166,13 @@ export default function AdminMenuItemsPage() {
         },
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/items/${itemId}`, {
-        method: 'PUT',
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${itemId}/toggle-active`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ is_available: !isAvailable }),
+        body: JSON.stringify({ is_active: !isAvailable }),
       });
 
       if (response.ok) {

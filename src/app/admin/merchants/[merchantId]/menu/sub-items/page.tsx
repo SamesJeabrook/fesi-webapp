@@ -9,15 +9,29 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
 import styles from './adminSubItems.module.scss';
 
+interface SubItemGroup {
+  id: string;
+  name: string;
+  description?: string;
+  selection_type: 'single' | 'multiple';
+  is_required: boolean;
+  max_selections?: number;
+  display_order: number;
+  menu_item_id: string;
+  menu_item_name?: string;
+  sub_items: SubItem[];
+  created_at: string;
+  updated_at: string;
+}
+
 interface SubItem {
   id: string;
   name: string;
   description?: string;
-  additional_price: number;
-  item_id: string;
-  item_name?: string;
-  is_available: boolean;
+  price_adjustment_pence: number;
   display_order: number;
+  is_available: boolean;
+  group_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -37,18 +51,13 @@ interface Merchant {
 export default function AdminMenuSubItemsPage() {
   const params = useParams();
   const { getAccessTokenSilently } = useAuth0();
-  const [subItems, setSubItems] = useState<SubItem[]>([]);
   const [items, setItems] = useState<MenuItem[]>([]);
+  const [subItemGroups, setSubItemGroups] = useState<SubItemGroup[]>([]);
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+  const [isCreatingItem, setIsCreatingItem] = useState(false);
   const [selectedItem, setSelectedItem] = useState('all');
-  const [newSubItem, setNewSubItem] = useState({
-    name: '',
-    description: '',
-    price_adjustment: '',
-    item_id: '',
-  });
 
   const merchantId = params?.merchantId as string;
 
@@ -61,21 +70,15 @@ export default function AdminMenuSubItemsPage() {
         },
       });
 
-      // Fetch merchant, items, and sub-items in parallel
-      const [merchantResponse, itemsResponse, subItemsResponse] = await Promise.all([
+      // Fetch merchant and menu data
+      const [merchantResponse, menuResponse] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/items`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/sub-items`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -88,14 +91,87 @@ export default function AdminMenuSubItemsPage() {
         setMerchant(merchantData.data);
       }
 
-      if (itemsResponse.ok) {
-        const itemsData = await itemsResponse.json();
-        setItems(itemsData.items || []);
-      }
+      if (menuResponse.ok) {
+        const menuData = await menuResponse.json();
+        console.log('Menu data received:', menuData.data?.menu?.length || 0, 'categories');
+        
+        if (menuData.success && menuData.data && menuData.data.menu) {
+          const allItems: MenuItem[] = [];
+          const allSubItemGroups: SubItemGroup[] = [];
+          
+          // Extract items from categories
+          for (const category of menuData.data.menu) {
+            if (category.items && Array.isArray(category.items)) {
+              for (const item of category.items) {
+                allItems.push({
+                  id: item.id,
+                  name: item.title || item.name,
+                  category_name: category.name
+                });
 
-      if (subItemsResponse.ok) {
-        const subItemsData = await subItemsResponse.json();
-        setSubItems(subItemsData.subItems || []);
+                // Fetch sub-groups for this item
+                try {
+                  const subGroupsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}/sub-groups`, {
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json',
+                    },
+                  });
+
+                  if (subGroupsResponse.ok) {
+                    const subGroupsData = await subGroupsResponse.json();
+                    console.log(`Sub-groups for item ${item.id} (${item.title || item.name}):`, subGroupsData);
+                    
+                    // The API returns the menu item with option_groups property
+                    let subGroupsArray = [];
+                    if (subGroupsData && subGroupsData.option_groups) {
+                      subGroupsArray = subGroupsData.option_groups;
+                    } else if (Array.isArray(subGroupsData)) {
+                      // Fallback if the API returns an array directly
+                      subGroupsArray = subGroupsData;
+                    }
+                    
+                    console.log(`Processed sub-groups array for ${item.id}:`, subGroupsArray);
+                    console.log(`Is array?`, Array.isArray(subGroupsArray), `Length:`, subGroupsArray?.length);
+                    
+                    if (Array.isArray(subGroupsArray) && subGroupsArray.length > 0) {
+                      subGroupsArray.forEach((subGroup: any) => {
+                        console.log(`Processing sub-group:`, subGroup);
+                        const processedGroup = {
+                          id: subGroup.id,
+                          name: subGroup.name,
+                          description: subGroup.description,
+                          selection_type: subGroup.selection_type || 'single',
+                          is_required: subGroup.is_required || false,
+                          max_selections: subGroup.max_selections,
+                          display_order: subGroup.display_order || 0,
+                          menu_item_id: item.id,
+                          menu_item_name: item.title || item.name,
+                          sub_items: subGroup.sub_items || [],
+                          created_at: subGroup.created_at || new Date().toISOString(),
+                          updated_at: subGroup.updated_at || new Date().toISOString()
+                        };
+                        console.log(`Adding processed group:`, processedGroup);
+                        allSubItemGroups.push(processedGroup);
+                      });
+                    } else {
+                      console.log(`No sub-groups found for item ${item.id} or not an array`);
+                    }
+                  }
+                } catch (subError) {
+                  console.error(`Error fetching sub-groups for item ${item.id}:`, subError);
+                }
+              }
+            }
+          }
+          
+          setItems(allItems);
+          setSubItemGroups(allSubItemGroups);
+          console.log('Final items:', allItems.length);
+          console.log('Final sub-item groups:', allSubItemGroups.length, allSubItemGroups);
+          console.log('All items found:', allItems);
+          console.log('All sub-item groups found:', allSubItemGroups);
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -104,80 +180,15 @@ export default function AdminMenuSubItemsPage() {
     }
   };
 
-  const createSubItem = async () => {
-    if (!newSubItem.name.trim() || !newSubItem.item_id || newSubItem.price_adjustment === '') return;
-
-    try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/sub-items`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: newSubItem.name,
-          description: newSubItem.description,
-          price_adjustment: parseFloat(newSubItem.price_adjustment) * 100, // Convert to cents
-          item_id: newSubItem.item_id,
-          display_order: subItems.length + 1,
-        }),
-      });
-
-      if (response.ok) {
-        setNewSubItem({ name: '', description: '', price_adjustment: '', item_id: '' });
-        setIsCreating(false);
-        fetchData();
-      }
-    } catch (error) {
-      console.error('Error creating sub-item:', error);
-    }
-  };
-
-  const toggleSubItemAvailability = async (subItemId: string, isAvailable: boolean) => {
-    try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/sub-items/${subItemId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ is_available: !isAvailable }),
-      });
-
-      if (response.ok) {
-        fetchData();
-      }
-    } catch (error) {
-      console.error('Error updating sub-item:', error);
-    }
-  };
-
-  const formatPriceAdjustment = (adjustmentInCents: number) => {
-    const adjustment = adjustmentInCents / 100;
-    return adjustment >= 0 ? `+$${adjustment.toFixed(2)}` : `-$${Math.abs(adjustment).toFixed(2)}`;
-  };
-
-  const filteredSubItems = selectedItem === 'all' 
-    ? subItems 
-    : subItems.filter(subItem => subItem.item_id === selectedItem);
-
   useEffect(() => {
     if (merchantId) {
       fetchData();
     }
   }, [merchantId]);
+
+  const filteredGroups = selectedItem === 'all' 
+    ? subItemGroups 
+    : subItemGroups.filter(group => group.menu_item_id === selectedItem);
 
   return (
     <ProtectedRoute requireRole={['admin']}>
@@ -188,18 +199,8 @@ export default function AdminMenuSubItemsPage() {
             label: `Back to ${merchant?.business_name || 'Merchant'} Dashboard`
           }}
           adminContext={`Managing sub-items for ${merchant?.business_name || 'merchant'}`}
-          title="Menu Sub-Items"
-          description="Manage variations and add-ons for menu items"
-          actions={
-            <Button
-              variant="primary"
-              onClick={() => setIsCreating(true)}
-              className={styles.subItems__createButton}
-              isDisabled={items.length === 0}
-            >
-              + Add Sub-Item
-            </Button>
-          }
+          title="Menu Sub-Items & Option Groups"
+          description="Manage option groups (like sizes, add-ons) and their individual items"
         />
 
         {items.length === 0 && !isLoading && (
@@ -243,154 +244,80 @@ export default function AdminMenuSubItemsPage() {
               </Grid.Item>
             </Grid.Container>
 
-            {/* Create Form Section */}
-            {isCreating && (
-              <Grid.Container gap="lg" className={styles.subItems__createSection}>
-                <Grid.Item lg={12} xl={10}>
-                  <div className={styles.subItems__createForm}>
-                    <Typography variant="heading-5" className={styles.subItems__formTitle}>
-                      Create New Sub-Item
-                    </Typography>
-                    
-                    <div className={styles.subItems__formRow}>
-                      <div className={styles.subItems__formGroup}>
-                        <label htmlFor="subItemName">Sub-Item Name</label>
-                        <input
-                          id="subItemName"
-                          type="text"
-                          value={newSubItem.name}
-                          onChange={(e) => setNewSubItem(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="e.g., Extra Cheese, Large Size"
-                          className={styles.subItems__input}
-                        />
-                      </div>
-                      <div className={styles.subItems__formGroup}>
-                        <label htmlFor="priceAdjustment">Price Adjustment ($)</label>
-                        <input
-                          id="priceAdjustment"
-                          type="number"
-                          step="0.01"
-                          value={newSubItem.price_adjustment}
-                          onChange={(e) => setNewSubItem(prev => ({ ...prev, price_adjustment: e.target.value }))}
-                          placeholder="0.00 (use negative for discounts)"
-                          className={styles.subItems__input}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.subItems__formGroup}>
-                      <label htmlFor="parentItem">Parent Menu Item</label>
-                      <select
-                        id="parentItem"
-                        value={newSubItem.item_id}
-                        onChange={(e) => setNewSubItem(prev => ({ ...prev, item_id: e.target.value }))}
-                        className={styles.subItems__select}
-                      >
-                        <option value="">Select a menu item</option>
-                        {items.map((item) => (
-                          <option key={item.id} value={item.id}>
-                            {item.name} {item.category_name && `(${item.category_name})`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className={styles.subItems__formGroup}>
-                      <label htmlFor="subItemDescription">Description (Optional)</label>
-                      <textarea
-                        id="subItemDescription"
-                        value={newSubItem.description}
-                        onChange={(e) => setNewSubItem(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Brief description of this variation or add-on"
-                        className={styles.subItems__textarea}
-                        rows={3}
-                      />
-                    </div>
-                    <div className={styles.subItems__formActions}>
-                      <Button variant="secondary" onClick={() => setIsCreating(false)}>
-                        Cancel
-                      </Button>
-                      <Button variant="primary" onClick={createSubItem}>
-                        Create Sub-Item
-                      </Button>
-                    </div>
-                  </div>
-                </Grid.Item>
-              </Grid.Container>
-            )}
-
-            {/* Sub-Items List Section */}
-            <Grid.Container gap="lg" className={styles.subItems__listSection}>
+            {/* Option Groups List */}
+            <Grid.Container gap="lg">
               {isLoading ? (
-                <Grid.Item>
+                <Grid.Item className={styles.subItems__loadingWrapper}>
                   <div className={styles.subItems__loading}>
-                    <Typography variant="body-medium">Loading sub-items...</Typography>
+                    <Typography variant="body-medium">Loading option groups...</Typography>
                   </div>
                 </Grid.Item>
-              ) : filteredSubItems.length === 0 ? (
+              ) : filteredGroups.length === 0 ? (
                 <Grid.Item md={12} lg={8}>
                   <div className={styles.subItems__empty}>
                     <Typography variant="heading-5">
-                      {selectedItem === 'all' ? 'No sub-items yet' : 'No sub-items for this item'}
+                      {selectedItem === 'all' ? 'No option groups yet' : 'No option groups for this item'}
                     </Typography>
                     <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
                       {selectedItem === 'all' 
-                        ? 'Create the first sub-item for this merchant'
-                        : 'Try selecting a different item or create a new sub-item'
+                        ? 'Create the first option group for this merchant'
+                        : 'Try selecting a different item or create a new option group'
                       }
                     </Typography>
                   </div>
                 </Grid.Item>
               ) : (
-                filteredSubItems.map((subItem) => (
-                  <Grid.Item sm={8} md={8} lg={6} xl={4} key={subItem.id}>
-                    <div className={styles.subItems__item}>
-                      <div className={styles.subItems__itemContent}>
-                        <div className={styles.subItems__itemHeader}>
-                          <div className={styles.subItems__itemTitle}>
-                            <Typography variant="heading-5">
-                              {subItem.name}
-                            </Typography>
-                            <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                              For: {items.find(item => item.id === subItem.item_id)?.name || 'Unknown Item'}
-                            </Typography>
-                          </div>
-                          <div className={styles.subItems__itemMeta}>
-                            <Typography 
-                              variant="heading-5" 
-                              style={{ 
-                                color: subItem.additional_price >= 0 ? 'var(--color-success-dark)' : 'var(--color-warning-dark)' 
-                              }}
-                            >
-                              {formatPriceAdjustment(subItem.additional_price)}
-                            </Typography>
-                            <span className={`${styles.subItems__status} ${
-                              subItem.is_available ? styles['subItems__status--available'] : styles['subItems__status--unavailable']
-                            }`}>
-                              {subItem.is_available ? 'Available' : 'Unavailable'}
-                            </span>
-                          </div>
-                        </div>
-                        {subItem.description && (
-                          <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                            {subItem.description}
+                filteredGroups.map((group) => (
+                  <Grid.Item md={12} lg={8} key={group.id}>
+                    <div className={styles.subItems__groupItem}>
+                      <div className={styles.subItems__groupHeader}>
+                        <div>
+                          <Typography variant="heading-4">{group.name}</Typography>
+                          <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
+                            For: {group.menu_item_name} • {group.selection_type} • {group.is_required ? 'Required' : 'Optional'}
                           </Typography>
-                        )}
-                        <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                          Order: {subItem.display_order}
-                        </Typography>
+                        </div>
                       </div>
-                      <div className={styles.subItems__itemActions}>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => toggleSubItemAvailability(subItem.id, subItem.is_available)}
-                        >
-                          {subItem.is_available ? 'Make Unavailable' : 'Make Available'}
-                        </Button>
-                        <Link href={`/admin/merchants/${merchantId}/menu/sub-items/${subItem.id}/edit`}>
-                          <Button variant="primary" size="sm">
-                            Edit
-                          </Button>
-                        </Link>
+                      
+                      {/* Sub-items within this group */}
+                      <div className={styles.subItems__groupItems}>
+                        {group.sub_items && group.sub_items.length > 0 ? (
+                          <Grid.Container gap="md">
+                            {group.sub_items.map((subItem) => (
+                              <Grid.Item sm={12} md={6} lg={4} key={subItem.id}>
+                                <div className={styles.subItems__item}>
+                                  <div className={styles.subItems__itemContent}>
+                                    <div className={styles.subItems__itemHeader}>
+                                      <Typography variant="heading-6">{subItem.name}</Typography>
+                                      <Typography 
+                                        variant="body-medium" 
+                                        style={{ 
+                                          color: subItem.price_adjustment_pence >= 0 ? 'var(--color-success-dark)' : 'var(--color-warning-dark)' 
+                                        }}
+                                      >
+                                        {subItem.price_adjustment_pence >= 0 
+                                          ? `+$${(subItem.price_adjustment_pence / 100).toFixed(2)}` 
+                                          : `-$${Math.abs(subItem.price_adjustment_pence / 100).toFixed(2)}`
+                                        }
+                                      </Typography>
+                                    </div>
+                                    {subItem.description && (
+                                      <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
+                                        {subItem.description}
+                                      </Typography>
+                                    )}
+                                  </div>
+                                </div>
+                              </Grid.Item>
+                            ))}
+                          </Grid.Container>
+                        ) : (
+                          <div className={styles.subItems__emptyGroup}>
+                            <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                              No items in this group yet.
+                            </Typography>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Grid.Item>
