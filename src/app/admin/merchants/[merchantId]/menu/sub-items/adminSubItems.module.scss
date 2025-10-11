@@ -1,47 +1,45 @@
 .subItems {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-8);
   padding: var(--spacing-8);
+  max-width: 1400px;
+  margin: 0 auto;
   min-height: 100vh;
   background-color: var(--color-neutral-50);
 
   @media (max-width: 768px) {
     padding: var(--spacing-6);
-    gap: var(--spacing-6);
+  }
+
+  &__headerGrid {
+    margin-bottom: var(--spacing-8);
   }
 
   &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--spacing-6);
-    padding: var(--spacing-8);
-    background: var(--color-neutral-white);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid var(--color-neutral-200);
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-      align-items: stretch;
-      padding: var(--spacing-6);
-      gap: var(--spacing-3);
-    }
+    margin-bottom: var(--spacing-6);
   }
 
   &__headerContent {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-3);
-    flex: 1;
+  }
+
+  &__headerActions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    
+    @media (max-width: 768px) {
+      justify-content: flex-start;
+    }
   }
 
   &__backLink {
+    display: inline-block;
+    margin-bottom: var(--spacing-6);
     color: var(--color-primary-500);
     text-decoration: none;
     font-weight: var(--font-weight-medium);
-    margin-bottom: var(--spacing-3);
-
+    
     &:hover {
       text-decoration: underline;
     }
@@ -51,75 +49,64 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-1);
-    margin-bottom: var(--spacing-1);
+    margin-bottom: var(--spacing-6);
   }
 
   &__badge {
-    display: inline-block;
     background: linear-gradient(135deg, #ff6b35, #f7931e);
     color: white;
     padding: var(--spacing-1) var(--spacing-3);
     border-radius: var(--border-radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
+    font-size: 0.75rem;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: inline-block;
     align-self: flex-start;
   }
 
   &__createButton {
-    @media (max-width: 768px) {
-      width: 100%;
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+    width: 100%;
+    
+    @media (min-width: 769px) {
+      width: auto;
+      min-width: 150px;
     }
   }
 
-  &__noItems {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: var(--spacing-3);
-    padding: var(--spacing-12);
-    background: var(--color-neutral-white);
-    border-radius: var(--border-radius-lg);
-    border: 1px solid var(--color-neutral-200);
-    text-align: center;
+  &__filtersSection {
+    margin-bottom: var(--spacing-8);
   }
 
   &__filters {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: var(--spacing-6);
-    padding: var(--spacing-8);
     background: var(--color-neutral-white);
-    border-radius: var(--border-radius-lg);
     border: 1px solid var(--color-neutral-200);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-6);
+    display: flex;
+    gap: var(--spacing-4);
+    align-items: center;
+    flex-wrap: wrap;
 
     @media (max-width: 768px) {
+      padding: var(--spacing-4);
       flex-direction: column;
       align-items: stretch;
-      gap: var(--spacing-3);
-      padding: var(--spacing-6);
     }
   }
 
   &__itemFilter {
-    padding: var(--spacing-3);
+    padding: var(--spacing-2) var(--spacing-4);
     border: 1px solid var(--color-neutral-300);
     border-radius: var(--border-radius-md);
     font-size: var(--font-size-base);
-    min-width: 250px;
-    transition: border-color var(--duration-normal) var(--easing-ease);
-
+    background: var(--color-neutral-white);
+    min-width: 200px;
+    
     &:focus {
       outline: none;
       border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.1);
     }
 
     @media (max-width: 768px) {
@@ -128,10 +115,26 @@
     }
   }
 
-  &__createForm {
+  &__noItems {
+    text-align: center;
+    padding: var(--spacing-12);
     background: var(--color-neutral-white);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--color-neutral-200);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    align-items: center;
+  }
+
+  &__createSection {
+    margin-bottom: var(--spacing-8);
+  }
+
+  &__createForm {
+    background: var(--color-neutral-white);
+    border: 1px solid var(--color-neutral-200);
+    border-radius: var(--border-radius-lg);
     padding: var(--spacing-8);
 
     @media (max-width: 768px) {
@@ -139,60 +142,50 @@
     }
   }
 
-  &__formRow {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: var(--spacing-6);
+  &__formTitle {
     margin-bottom: var(--spacing-6);
+  }
+
+  &__formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
 
     @media (max-width: 768px) {
-      flex-direction: column;
-      gap: var(--spacing-3);
+      grid-template-columns: 1fr;
     }
   }
 
   &__formGroup {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-1);
-    margin-bottom: var(--spacing-6);
-    flex: 1;
+    margin-bottom: var(--spacing-4);
 
     label {
+      display: block;
+      margin-bottom: var(--spacing-2);
       font-weight: var(--font-weight-medium);
-      color: var(--color-neutral-900);
+      color: var(--color-text-primary);
     }
 
     &:last-of-type {
-      margin-bottom: var(--spacing-8);
-    }
-
-    .subItems__formRow & {
-      margin-bottom: 0;
-
-      &:last-child {
-        flex: 0 0 200px;
-
-        @media (max-width: 768px) {
-          flex: 1;
-        }
-      }
+      margin-bottom: var(--spacing-6);
     }
   }
 
   &__input,
   &__textarea,
   &__select {
+    width: 100%;
     padding: var(--spacing-3);
     border: 1px solid var(--color-neutral-300);
     border-radius: var(--border-radius-md);
     font-size: var(--font-size-base);
     transition: border-color var(--duration-normal) var(--easing-ease);
-
+    
     &:focus {
       outline: none;
       border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.1);
     }
 
     &::placeholder {
@@ -208,13 +201,11 @@
 
   &__formActions {
     display: flex;
+    gap: var(--spacing-3);
     justify-content: flex-end;
-    align-items: center;
-    gap: var(--spacing-6);
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-      gap: var(--spacing-3);
+    
+    @media (max-width: 480px) {
+      flex-direction: column-reverse;
 
       button {
         width: 100%;
@@ -222,68 +213,52 @@
     }
   }
 
-  &__list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-6);
-  }
-
   &__loading,
   &__empty {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: var(--spacing-3);
+    text-align: center;
     padding: var(--spacing-12);
     background: var(--color-neutral-white);
     border-radius: var(--border-radius-lg);
     border: 1px solid var(--color-neutral-200);
-    text-align: center;
   }
 
   &__item {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--spacing-6);
-    padding: var(--spacing-8);
     background: var(--color-neutral-white);
-    border-radius: var(--border-radius-lg);
     border: 1px solid var(--color-neutral-200);
-    transition: border-color var(--duration-normal) var(--easing-ease), 
-                box-shadow var(--duration-normal) var(--easing-ease);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-6);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all var(--duration-normal) var(--easing-ease);
 
     &:hover {
-      border-color: var(--color-neutral-300);
-      box-shadow: var(--shadow-md);
+      border-color: var(--color-primary-300);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
     }
 
     @media (max-width: 768px) {
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--spacing-3);
-      padding: var(--spacing-6);
+      padding: var(--spacing-4);
     }
   }
 
   &__itemContent {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-3);
     flex: 1;
+    margin-bottom: var(--spacing-4);
   }
 
   &__itemHeader {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: var(--spacing-6);
+    margin-bottom: var(--spacing-3);
+    gap: var(--spacing-3);
 
     @media (max-width: 768px) {
       flex-direction: column;
       align-items: stretch;
-      gap: var(--spacing-3);
+      gap: var(--spacing-2);
     }
   }
 
@@ -291,13 +266,14 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-1);
+    flex: 1;
   }
 
   &__itemMeta {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: var(--spacing-1);
+    gap: var(--spacing-2);
 
     @media (max-width: 768px) {
       flex-direction: row;
@@ -313,6 +289,7 @@
     font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
 
     &--available {
       background-color: var(--color-success-light);
@@ -320,52 +297,18 @@
     }
 
     &--unavailable {
-      background-color: var(--color-warning-light);
-      color: var(--color-warning-dark);
+      background-color: var(--color-error-light);
+      color: var(--color-error-dark);
     }
   }
 
   &__itemActions {
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: var(--spacing-3);
-
-    @media (max-width: 768px) {
-      justify-content: flex-start;
-      gap: var(--spacing-1);
-
-      button {
-        flex: 1;
-      }
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .subItems {
-    padding: var(--spacing-3);
-    gap: var(--spacing-3);
-
-    &__header {
-      padding: var(--spacing-3);
-    }
-
-    &__filters {
-      padding: var(--spacing-3);
-    }
-
-    &__createForm {
-      padding: var(--spacing-3);
-    }
-
-    &__item {
-      padding: var(--spacing-3);
-    }
-
-    &__itemActions {
+    gap: var(--spacing-2);
+    
+    @media (max-width: 480px) {
       flex-direction: column;
-      
+
       button {
         width: 100%;
       }

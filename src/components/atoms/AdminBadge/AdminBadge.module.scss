@@ -1,36 +1,31 @@
 .adminBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
+  display: inline-block;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: white;
   padding: var(--spacing-1) var(--spacing-3);
-  border-radius: var(--radius-full);
+  border-radius: var(--border-radius-sm);
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  line-height: 1.4;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   white-space: nowrap;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   
-  // Variants
-  &.warning {
-    background-color: var(--color-warning-light);
-    color: var(--color-warning-dark);
-    border: 1px solid var(--color-warning);
+  // Optional variants for different contexts
+  &.admin {
+    background: linear-gradient(135deg, #ff6b35, #f7931e);
   }
   
-  &.info {
-    background-color: var(--color-primary-light);
-    color: var(--color-primary-dark);
-    border: 1px solid var(--color-primary);
+  &.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
   }
   
   &.success {
-    background-color: var(--color-success-light);
-    color: var(--color-success-dark);
-    border: 1px solid var(--color-success);
+    background: linear-gradient(135deg, #10b981, #059669);
   }
   
   &.danger {
-    background-color: var(--color-danger-light);
-    color: var(--color-danger-dark);
-    border: 1px solid var(--color-danger);
+    background: linear-gradient(135deg, #ef4444, #dc2626);
   }
 }

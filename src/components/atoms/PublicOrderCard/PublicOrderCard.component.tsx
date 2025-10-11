@@ -6,7 +6,7 @@ import styles from './PublicOrderCard.module.scss';
 
 const statusConfig = {
   pending: { label: 'Order Received', color: 'info', icon: '📝' },
-  accepted: { label: 'Confirmed', color: 'success', icon: '✅' },
+  accepted: { label: 'Confirmed', color: 'info', icon: '✅' },
   preparing: { label: 'Preparing', color: 'warning', icon: '👨‍🍳' },
   ready: { label: 'Ready', color: 'success', icon: '🔔' },
   delivered: { label: 'Completed', color: 'success', icon: '✨' },

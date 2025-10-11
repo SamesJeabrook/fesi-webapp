@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Typography, Button } from '@/components/atoms';
+import { Typography, Button, Grid } from '@/components/atoms';
+import { AdminPageHeader } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
 import styles from './adminSubItems.module.scss';
@@ -181,102 +182,57 @@ export default function AdminMenuSubItemsPage() {
   return (
     <ProtectedRoute requireRole={['admin']}>
       <div className={styles.subItems}>
-        <div className={styles.subItems__header}>
-          <div className={styles.subItems__headerContent}>
-            <Link href={`/admin/merchants/${merchantId}`} className={styles.subItems__backLink}>
-              ← Back to {merchant?.business_name || 'Merchant'} Dashboard
-            </Link>
-            <div className={styles.subItems__adminBadge}>
-              <span className={styles.subItems__badge}>🔧 ADMIN MODE</span>
-              <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                Managing sub-items for {merchant?.business_name || 'merchant'}
-              </Typography>
-            </div>
-            <Typography variant="heading-3">
-              Menu Sub-Items
-            </Typography>
-            <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-              Manage variations and add-ons for menu items
-            </Typography>
-          </div>
-          <Button
-            variant="primary"
-            onClick={() => setIsCreating(true)}
-            className={styles.subItems__createButton}
-            disabled={items.length === 0}
-          >
-            + Add Sub-Item
-          </Button>
-        </div>
+        <AdminPageHeader
+          backLink={{
+            href: `/admin/merchants/${merchantId}`,
+            label: `Back to ${merchant?.business_name || 'Merchant'} Dashboard`
+          }}
+          adminContext={`Managing sub-items for ${merchant?.business_name || 'merchant'}`}
+          title="Menu Sub-Items"
+          description="Manage variations and add-ons for menu items"
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setIsCreating(true)}
+              className={styles.subItems__createButton}
+              isDisabled={items.length === 0}
+            >
+              + Add Sub-Item
+            </Button>
+          }
+        />
 
         {items.length === 0 && !isLoading && (
-          <div className={styles.subItems__noItems}>
-            <Typography variant="heading-5">No menu items available</Typography>
-            <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-              You need to create menu items before adding sub-items.
-            </Typography>
-            <Link href={`/admin/merchants/${merchantId}/menu/items`}>
-              <Button variant="primary">Create Menu Items</Button>
-            </Link>
-          </div>
+          <Grid.Container gap="lg">
+            <Grid.Item md={12} lg={8}>
+              <div className={styles.subItems__noItems}>
+                <Typography variant="heading-5">No menu items available</Typography>
+                <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                  You need to create menu items before adding sub-items.
+                </Typography>
+                <Link href={`/admin/merchants/${merchantId}/menu/items`}>
+                  <Button variant="primary">Create Menu Items</Button>
+                </Link>
+              </div>
+            </Grid.Item>
+          </Grid.Container>
         )}
 
         {items.length > 0 && (
           <>
-            <div className={styles.subItems__filters}>
-              <Typography variant="body-medium" style={{ fontWeight: '500' }}>
-                Filter by menu item:
-              </Typography>
-              <select
-                value={selectedItem}
-                onChange={(e) => setSelectedItem(e.target.value)}
-                className={styles.subItems__itemFilter}
-              >
-                <option value="all">All Items</option>
-                {items.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.name} {item.category_name && `(${item.category_name})`}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {isCreating && (
-              <div className={styles.subItems__createForm}>
-                <div className={styles.subItems__formRow}>
-                  <div className={styles.subItems__formGroup}>
-                    <label htmlFor="subItemName">Sub-Item Name</label>
-                    <input
-                      id="subItemName"
-                      type="text"
-                      value={newSubItem.name}
-                      onChange={(e) => setNewSubItem(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="e.g., Extra Cheese, Large Size"
-                      className={styles.subItems__input}
-                    />
-                  </div>
-                  <div className={styles.subItems__formGroup}>
-                    <label htmlFor="priceAdjustment">Price Adjustment ($)</label>
-                    <input
-                      id="priceAdjustment"
-                      type="number"
-                      step="0.01"
-                      value={newSubItem.price_adjustment}
-                      onChange={(e) => setNewSubItem(prev => ({ ...prev, price_adjustment: e.target.value }))}
-                      placeholder="0.00 (use negative for discounts)"
-                      className={styles.subItems__input}
-                    />
-                  </div>
-                </div>
-                <div className={styles.subItems__formGroup}>
-                  <label htmlFor="parentItem">Parent Menu Item</label>
+            {/* Filters Section */}
+            <Grid.Container gap="lg" className={styles.subItems__filtersSection}>
+              <Grid.Item lg={12} xl={8}>
+                <div className={styles.subItems__filters}>
+                  <Typography variant="body-medium" style={{ fontWeight: '500' }}>
+                    Filter by menu item:
+                  </Typography>
                   <select
-                    id="parentItem"
-                    value={newSubItem.item_id}
-                    onChange={(e) => setNewSubItem(prev => ({ ...prev, item_id: e.target.value }))}
-                    className={styles.subItems__select}
+                    value={selectedItem}
+                    onChange={(e) => setSelectedItem(e.target.value)}
+                    className={styles.subItems__itemFilter}
                   >
-                    <option value="">Select a menu item</option>
+                    <option value="all">All Items</option>
                     {items.map((item) => (
                       <option key={item.id} value={item.id}>
                         {item.name} {item.category_name && `(${item.category_name})`}
@@ -284,101 +240,163 @@ export default function AdminMenuSubItemsPage() {
                     ))}
                   </select>
                 </div>
-                <div className={styles.subItems__formGroup}>
-                  <label htmlFor="subItemDescription">Description (Optional)</label>
-                  <textarea
-                    id="subItemDescription"
-                    value={newSubItem.description}
-                    onChange={(e) => setNewSubItem(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Brief description of this variation or add-on"
-                    className={styles.subItems__textarea}
-                    rows={3}
-                  />
-                </div>
-                <div className={styles.subItems__formActions}>
-                  <Button variant="secondary" onClick={() => setIsCreating(false)}>
-                    Cancel
-                  </Button>
-                  <Button variant="primary" onClick={createSubItem}>
-                    Create Sub-Item
-                  </Button>
-                </div>
-              </div>
-            )}
+              </Grid.Item>
+            </Grid.Container>
 
-            <div className={styles.subItems__list}>
-              {isLoading ? (
-                <div className={styles.subItems__loading}>
-                  <Typography variant="body-medium">Loading sub-items...</Typography>
-                </div>
-              ) : filteredSubItems.length === 0 ? (
-                <div className={styles.subItems__empty}>
-                  <Typography variant="heading-5">
-                    {selectedItem === 'all' ? 'No sub-items yet' : 'No sub-items for this item'}
-                  </Typography>
-                  <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                    {selectedItem === 'all' 
-                      ? 'Create the first sub-item for this merchant'
-                      : 'Try selecting a different item or create a new sub-item'
-                    }
-                  </Typography>
-                </div>
-              ) : (
-                filteredSubItems.map((subItem) => (
-                  <div key={subItem.id} className={styles.subItems__item}>
-                    <div className={styles.subItems__itemContent}>
-                      <div className={styles.subItems__itemHeader}>
-                        <div className={styles.subItems__itemTitle}>
-                          <Typography variant="heading-5">
-                            {subItem.name}
-                          </Typography>
-                          <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                            For: {items.find(item => item.id === subItem.item_id)?.name || 'Unknown Item'}
-                          </Typography>
-                        </div>
-                        <div className={styles.subItems__itemMeta}>
-                          <Typography 
-                            variant="heading-5" 
-                            style={{ 
-                              color: subItem.price_adjustment >= 0 ? 'var(--color-success-dark)' : 'var(--color-warning-dark)' 
-                            }}
-                          >
-                            {formatPriceAdjustment(subItem.additional_price)}
-                          </Typography>
-                          <span className={`${styles.subItems__status} ${
-                            subItem.is_available ? styles['subItems__status--available'] : styles['subItems__status--unavailable']
-                          }`}>
-                            {subItem.is_available ? 'Available' : 'Unavailable'}
-                          </span>
-                        </div>
+            {/* Create Form Section */}
+            {isCreating && (
+              <Grid.Container gap="lg" className={styles.subItems__createSection}>
+                <Grid.Item lg={12} xl={10}>
+                  <div className={styles.subItems__createForm}>
+                    <Typography variant="heading-5" className={styles.subItems__formTitle}>
+                      Create New Sub-Item
+                    </Typography>
+                    
+                    <div className={styles.subItems__formRow}>
+                      <div className={styles.subItems__formGroup}>
+                        <label htmlFor="subItemName">Sub-Item Name</label>
+                        <input
+                          id="subItemName"
+                          type="text"
+                          value={newSubItem.name}
+                          onChange={(e) => setNewSubItem(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="e.g., Extra Cheese, Large Size"
+                          className={styles.subItems__input}
+                        />
                       </div>
-                      {subItem.description && (
-                        <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                          {subItem.description}
-                        </Typography>
-                      )}
-                      <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                        Order: {subItem.display_order}
-                      </Typography>
+                      <div className={styles.subItems__formGroup}>
+                        <label htmlFor="priceAdjustment">Price Adjustment ($)</label>
+                        <input
+                          id="priceAdjustment"
+                          type="number"
+                          step="0.01"
+                          value={newSubItem.price_adjustment}
+                          onChange={(e) => setNewSubItem(prev => ({ ...prev, price_adjustment: e.target.value }))}
+                          placeholder="0.00 (use negative for discounts)"
+                          className={styles.subItems__input}
+                        />
+                      </div>
                     </div>
-                    <div className={styles.subItems__itemActions}>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => toggleSubItemAvailability(subItem.id, subItem.is_available)}
+                    <div className={styles.subItems__formGroup}>
+                      <label htmlFor="parentItem">Parent Menu Item</label>
+                      <select
+                        id="parentItem"
+                        value={newSubItem.item_id}
+                        onChange={(e) => setNewSubItem(prev => ({ ...prev, item_id: e.target.value }))}
+                        className={styles.subItems__select}
                       >
-                        {subItem.is_available ? 'Make Unavailable' : 'Make Available'}
+                        <option value="">Select a menu item</option>
+                        {items.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.name} {item.category_name && `(${item.category_name})`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className={styles.subItems__formGroup}>
+                      <label htmlFor="subItemDescription">Description (Optional)</label>
+                      <textarea
+                        id="subItemDescription"
+                        value={newSubItem.description}
+                        onChange={(e) => setNewSubItem(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Brief description of this variation or add-on"
+                        className={styles.subItems__textarea}
+                        rows={3}
+                      />
+                    </div>
+                    <div className={styles.subItems__formActions}>
+                      <Button variant="secondary" onClick={() => setIsCreating(false)}>
+                        Cancel
                       </Button>
-                      <Link href={`/admin/merchants/${merchantId}/menu/sub-items/${subItem.id}/edit`}>
-                        <Button variant="primary" size="sm">
-                          Edit
-                        </Button>
-                      </Link>
+                      <Button variant="primary" onClick={createSubItem}>
+                        Create Sub-Item
+                      </Button>
                     </div>
                   </div>
+                </Grid.Item>
+              </Grid.Container>
+            )}
+
+            {/* Sub-Items List Section */}
+            <Grid.Container gap="lg" className={styles.subItems__listSection}>
+              {isLoading ? (
+                <Grid.Item>
+                  <div className={styles.subItems__loading}>
+                    <Typography variant="body-medium">Loading sub-items...</Typography>
+                  </div>
+                </Grid.Item>
+              ) : filteredSubItems.length === 0 ? (
+                <Grid.Item md={12} lg={8}>
+                  <div className={styles.subItems__empty}>
+                    <Typography variant="heading-5">
+                      {selectedItem === 'all' ? 'No sub-items yet' : 'No sub-items for this item'}
+                    </Typography>
+                    <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                      {selectedItem === 'all' 
+                        ? 'Create the first sub-item for this merchant'
+                        : 'Try selecting a different item or create a new sub-item'
+                      }
+                    </Typography>
+                  </div>
+                </Grid.Item>
+              ) : (
+                filteredSubItems.map((subItem) => (
+                  <Grid.Item sm={8} md={8} lg={6} xl={4} key={subItem.id}>
+                    <div className={styles.subItems__item}>
+                      <div className={styles.subItems__itemContent}>
+                        <div className={styles.subItems__itemHeader}>
+                          <div className={styles.subItems__itemTitle}>
+                            <Typography variant="heading-5">
+                              {subItem.name}
+                            </Typography>
+                            <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
+                              For: {items.find(item => item.id === subItem.item_id)?.name || 'Unknown Item'}
+                            </Typography>
+                          </div>
+                          <div className={styles.subItems__itemMeta}>
+                            <Typography 
+                              variant="heading-5" 
+                              style={{ 
+                                color: subItem.additional_price >= 0 ? 'var(--color-success-dark)' : 'var(--color-warning-dark)' 
+                              }}
+                            >
+                              {formatPriceAdjustment(subItem.additional_price)}
+                            </Typography>
+                            <span className={`${styles.subItems__status} ${
+                              subItem.is_available ? styles['subItems__status--available'] : styles['subItems__status--unavailable']
+                            }`}>
+                              {subItem.is_available ? 'Available' : 'Unavailable'}
+                            </span>
+                          </div>
+                        </div>
+                        {subItem.description && (
+                          <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                            {subItem.description}
+                          </Typography>
+                        )}
+                        <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
+                          Order: {subItem.display_order}
+                        </Typography>
+                      </div>
+                      <div className={styles.subItems__itemActions}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => toggleSubItemAvailability(subItem.id, subItem.is_available)}
+                        >
+                          {subItem.is_available ? 'Make Unavailable' : 'Make Available'}
+                        </Button>
+                        <Link href={`/admin/merchants/${merchantId}/menu/sub-items/${subItem.id}/edit`}>
+                          <Button variant="primary" size="sm">
+                            Edit
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </Grid.Item>
                 ))
               )}
-            </div>
+            </Grid.Container>
           </>
         )}
       </div>

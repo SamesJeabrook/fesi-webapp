@@ -7,7 +7,7 @@
     text-align: center;
     margin-bottom: 3rem;
     padding-bottom: 1.5rem;
-    border-bottom: 2px solid var(--color-border);
+    border-bottom: 2px solid var(--color-secondary-500);
 
     h3 {
       margin-bottom: 0.5rem;
@@ -35,10 +35,10 @@
   }
 
   &__column {
-    background: var(--color-background-secondary);
+    background: var(--color-secondary-100);
     border-radius: var(--border-radius-lg);
     padding: 1.5rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-secondary-500);
   }
 
   &__columnHeader {
@@ -47,7 +47,7 @@
     align-items: center;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-secondary-500);
 
     h5 {
       margin: 0;

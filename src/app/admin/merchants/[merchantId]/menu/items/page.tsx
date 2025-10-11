@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Typography, Button } from '@/components/atoms';
+import { Typography, Button, Grid } from '@/components/atoms';
+import { AdminPageHeader } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
 import styles from './adminItems.module.scss';
@@ -179,103 +180,57 @@ export default function AdminMenuItemsPage() {
   return (
     <ProtectedRoute requireRole={['admin']}>
       <div className={styles.items}>
-        <div className={styles.items__header}>
-          <div className={styles.items__headerContent}>
-            <Link href={`/admin/merchants/${merchantId}`} className={styles.items__backLink}>
-              ← Back to {merchant?.business_name || 'Merchant'} Dashboard
-            </Link>
-            <div className={styles.items__adminBadge}>
-              <span className={styles.items__badge}>🔧 ADMIN MODE</span>
-              <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                Managing menu items for {merchant?.business_name || 'merchant'}
-              </Typography>
-            </div>
-            <Typography variant="heading-3">
-              Menu Items
-            </Typography>
-            <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-              Manage menu items and their availability for this merchant
-            </Typography>
-          </div>
-          <Button
-            variant="primary"
-            onClick={() => setIsCreating(true)}
-            className={styles.items__createButton}
-            disabled={categories.length === 0}
-          >
-            + Add Item
-          </Button>
-        </div>
+        <AdminPageHeader
+          backLink={{
+            href: `/admin/merchants/${merchantId}`,
+            label: `Back to ${merchant?.business_name || 'Merchant'} Dashboard`
+          }}
+          adminContext={`Managing menu items for ${merchant?.business_name || 'merchant'}`}
+          title="Menu Items"
+          description="Manage menu items and their availability for this merchant"
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setIsCreating(true)}
+              className={styles.items__createButton}
+              isDisabled={categories.length === 0}
+            >
+              + Add Item
+            </Button>
+          }
+        />
 
         {categories.length === 0 && !isLoading && (
-          <div className={styles.items__noCategories}>
-            <Typography variant="heading-5">No categories available</Typography>
-            <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-              You need to create menu categories before adding items.
-            </Typography>
-            <Link href={`/admin/merchants/${merchantId}/menu/categories`}>
-              <Button variant="primary">Create Categories</Button>
-            </Link>
-          </div>
+          <Grid.Container gap="lg">
+            <Grid.Item md={12} lg={8}>
+              <div className={styles.items__noCategories}>
+                <Typography variant="heading-5">No categories available</Typography>
+                <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                  You need to create menu categories before adding items.
+                </Typography>
+                <Link href={`/admin/merchants/${merchantId}/menu/categories`}>
+                  <Button variant="primary">Create Categories</Button>
+                </Link>
+              </div>
+            </Grid.Item>
+          </Grid.Container>
         )}
 
         {categories.length > 0 && (
           <>
-            <div className={styles.items__filters}>
-              <Typography variant="body-medium" style={{ fontWeight: '500' }}>
-                Filter by category:
-              </Typography>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className={styles.items__categoryFilter}
-              >
-                <option value="all">All Categories</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {isCreating && (
-              <div className={styles.items__createForm}>
-                <div className={styles.items__formRow}>
-                  <div className={styles.items__formGroup}>
-                    <label htmlFor="itemName">Item Name</label>
-                    <input
-                      id="itemName"
-                      type="text"
-                      value={newItem.name}
-                      onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="e.g., Margherita Pizza"
-                      className={styles.items__input}
-                    />
-                  </div>
-                  <div className={styles.items__formGroup}>
-                    <label htmlFor="itemPrice">Price ($)</label>
-                    <input
-                      id="itemPrice"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={newItem.price}
-                      onChange={(e) => setNewItem(prev => ({ ...prev, price: e.target.value }))}
-                      placeholder="0.00"
-                      className={styles.items__input}
-                    />
-                  </div>
-                </div>
-                <div className={styles.items__formGroup}>
-                  <label htmlFor="itemCategory">Category</label>
+            {/* Filters Section */}
+            <Grid.Container gap="lg" className={styles.items__filtersSection}>
+              <Grid.Item lg={12} xl={8}>
+                <div className={styles.items__filters}>
+                  <Typography variant="body-medium" style={{ fontWeight: '500' }}>
+                    Filter by category:
+                  </Typography>
                   <select
-                    id="itemCategory"
-                    value={newItem.category_id}
-                    onChange={(e) => setNewItem(prev => ({ ...prev, category_id: e.target.value }))}
-                    className={styles.items__select}
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className={styles.items__categoryFilter}
                   >
-                    <option value="">Select a category</option>
+                    <option value="all">All Categories</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
@@ -283,96 +238,159 @@ export default function AdminMenuItemsPage() {
                     ))}
                   </select>
                 </div>
-                <div className={styles.items__formGroup}>
-                  <label htmlFor="itemDescription">Description (Optional)</label>
-                  <textarea
-                    id="itemDescription"
-                    value={newItem.description}
-                    onChange={(e) => setNewItem(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Brief description of the item"
-                    className={styles.items__textarea}
-                    rows={3}
-                  />
-                </div>
-                <div className={styles.items__formActions}>
-                  <Button variant="secondary" onClick={() => setIsCreating(false)}>
-                    Cancel
-                  </Button>
-                  <Button variant="primary" onClick={createItem}>
-                    Create Item
-                  </Button>
-                </div>
-              </div>
-            )}
+              </Grid.Item>
+            </Grid.Container>
 
-            <div className={styles.items__list}>
-              {isLoading ? (
-                <div className={styles.items__loading}>
-                  <Typography variant="body-medium">Loading items...</Typography>
-                </div>
-              ) : filteredItems.length === 0 ? (
-                <div className={styles.items__empty}>
-                  <Typography variant="heading-5">
-                    {selectedCategory === 'all' ? 'No items yet' : 'No items in this category'}
-                  </Typography>
-                  <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                    {selectedCategory === 'all' 
-                      ? 'Create the first menu item for this merchant'
-                      : 'Try selecting a different category or create a new item'
-                    }
-                  </Typography>
-                </div>
-              ) : (
-                filteredItems.map((item) => (
-                  <div key={item.id} className={styles.items__item}>
-                    <div className={styles.items__itemContent}>
-                      <div className={styles.items__itemHeader}>
-                        <div className={styles.items__itemTitle}>
-                          <Typography variant="heading-5">
-                            {item.name}
-                          </Typography>
-                          <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                            {categories.find(cat => cat.id === item.category_id)?.name || 'Unknown Category'}
-                          </Typography>
-                        </div>
-                        <div className={styles.items__itemMeta}>
-                          <Typography variant="heading-5" style={{ color: 'var(--color-primary)' }}>
-                            £{formatPrice(item.base_price)}
-                          </Typography>
-                          <span className={`${styles.items__status} ${
-                            item.is_available ? styles['items__status--available'] : styles['items__status--unavailable']
-                          }`}>
-                            {item.is_available ? 'Available' : 'Unavailable'}
-                          </span>
-                        </div>
+            {/* Create Form Section */}
+            {isCreating && (
+              <Grid.Container gap="lg" className={styles.items__createSection}>
+                <Grid.Item lg={12} xl={10}>
+                  <div className={styles.items__createForm}>
+                    <Typography variant="heading-5" className={styles.items__formTitle}>
+                      Create New Menu Item
+                    </Typography>
+                    
+                    <div className={styles.items__formRow}>
+                      <div className={styles.items__formGroup}>
+                        <label htmlFor="itemName">Item Name</label>
+                        <input
+                          id="itemName"
+                          type="text"
+                          value={newItem.name}
+                          onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="e.g., Margherita Pizza"
+                          className={styles.items__input}
+                        />
                       </div>
-                      {item.description && (
-                        <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                          {item.description}
-                        </Typography>
-                      )}
-                      <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                        Order: {item.display_order}
-                      </Typography>
+                      <div className={styles.items__formGroup}>
+                        <label htmlFor="itemPrice">Price ($)</label>
+                        <input
+                          id="itemPrice"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={newItem.price}
+                          onChange={(e) => setNewItem(prev => ({ ...prev, price: e.target.value }))}
+                          placeholder="0.00"
+                          className={styles.items__input}
+                        />
+                      </div>
                     </div>
-                    <div className={styles.items__itemActions}>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => toggleItemAvailability(item.id, item.is_available)}
+                    <div className={styles.items__formGroup}>
+                      <label htmlFor="itemCategory">Category</label>
+                      <select
+                        id="itemCategory"
+                        value={newItem.category_id}
+                        onChange={(e) => setNewItem(prev => ({ ...prev, category_id: e.target.value }))}
+                        className={styles.items__select}
                       >
-                        {item.is_available ? 'Make Unavailable' : 'Make Available'}
+                        <option value="">Select a category</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className={styles.items__formGroup}>
+                      <label htmlFor="itemDescription">Description (Optional)</label>
+                      <textarea
+                        id="itemDescription"
+                        value={newItem.description}
+                        onChange={(e) => setNewItem(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Brief description of the item"
+                        className={styles.items__textarea}
+                        rows={3}
+                      />
+                    </div>
+                    <div className={styles.items__formActions}>
+                      <Button variant="secondary" onClick={() => setIsCreating(false)}>
+                        Cancel
                       </Button>
-                      <Link href={`/admin/merchants/${merchantId}/menu/items/${item.id}/edit`}>
-                        <Button variant="primary" size="sm">
-                          Edit
-                        </Button>
-                      </Link>
+                      <Button variant="primary" onClick={createItem}>
+                        Create Item
+                      </Button>
                     </div>
                   </div>
+                </Grid.Item>
+              </Grid.Container>
+            )}
+
+            {/* Items List Section */}
+            <Grid.Container gap="lg" className={styles.items__listSection}>
+              {isLoading ? (
+                <Grid.Item>
+                  <div className={styles.items__loading}>
+                    <Typography variant="body-medium">Loading items...</Typography>
+                  </div>
+                </Grid.Item>
+              ) : filteredItems.length === 0 ? (
+                <Grid.Item md={12} lg={8}>
+                  <div className={styles.items__empty}>
+                    <Typography variant="heading-5">
+                      {selectedCategory === 'all' ? 'No items yet' : 'No items in this category'}
+                    </Typography>
+                    <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                      {selectedCategory === 'all' 
+                        ? 'Create the first menu item for this merchant'
+                        : 'Try selecting a different category or create a new item'
+                      }
+                    </Typography>
+                  </div>
+                </Grid.Item>
+              ) : (
+                filteredItems.map((item) => (
+                  <Grid.Item sm={8} md={8} lg={6} xl={4} key={item.id}>
+                    <div className={styles.items__item}>
+                      <div className={styles.items__itemContent}>
+                        <div className={styles.items__itemHeader}>
+                          <div className={styles.items__itemTitle}>
+                            <Typography variant="heading-5">
+                              {item.name}
+                            </Typography>
+                            <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
+                              {categories.find(cat => cat.id === item.category_id)?.name || 'Unknown Category'}
+                            </Typography>
+                          </div>
+                          <div className={styles.items__itemMeta}>
+                            <Typography variant="heading-5" style={{ color: 'var(--color-primary)' }}>
+                              £{formatPrice(item.base_price)}
+                            </Typography>
+                            <span className={`${styles.items__status} ${
+                              item.is_available ? styles['items__status--available'] : styles['items__status--unavailable']
+                            }`}>
+                              {item.is_available ? 'Available' : 'Unavailable'}
+                            </span>
+                          </div>
+                        </div>
+                        {item.description && (
+                          <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                            {item.description}
+                          </Typography>
+                        )}
+                        <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
+                          Order: {item.display_order}
+                        </Typography>
+                      </div>
+                      <div className={styles.items__itemActions}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => toggleItemAvailability(item.id, item.is_available)}
+                        >
+                          {item.is_available ? 'Make Unavailable' : 'Make Available'}
+                        </Button>
+                        <Link href={`/admin/merchants/${merchantId}/menu/items/${item.id}/edit`}>
+                          <Button variant="primary" size="sm">
+                            Edit
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </Grid.Item>
                 ))
               )}
-            </div>
+            </Grid.Container>
           </>
         )}
       </div>

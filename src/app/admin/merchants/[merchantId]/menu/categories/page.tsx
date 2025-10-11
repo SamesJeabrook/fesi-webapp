@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Typography, Button } from '@/components/atoms';
+import { Typography, Button, Grid } from '@/components/atoms';
+import { AdminPageHeader } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
 import styles from './adminCategories.module.scss';
@@ -44,15 +45,15 @@ export default function AdminMenuCategoriesPage() {
         },
       });
 
-      // Fetch merchant details and categories in parallel
-      const [merchantResponse, categoriesResponse] = await Promise.all([
+      // Fetch merchant details and menu data (which includes categories) in parallel
+      const [merchantResponse, menuResponse] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/categories`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -65,9 +66,21 @@ export default function AdminMenuCategoriesPage() {
         setMerchant(merchantData.data);
       }
 
-      if (categoriesResponse.ok) {
-        const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData.categories || []);
+      if (menuResponse.ok) {
+        const menuData = await menuResponse.json();
+        // Extract categories from menu data - the API returns menu organized by categories
+        if (menuData.success && menuData.data && menuData.data.menu) {
+          const categoryList = menuData.data.menu.map((category: any, index: number) => ({
+            id: category.name, // Use category name as ID since that's how it's structured
+            name: category.name,
+            description: '', // Categories from menu don't have descriptions
+            display_order: category.display_order || index + 1,
+            is_active: true, // Categories with items are considered active
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }));
+          setCategories(categoryList);
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -86,7 +99,7 @@ export default function AdminMenuCategoriesPage() {
         },
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/categories`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -117,7 +130,7 @@ export default function AdminMenuCategoriesPage() {
         },
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/menu/categories/${categoryId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories/${categoryId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -143,121 +156,132 @@ export default function AdminMenuCategoriesPage() {
   return (
     <ProtectedRoute requireRole={['admin']}>
       <div className={styles.categories}>
-        <div className={styles.categories__header}>
-          <div className={styles.categories__headerContent}>
-            <Link href={`/admin/merchants/${merchantId}`} className={styles.categories__backLink}>
-              ← Back to {merchant?.business_name || 'Merchant'} Dashboard
-            </Link>
-            <div className={styles.categories__adminBadge}>
-              <span className={styles.categories__badge}>🔧 ADMIN MODE</span>
-              <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                Managing menu categories for {merchant?.business_name || 'merchant'}
-              </Typography>
-            </div>
-            <Typography variant="heading-3">
-              Menu Categories
-            </Typography>
-            <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-              Organize menu items into categories for this merchant
-            </Typography>
-          </div>
-          <Button
-            variant="primary"
-            onClick={() => setIsCreating(true)}
-            className={styles.categories__createButton}
-          >
-            + Add Category
-          </Button>
-        </div>
+        {/* Header Section */}
+        <AdminPageHeader
+          backLink={{
+            href: `/admin/merchants/${merchantId}`,
+            label: `Back to ${merchant?.business_name || 'Merchant'} Dashboard`
+          }}
+          adminContext={`Managing menu categories for ${merchant?.name || 'merchant'}`}
+          title="Menu Categories"
+          description="Organize menu items into categories for this merchant"
+          actions={
+            <Button
+              variant="primary"
+              onClick={() => setIsCreating(true)}
+              className={styles.categories__createButton}
+            >
+              + Add Category
+            </Button>
+          }
+        />
 
+        {/* Create Form Section */}
         {isCreating && (
-          <div className={styles.categories__createForm}>
-            <div className={styles.categories__formGroup}>
-              <label htmlFor="categoryName">Category Name</label>
-              <input
-                id="categoryName"
-                type="text"
-                value={newCategory.name}
-                onChange={(e) => setNewCategory(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g., Appetizers, Main Courses, Desserts"
-                className={styles.categories__input}
-              />
-            </div>
-            <div className={styles.categories__formGroup}>
-              <label htmlFor="categoryDescription">Description (Optional)</label>
-              <textarea
-                id="categoryDescription"
-                value={newCategory.description}
-                onChange={(e) => setNewCategory(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Brief description of this category"
-                className={styles.categories__textarea}
-                rows={3}
-              />
-            </div>
-            <div className={styles.categories__formActions}>
-              <Button variant="secondary" onClick={() => setIsCreating(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={createCategory}>
-                Create Category
-              </Button>
-            </div>
-          </div>
-        )}
-
-        <div className={styles.categories__list}>
-          {isLoading ? (
-            <div className={styles.categories__loading}>
-              <Typography variant="body-medium">Loading categories...</Typography>
-            </div>
-          ) : categories.length === 0 ? (
-            <div className={styles.categories__empty}>
-              <Typography variant="heading-5">No categories yet</Typography>
-              <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                Create the first menu category for this merchant
-              </Typography>
-            </div>
-          ) : (
-            categories.map((category) => (
-              <div key={category.id} className={styles.categories__item}>
-                <div className={styles.categories__itemContent}>
-                  <div className={styles.categories__itemHeader}>
-                    <Typography variant="heading-5">
-                      {category.name}
-                    </Typography>
-                    <span className={`${styles.categories__status} ${
-                      category.is_active ? styles['categories__status--active'] : styles['categories__status--inactive']
-                    }`}>
-                      {category.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  {category.description && (
-                    <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                      {category.description}
-                    </Typography>
-                  )}
-                  <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                    Order: {category.display_order}
-                  </Typography>
+          <Grid.Container gap="lg" className={styles.categories__createSection}>
+            <Grid.Item lg={12} xl={8} className={styles.categories__createFormWrapper}>
+              <div className={styles.categories__createForm}>
+                <Typography variant="heading-5" className={styles.categories__formTitle}>
+                  Create New Category
+                </Typography>
+                
+                <div className={styles.categories__formGroup}>
+                  <label htmlFor="categoryName">Category Name</label>
+                  <input
+                    id="categoryName"
+                    type="text"
+                    value={newCategory.name}
+                    onChange={(e) => setNewCategory(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="e.g., Appetizers, Main Courses, Desserts"
+                    className={styles.categories__input}
+                  />
                 </div>
-                <div className={styles.categories__itemActions}>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => toggleCategoryStatus(category.id, category.is_active)}
-                  >
-                    {category.is_active ? 'Deactivate' : 'Activate'}
+                
+                <div className={styles.categories__formGroup}>
+                  <label htmlFor="categoryDescription">Description (Optional)</label>
+                  <textarea
+                    id="categoryDescription"
+                    value={newCategory.description}
+                    onChange={(e) => setNewCategory(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Brief description of this category"
+                    className={styles.categories__textarea}
+                    rows={3}
+                  />
+                </div>
+                
+                <div className={styles.categories__formActions}>
+                  <Button variant="secondary" onClick={() => setIsCreating(false)}>
+                    Cancel
                   </Button>
-                  <Link href={`/admin/merchants/${merchantId}/menu/categories/${category.id}/edit`}>
-                    <Button variant="primary" size="sm">
-                      Edit
-                    </Button>
-                  </Link>
+                  <Button variant="primary" onClick={createCategory}>
+                    Create Category
+                  </Button>
                 </div>
               </div>
+            </Grid.Item>
+          </Grid.Container>
+        )}
+
+        {/* Categories List Section */}
+        <Grid.Container gap="lg" className={styles.categories__listSection}>
+          {isLoading ? (
+            <Grid.Item className={styles.categories__loadingWrapper}>
+              <div className={styles.categories__loading}>
+                <Typography variant="body-medium">Loading categories...</Typography>
+              </div>
+            </Grid.Item>
+          ) : categories.length === 0 ? (
+            <Grid.Item md={12} lg={8} className={styles.categories__emptyWrapper}>
+              <div className={styles.categories__empty}>
+                <Typography variant="heading-5">No categories yet</Typography>
+                <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                  Create the first menu category for this merchant
+                </Typography>
+              </div>
+            </Grid.Item>
+          ) : (
+            categories.map((category) => (
+              <Grid.Item sm={8} md={8} lg={4} xl={4} key={category.id}>
+                <div className={styles.categories__item}>
+                  <div className={styles.categories__itemContent}>
+                    <div className={styles.categories__itemHeader}>
+                      <Typography variant="heading-5">
+                        {category.name}
+                      </Typography>
+                      <span className={`${styles.categories__status} ${
+                        category.is_active ? styles['categories__status--active'] : styles['categories__status--inactive']
+                      }`}>
+                        {category.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    {category.description && (
+                      <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                        {category.description}
+                      </Typography>
+                    )}
+                    <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
+                      Order: {category.display_order}
+                    </Typography>
+                  </div>
+                  <div className={styles.categories__itemActions}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => toggleCategoryStatus(category.id, category.is_active)}
+                    >
+                      {category.is_active ? 'Deactivate' : 'Activate'}
+                    </Button>
+                    <Link href={`/admin/merchants/${merchantId}/menu/categories/${category.id}/edit`}>
+                      <Button variant="primary" size="sm">
+                        Edit
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </Grid.Item>
             ))
           )}
-        </div>
+        </Grid.Container>
       </div>
     </ProtectedRoute>
   );

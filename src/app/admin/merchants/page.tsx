@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import { Typography, Button } from '@/components/atoms';
+import { Typography, Button, Grid } from '@/components/atoms';
+import { AdminPageHeader } from '@/components/molecules';
 import Link from 'next/link';
 import styles from './adminMerchants.module.scss';
 
@@ -79,80 +80,86 @@ export default function AdminMerchantsPage() {
   return (
     <ProtectedRoute requireRole={['admin']}>
       <div className={styles.merchants}>
-        <div className={styles.merchants__header}>
-          <div className={styles.merchants__headerContent}>
-            <Typography variant="heading-2">
-              Merchant Management
-            </Typography>
-            <Typography variant="body-medium" style={{ color: 'var(--color-neutral-500)' }}>
-              Select a merchant to manage their account and operations
-            </Typography>
-          </div>
-        </div>
+        <AdminPageHeader
+          adminContext="System administration area"
+          title="Merchant Management"
+          description="Select a merchant to manage their account and operations"
+        />
 
-        <div className={styles.merchants__search}>
-          <input
-            type="text"
-            placeholder="Search merchants by name, email, or username..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={styles.merchants__searchInput}
-          />
-        </div>
+        {/* Search Section */}
+        <Grid.Container gap="lg" className={styles.merchants__searchSection}>
+          <Grid.Item lg={12} xl={10}>
+            <div className={styles.merchants__search}>
+              <input
+                type="text"
+                placeholder="Search merchants by name, email, or username..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={styles.merchants__searchInput}
+              />
+            </div>
+          </Grid.Item>
+        </Grid.Container>
 
-        <div className={styles.merchants__list}>
+        {/* Merchants List Section */}
+        <Grid.Container gap="lg" className={styles.merchants__listSection}>
           {isLoading ? (
-            <div className={styles.merchants__loading}>
-              <Typography variant="body-medium">Loading merchants...</Typography>
-            </div>
+            <Grid.Item>
+              <div className={styles.merchants__loading}>
+                <Typography variant="body-medium">Loading merchants...</Typography>
+              </div>
+            </Grid.Item>
           ) : filteredMerchants.length === 0 ? (
-            <div className={styles.merchants__empty}>
-              <Typography variant="heading-5">
-                {searchTerm ? 'No merchants found' : 'No merchants yet'}
-              </Typography>
-              <Typography variant="body-medium" style={{ color: 'var(--color-neutral-500)' }}>
-                {searchTerm ? 'Try adjusting your search terms' : 'Merchants will appear here once they register'}
-              </Typography>
-            </div>
+            <Grid.Item md={12} lg={8}>
+              <div className={styles.merchants__empty}>
+                <Typography variant="heading-5">
+                  {searchTerm ? 'No merchants found' : 'No merchants yet'}
+                </Typography>
+                <Typography variant="body-medium" style={{ color: 'var(--color-neutral-500)' }}>
+                  {searchTerm ? 'Try adjusting your search terms' : 'Merchants will appear here once they register'}
+                </Typography>
+              </div>
+            </Grid.Item>
           ) : (
             filteredMerchants.map((merchant) => (
-              <Link
-                key={merchant.id}
-                href={`/admin/merchants/${merchant.id}`}
-                className={styles.merchants__item}
-              >
-                <div className={styles.merchants__itemContent}>
-                  <div className={styles.merchants__itemHeader}>
-                    <Typography variant="heading-5">
-                      {merchant.business_name || merchant.name}
-                    </Typography>
-                    <span className={`${styles.merchants__status} ${
-                      merchant.status === 'active' ? styles['merchants__status--active'] : styles['merchants__status--inactive']
-                    }`}>
-                      {merchant.status}
-                    </span>
-                  </div>
-                  <div className={styles.merchants__itemDetails}>
-                    <Typography variant="body-medium" style={{ color: 'var(--color-neutral-500)' }}>
-                      {merchant.email}
-                    </Typography>
+              <Grid.Item sm={8} md={8} lg={6} xl={4} key={merchant.id}>
+                <Link
+                  href={`/admin/merchants/${merchant.id}`}
+                  className={styles.merchants__item}
+                >
+                  <div className={styles.merchants__itemContent}>
+                    <div className={styles.merchants__itemHeader}>
+                      <Typography variant="heading-5">
+                        {merchant.business_name || merchant.name}
+                      </Typography>
+                      <span className={`${styles.merchants__status} ${
+                        merchant.status === 'active' ? styles['merchants__status--active'] : styles['merchants__status--inactive']
+                      }`}>
+                        {merchant.status}
+                      </span>
+                    </div>
+                    <div className={styles.merchants__itemDetails}>
+                      <Typography variant="body-medium" style={{ color: 'var(--color-neutral-500)' }}>
+                        {merchant.email}
+                      </Typography>
+                      <Typography variant="body-small" style={{ color: 'var(--color-neutral-500)' }}>
+                        @{merchant.username} • {merchant.phone}
+                      </Typography>
+                    </div>
                     <Typography variant="body-small" style={{ color: 'var(--color-neutral-500)' }}>
-                      @{merchant.username} • {merchant.phone}
+                      Joined: {new Date(merchant.created_at).toLocaleDateString()}
                     </Typography>
                   </div>
-                  <Typography variant="body-small" style={{ color: 'var(--color-neutral-500)' }}>
-                    Joined: {new Date(merchant.created_at).toLocaleDateString()}
-                  </Typography>
-                </div>
-                <div className={styles.merchants__itemActions}>
-                  <Button variant="primary" size="sm">
-                    Manage →
-                  </Button>
-                </div>
-              </Link>
+                  <div className={styles.merchants__itemActions}>
+                    <Button variant="primary" size="sm">
+                      Manage →
+                    </Button>
+                  </div>
+                </Link>
+              </Grid.Item>
             ))
           )}
-        </div>
+        </Grid.Container>
       </div>
     </ProtectedRoute>
   );

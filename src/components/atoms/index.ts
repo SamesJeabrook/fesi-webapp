@@ -11,3 +11,4 @@ export * from './StatusColumn';
 export * from './AdminBadge';
 export * from './MerchantCard';
 export * from './PublicOrderCard';
+export * from './BackLink';

@@ -1,0 +1,19 @@
+.backLink {
+  display: inline-block;
+  margin-bottom: var(--spacing-6);
+  color: var(--color-primary-500);
+  text-decoration: none;
+  font-weight: var(--font-weight-medium);
+  transition: all var(--duration-fast) var(--easing-ease);
+  
+  &:hover {
+    text-decoration: underline;
+    color: var(--color-primary-600);
+  }
+
+  &:focus {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+    border-radius: var(--border-radius-sm);
+  }
+}
