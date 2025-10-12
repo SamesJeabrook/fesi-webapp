@@ -17,29 +17,25 @@ interface SubItemGroup {
   is_required: boolean;
   max_selections?: number;
   display_order: number;
-  menu_item_id: string;
-  menu_item_name?: string;
+  merchant_id: string;
+  merchant_name?: string;
+  item_count: number;
+  menu_item_count: number;
   sub_items: SubItem[];
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 interface SubItem {
   id: string;
   name: string;
   description?: string;
-  price_adjustment_pence: number;
+  additional_price: number;
   display_order: number;
-  is_available: boolean;
+  is_active: boolean;
   group_id: string;
   created_at: string;
-  updated_at: string;
-}
-
-interface MenuItem {
-  id: string;
-  name: string;
-  category_name?: string;
+  updated_at?: string;
 }
 
 interface Merchant {
@@ -51,13 +47,12 @@ interface Merchant {
 export default function AdminMenuSubItemsPage() {
   const params = useParams();
   const { getAccessTokenSilently } = useAuth0();
-  const [items, setItems] = useState<MenuItem[]>([]);
   const [subItemGroups, setSubItemGroups] = useState<SubItemGroup[]>([]);
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [isCreatingItem, setIsCreatingItem] = useState(false);
-  const [selectedItem, setSelectedItem] = useState('all');
+  const [selectedFilter, setSelectedFilter] = useState('all');
 
   const merchantId = params?.merchantId as string;
 
@@ -70,15 +65,15 @@ export default function AdminMenuSubItemsPage() {
         },
       });
 
-      // Fetch merchant and menu data
-      const [merchantResponse, menuResponse] = await Promise.all([
+      // Fetch merchant and sub-groups data
+      const [merchantResponse, subGroupsResponse] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sub-groups?merchant_id=${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -91,86 +86,35 @@ export default function AdminMenuSubItemsPage() {
         setMerchant(merchantData.data);
       }
 
-      if (menuResponse.ok) {
-        const menuData = await menuResponse.json();
-        console.log('Menu data received:', menuData.data?.menu?.length || 0, 'categories');
+      if (subGroupsResponse.ok) {
+        const subGroupsData = await subGroupsResponse.json();
+        console.log('Sub-groups data received:', subGroupsData);
         
-        if (menuData.success && menuData.data && menuData.data.menu) {
-          const allItems: MenuItem[] = [];
-          const allSubItemGroups: SubItemGroup[] = [];
-          
-          // Extract items from categories
-          for (const category of menuData.data.menu) {
-            if (category.items && Array.isArray(category.items)) {
-              for (const item of category.items) {
-                allItems.push({
-                  id: item.id,
-                  name: item.title || item.name,
-                  category_name: category.name
+        if (subGroupsData.success && subGroupsData.data) {
+          // Fetch detailed sub-groups with items
+          const detailedSubGroups = await Promise.all(
+            subGroupsData.data.map(async (group: any) => {
+              try {
+                const detailResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sub-groups/${group.id}`, {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
                 });
-
-                // Fetch sub-groups for this item
-                try {
-                  const subGroupsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}/sub-groups`, {
-                    headers: {
-                      'Authorization': `Bearer ${token}`,
-                      'Content-Type': 'application/json',
-                    },
-                  });
-
-                  if (subGroupsResponse.ok) {
-                    const subGroupsData = await subGroupsResponse.json();
-                    console.log(`Sub-groups for item ${item.id} (${item.title || item.name}):`, subGroupsData);
-                    
-                    // The API returns the menu item with option_groups property
-                    let subGroupsArray = [];
-                    if (subGroupsData && subGroupsData.option_groups) {
-                      subGroupsArray = subGroupsData.option_groups;
-                    } else if (Array.isArray(subGroupsData)) {
-                      // Fallback if the API returns an array directly
-                      subGroupsArray = subGroupsData;
-                    }
-                    
-                    console.log(`Processed sub-groups array for ${item.id}:`, subGroupsArray);
-                    console.log(`Is array?`, Array.isArray(subGroupsArray), `Length:`, subGroupsArray?.length);
-                    
-                    if (Array.isArray(subGroupsArray) && subGroupsArray.length > 0) {
-                      subGroupsArray.forEach((subGroup: any) => {
-                        console.log(`Processing sub-group:`, subGroup);
-                        const processedGroup = {
-                          id: subGroup.id,
-                          name: subGroup.name,
-                          description: subGroup.description,
-                          selection_type: subGroup.selection_type || 'single',
-                          is_required: subGroup.is_required || false,
-                          max_selections: subGroup.max_selections,
-                          display_order: subGroup.display_order || 0,
-                          menu_item_id: item.id,
-                          menu_item_name: item.title || item.name,
-                          sub_items: subGroup.sub_items || [],
-                          created_at: subGroup.created_at || new Date().toISOString(),
-                          updated_at: subGroup.updated_at || new Date().toISOString()
-                        };
-                        console.log(`Adding processed group:`, processedGroup);
-                        allSubItemGroups.push(processedGroup);
-                      });
-                    } else {
-                      console.log(`No sub-groups found for item ${item.id} or not an array`);
-                    }
-                  }
-                } catch (subError) {
-                  console.error(`Error fetching sub-groups for item ${item.id}:`, subError);
+                
+                if (detailResponse.ok) {
+                  const detailData = await detailResponse.json();
+                  return detailData.success ? detailData.data : group;
                 }
+              } catch (error) {
+                console.error(`Error fetching details for group ${group.id}:`, error);
               }
-            }
-          }
+              return group;
+            })
+          );
           
-          setItems(allItems);
-          setSubItemGroups(allSubItemGroups);
-          console.log('Final items:', allItems.length);
-          console.log('Final sub-item groups:', allSubItemGroups.length, allSubItemGroups);
-          console.log('All items found:', allItems);
-          console.log('All sub-item groups found:', allSubItemGroups);
+          setSubItemGroups(detailedSubGroups);
+          console.log('Final sub-item groups:', detailedSubGroups);
         }
       }
     } catch (error) {
@@ -186,9 +130,15 @@ export default function AdminMenuSubItemsPage() {
     }
   }, [merchantId]);
 
-  const filteredGroups = selectedItem === 'all' 
+  const filteredGroups = selectedFilter === 'all' 
     ? subItemGroups 
-    : subItemGroups.filter(group => group.menu_item_id === selectedItem);
+    : subItemGroups.filter(group => {
+        if (selectedFilter === 'required') return group.is_required;
+        if (selectedFilter === 'optional') return !group.is_required;
+        if (selectedFilter === 'single') return group.selection_type === 'single';
+        if (selectedFilter === 'multiple') return group.selection_type === 'multiple';
+        return true;
+      });
 
   return (
     <ProtectedRoute requireRole={['admin']}>
@@ -203,65 +153,48 @@ export default function AdminMenuSubItemsPage() {
           description="Manage option groups (like sizes, add-ons) and their individual items"
         />
 
-        {items.length === 0 && !isLoading && (
-          <Grid.Container gap="lg">
-            <Grid.Item md={12} lg={8}>
-              <div className={styles.subItems__noItems}>
-                <Typography variant="heading-5">No menu items available</Typography>
-                <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                  You need to create menu items before adding sub-items.
+        {/* Option Groups List */}
+        <Grid.Container gap="lg">
+          {/* Filters Section */}
+          <Grid.Container gap="lg" className={styles.subItems__filtersSection}>
+            <Grid.Item lg={12} xl={8}>
+              <div className={styles.subItems__filters}>
+                <Typography variant="body-medium" style={{ fontWeight: '500' }}>
+                  Filter option groups:
                 </Typography>
-                <Link href={`/admin/merchants/${merchantId}/menu/items`}>
-                  <Button variant="primary">Create Menu Items</Button>
-                </Link>
+                <select
+                  value={selectedFilter}
+                  onChange={(e) => setSelectedFilter(e.target.value)}
+                  className={styles.subItems__itemFilter}
+                >
+                  <option value="all">All Groups</option>
+                  <option value="required">Required Only</option>
+                  <option value="optional">Optional Only</option>
+                  <option value="single">Single Selection</option>
+                  <option value="multiple">Multiple Selection</option>
+                </select>
               </div>
             </Grid.Item>
           </Grid.Container>
-        )}
 
-        {items.length > 0 && (
-          <>
-            {/* Filters Section */}
-            <Grid.Container gap="lg" className={styles.subItems__filtersSection}>
-              <Grid.Item lg={12} xl={8}>
-                <div className={styles.subItems__filters}>
-                  <Typography variant="body-medium" style={{ fontWeight: '500' }}>
-                    Filter by menu item:
-                  </Typography>
-                  <select
-                    value={selectedItem}
-                    onChange={(e) => setSelectedItem(e.target.value)}
-                    className={styles.subItems__itemFilter}
-                  >
-                    <option value="all">All Items</option>
-                    {items.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} {item.category_name && `(${item.category_name})`}
-                      </option>
-                    ))}
-                  </select>
+          {/* Main Content */}
+          <Grid.Container gap="lg">
+            {isLoading ? (
+              <Grid.Item className={styles.subItems__loadingWrapper}>
+                <div className={styles.subItems__loading}>
+                  <Typography variant="body-medium">Loading option groups...</Typography>
                 </div>
               </Grid.Item>
-            </Grid.Container>
-
-            {/* Option Groups List */}
-            <Grid.Container gap="lg">
-              {isLoading ? (
-                <Grid.Item className={styles.subItems__loadingWrapper}>
-                  <div className={styles.subItems__loading}>
-                    <Typography variant="body-medium">Loading option groups...</Typography>
-                  </div>
-                </Grid.Item>
-              ) : filteredGroups.length === 0 ? (
+            ) : filteredGroups.length === 0 ? (
                 <Grid.Item md={12} lg={8}>
                   <div className={styles.subItems__empty}>
                     <Typography variant="heading-5">
-                      {selectedItem === 'all' ? 'No option groups yet' : 'No option groups for this item'}
+                      {selectedFilter === 'all' ? 'No option groups yet' : 'No option groups match the filter'}
                     </Typography>
                     <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                      {selectedItem === 'all' 
+                      {selectedFilter === 'all' 
                         ? 'Create the first option group for this merchant'
-                        : 'Try selecting a different item or create a new option group'
+                        : 'Try selecting a different filter or create a new option group'
                       }
                     </Typography>
                   </div>
@@ -274,7 +207,7 @@ export default function AdminMenuSubItemsPage() {
                         <div>
                           <Typography variant="heading-4">{group.name}</Typography>
                           <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                            For: {group.menu_item_name} • {group.selection_type} • {group.is_required ? 'Required' : 'Optional'}
+                            {group.selection_type} • {group.is_required ? 'Required' : 'Optional'} • Used by {group.menu_item_count} menu items • {group.item_count} options
                           </Typography>
                         </div>
                       </div>
@@ -292,12 +225,12 @@ export default function AdminMenuSubItemsPage() {
                                       <Typography 
                                         variant="body-medium" 
                                         style={{ 
-                                          color: subItem.price_adjustment_pence >= 0 ? 'var(--color-success-dark)' : 'var(--color-warning-dark)' 
+                                          color: subItem.additional_price >= 0 ? 'var(--color-success-dark)' : 'var(--color-warning-dark)' 
                                         }}
                                       >
-                                        {subItem.price_adjustment_pence >= 0 
-                                          ? `+$${(subItem.price_adjustment_pence / 100).toFixed(2)}` 
-                                          : `-$${Math.abs(subItem.price_adjustment_pence / 100).toFixed(2)}`
+                                        {subItem.additional_price >= 0 
+                                          ? `+$${(subItem.additional_price / 100).toFixed(2)}` 
+                                          : `-$${Math.abs(subItem.additional_price / 100).toFixed(2)}`
                                         }
                                       </Typography>
                                     </div>
@@ -324,9 +257,8 @@ export default function AdminMenuSubItemsPage() {
                 ))
               )}
             </Grid.Container>
-          </>
-        )}
-      </div>
-    </ProtectedRoute>
-  );
-}
+          </Grid.Container>
+        </div>
+      </ProtectedRoute>
+    );
+  }
