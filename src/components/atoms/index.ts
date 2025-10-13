@@ -12,3 +12,7 @@ export * from './AdminBadge';
 export * from './MerchantCard';
 export * from './PublicOrderCard';
 export * from './BackLink';
+export * from './Badge';
+export * from './FormInput';
+export * from './FormSelect';
+export * from './FormCheckbox';

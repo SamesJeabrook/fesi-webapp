@@ -11,12 +11,12 @@ import styles from './adminItems.module.scss';
 
 interface MenuItem {
   id: string;
-  name: string;
+  title: string; // API returns 'title', not 'name'
   description?: string;
   base_price: number;
   category_id: string;
   category_name?: string;
-  is_available: boolean;
+  is_active: boolean; // API returns 'is_active', not 'is_available'
   display_order: number;
   created_at: string;
   updated_at: string;
@@ -61,14 +61,20 @@ export default function AdminMenuItemsPage() {
       });
 
       // Fetch merchant, categories, and items in parallel
-      const [merchantResponse, menuResponse] = await Promise.all([
+      const [merchantResponse, menuResponse, categoriesResponse] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}/admin`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories?merchant_id=${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -81,16 +87,17 @@ export default function AdminMenuItemsPage() {
         setMerchant(merchantData.data);
       }
 
+      if (categoriesResponse.ok) {
+        const categoriesData = await categoriesResponse.json();
+        if (categoriesData.success && categoriesData.data) {
+          setCategories(categoriesData.data);
+        }
+      }
+
       if (menuResponse.ok) {
         const menuData = await menuResponse.json();
-        // Extract categories and items from menu data
+        // Extract items from menu data
         if (menuData.success && menuData.data && menuData.data.menu) {
-          // Extract categories
-          const categoryList = menuData.data.menu.map((category: any, index: number) => ({
-            id: category.name,
-            name: category.name
-          }));
-          setCategories(categoryList);
 
           // Extract all items from all categories
           const allItems: MenuItem[] = [];
@@ -99,12 +106,12 @@ export default function AdminMenuItemsPage() {
               category.items.forEach((item: any) => {
                 allItems.push({
                   id: item.id,
-                  name: item.title || item.name,
+                  title: item.title,
                   description: item.description,
                   base_price: item.base_price,
-                  category_id: category.name,
-                  category_name: category.name,
-                  is_available: item.is_active,
+                  category_id: item.category_id, // Use the actual UUID category_id
+                  category_name: category.name,  // Keep category name for display
+                  is_active: item.is_active,
                   display_order: item.display_order || 0,
                   created_at: item.created_at || new Date().toISOString(),
                   updated_at: item.updated_at || new Date().toISOString()
@@ -123,7 +130,19 @@ export default function AdminMenuItemsPage() {
   };
 
   const createItem = async () => {
-    if (!newItem.name.trim() || !newItem.category_id || !newItem.price) return;
+    // Validate required fields
+    if (!newItem.name.trim()) {
+      alert('Item name is required');
+      return;
+    }
+    if (!newItem.price || isNaN(parseFloat(newItem.price)) || parseFloat(newItem.price) <= 0) {
+      alert('Valid price is required');
+      return;
+    }
+    if (!merchantId) {
+      alert('Merchant ID is missing');
+      return;
+    }
 
     try {
       const token = await getAccessTokenSilently({
@@ -132,33 +151,44 @@ export default function AdminMenuItemsPage() {
         },
       });
 
+      const requestData = {
+        title: newItem.name.trim(),
+        description: newItem.description?.trim() || '',
+        base_price: Math.round(parseFloat(newItem.price) * 100), // Convert pounds to pence
+        category_id: newItem.category_id || null,
+        merchant_id: merchantId,
+        display_order: items.length + 1,
+      };
+
+      console.log('Creating menu item with data:', requestData);
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: newItem.name,
-          description: newItem.description,
-          price_pence: Math.round(parseFloat(newItem.price) * 100),
-          category_id: newItem.category_id,
-          merchant_id: merchantId,
-          display_order: items.length + 1,
-        }),
+        body: JSON.stringify(requestData),
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('Menu item created successfully:', result);
         setNewItem({ name: '', description: '', price: '', category_id: '' });
         setIsCreating(false);
         fetchData();
+      } else {
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        alert(`Error creating item: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error creating item:', error);
+      console.error('Network/Request Error:', error);
+      alert('Error creating item. Please check the console for details.');
     }
   };
 
-  const toggleItemAvailability = async (itemId: string, isAvailable: boolean) => {
+  const toggleItemAvailability = async (itemId: string, isActive: boolean) => {
     try {
       const token = await getAccessTokenSilently({
         authorizationParams: {
@@ -172,7 +202,6 @@ export default function AdminMenuItemsPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ is_active: !isAvailable }),
       });
 
       if (response.ok) {
@@ -240,7 +269,7 @@ export default function AdminMenuItemsPage() {
           <>
             {/* Filters Section */}
             <Grid.Container gap="lg" className={styles.items__filtersSection}>
-              <Grid.Item lg={12} xl={8}>
+              <Grid.Item sm={16}>
                 <div className={styles.items__filters}>
                   <Typography variant="body-medium" style={{ fontWeight: '500' }}>
                     Filter by category:
@@ -283,7 +312,7 @@ export default function AdminMenuItemsPage() {
                         />
                       </div>
                       <div className={styles.items__formGroup}>
-                        <label htmlFor="itemPrice">Price ($)</label>
+                        <label htmlFor="itemPrice">Price (£)</label>
                         <input
                           id="itemPrice"
                           type="number"
@@ -291,7 +320,7 @@ export default function AdminMenuItemsPage() {
                           min="0"
                           value={newItem.price}
                           onChange={(e) => setNewItem(prev => ({ ...prev, price: e.target.value }))}
-                          placeholder="0.00"
+                          placeholder="5.99"
                           className={styles.items__input}
                         />
                       </div>
@@ -345,7 +374,7 @@ export default function AdminMenuItemsPage() {
                   </div>
                 </Grid.Item>
               ) : filteredItems.length === 0 ? (
-                <Grid.Item md={12} lg={8}>
+                <Grid.Item sm={16} md={8} lg={4}>
                   <div className={styles.items__empty}>
                     <Typography variant="heading-5">
                       {selectedCategory === 'all' ? 'No items yet' : 'No items in this category'}
@@ -360,13 +389,13 @@ export default function AdminMenuItemsPage() {
                 </Grid.Item>
               ) : (
                 filteredItems.map((item) => (
-                  <Grid.Item sm={8} md={8} lg={6} xl={4} key={item.id}>
-                    <div className={styles.items__item}>
+                  <Grid.Item sm={16} md={8} lg={4} xl={4} key={item.id}>
+                    <div className={`${styles.items__item} ${!item.is_active ? styles['items__item--inactive'] : ''}`}>
                       <div className={styles.items__itemContent}>
                         <div className={styles.items__itemHeader}>
                           <div className={styles.items__itemTitle}>
                             <Typography variant="heading-5">
-                              {item.name}
+                              {item.title}
                             </Typography>
                             <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
                               {categories.find(cat => cat.id === item.category_id)?.name || 'Unknown Category'}
@@ -377,9 +406,9 @@ export default function AdminMenuItemsPage() {
                               £{formatPrice(item.base_price)}
                             </Typography>
                             <span className={`${styles.items__status} ${
-                              item.is_available ? styles['items__status--available'] : styles['items__status--unavailable']
+                              item.is_active ? styles['items__status--available'] : styles['items__status--unavailable']
                             }`}>
-                              {item.is_available ? 'Available' : 'Unavailable'}
+                              {item.is_active ? 'Available' : 'Unavailable'}
                             </span>
                           </div>
                         </div>
@@ -396,9 +425,9 @@ export default function AdminMenuItemsPage() {
                         <Button
                           variant="secondary"
                           size="sm"
-                          onClick={() => toggleItemAvailability(item.id, item.is_available)}
+                          onClick={() => toggleItemAvailability(item.id, item.is_active)}
                         >
-                          {item.is_available ? 'Make Unavailable' : 'Make Available'}
+                          {item.is_active ? 'Make Unavailable' : 'Make Available'}
                         </Button>
                         <Link href={`/admin/merchants/${merchantId}/menu/items/${item.id}/edit`}>
                           <Button variant="primary" size="sm">

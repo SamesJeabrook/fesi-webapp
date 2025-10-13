@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Typography, Button, Grid } from '@/components/atoms';
-import { AdminPageHeader } from '@/components/molecules';
+import { Typography, Button, Grid, FormInput, FormSelect, FormCheckbox } from '@/components/atoms';
+import { AdminPageHeader, ExpandableCard, EditableListItem } from '@/components/molecules';
+import { Badge } from '@/components/atoms/Badge';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
 import styles from './adminSubItems.module.scss';
@@ -44,6 +45,163 @@ interface Merchant {
   name: string;
 }
 
+// Group Edit Form Component
+const GroupEditForm: React.FC<{
+  group: SubItemGroup;
+  onSave: (data: Partial<SubItemGroup>) => void;
+  onCancel: () => void;
+}> = ({ group, onSave, onCancel }) => {
+  const [formData, setFormData] = useState({
+    name: group.name,
+    description: group.description || '',
+    selection_type: group.selection_type,
+    is_required: group.is_required,
+    max_selections: group.max_selections?.toString() || ''
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      name: formData.name,
+      description: formData.description,
+      selection_type: formData.selection_type,
+      is_required: formData.is_required,
+      max_selections: formData.max_selections ? parseInt(formData.max_selections) : undefined
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.editForm}>
+      <div className={styles.editForm__grid}>
+        <FormInput
+          label="Group Name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          required
+          size="md"
+        />
+        
+        <FormInput
+          label="Description (optional)"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          size="md"
+        />
+        
+        <FormSelect
+          label="Selection Type"
+          value={formData.selection_type}
+          onChange={(e) => setFormData({ ...formData, selection_type: e.target.value as 'single' | 'multiple' })}
+          options={[
+            { value: 'single', label: 'Single Choice (radio buttons)' },
+            { value: 'multiple', label: 'Multiple Choice (checkboxes)' }
+          ]}
+          required
+          size="md"
+        />
+        
+        {formData.selection_type === 'multiple' && (
+          <FormInput
+            label="Maximum Selections (optional)"
+            type="number"
+            value={formData.max_selections}
+            onChange={(e) => setFormData({ ...formData, max_selections: e.target.value })}
+            helpText="Leave empty for unlimited selections"
+            size="md"
+          />
+        )}
+      </div>
+      
+      <FormCheckbox
+        label="Required for customers"
+        checked={formData.is_required}
+        onChange={(e) => setFormData({ ...formData, is_required: e.target.checked })}
+        size="md"
+      />
+      
+      <div className={styles.editForm__actions}>
+        <Button type="button" variant="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" variant="primary">
+          Save Changes
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+// Item Edit Form Component
+const ItemEditForm: React.FC<{
+  item: SubItem;
+  onSave: (data: Partial<SubItem>) => void;
+  onCancel: () => void;
+}> = ({ item, onSave, onCancel }) => {
+  const [formData, setFormData] = useState({
+    name: item.name,
+    description: item.description || '',
+    additional_price: (item.additional_price / 100).toFixed(2),
+    is_active: item.is_active
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      name: formData.name,
+      description: formData.description,
+      additional_price: Math.round(parseFloat(formData.additional_price) * 100),
+      is_active: formData.is_active
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className={styles.editForm}>
+      <div className={styles.editForm__grid}>
+        <FormInput
+          label="Option Name"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          required
+          size="md"
+        />
+        
+        <FormInput
+          label="Price Adjustment ($)"
+          type="number"
+          step="0.01"
+          value={formData.additional_price}
+          onChange={(e) => setFormData({ ...formData, additional_price: e.target.value })}
+          helpText="Enter 0 for no charge, negative for discount"
+          size="md"
+        />
+        
+        <FormInput
+          label="Description (optional)"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          size="md"
+        />
+      </div>
+      
+      <FormCheckbox
+        label="Available to customers"
+        checked={formData.is_active}
+        onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+        size="md"
+      />
+      
+      <div className={styles.editForm__actions}>
+        <Button type="button" variant="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" variant="primary">
+          Save Changes
+        </Button>
+      </div>
+    </form>
+  );
+};
+
 export default function AdminMenuSubItemsPage() {
   const params = useParams();
   const { getAccessTokenSilently } = useAuth0();
@@ -51,8 +209,10 @@ export default function AdminMenuSubItemsPage() {
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
-  const [isCreatingItem, setIsCreatingItem] = useState(false);
+  const [isCreatingItem, setIsCreatingItem] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState('all');
+  const [editingGroup, setEditingGroup] = useState<string | null>(null);
+  const [editingItem, setEditingItem] = useState<string | null>(null);
 
   const merchantId = params?.merchantId as string;
 
@@ -88,7 +248,6 @@ export default function AdminMenuSubItemsPage() {
 
       if (subGroupsResponse.ok) {
         const subGroupsData = await subGroupsResponse.json();
-        console.log('Sub-groups data received:', subGroupsData);
         
         if (subGroupsData.success && subGroupsData.data) {
           // Fetch detailed sub-groups with items
@@ -114,7 +273,6 @@ export default function AdminMenuSubItemsPage() {
           );
           
           setSubItemGroups(detailedSubGroups);
-          console.log('Final sub-item groups:', detailedSubGroups);
         }
       }
     } catch (error) {
@@ -140,125 +298,254 @@ export default function AdminMenuSubItemsPage() {
         return true;
       });
 
+  const handleGroupEdit = (groupId: string) => {
+    setEditingGroup(groupId);
+  };
+
+  const handleItemEdit = (itemId: string) => {
+    setEditingItem(itemId);
+  };
+
+  const handleSaveGroup = async (groupId: string, updatedData: Partial<SubItemGroup>) => {
+    try {
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+        },
+      });
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sub-groups/${groupId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setSubItemGroups(groups => 
+            groups.map(group => 
+              group.id === groupId 
+                ? { ...group, ...result.data }
+                : group
+            )
+          );
+          setEditingGroup(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating group:', error);
+    }
+  };
+
+  const handleSaveItem = async (itemId: string, updatedData: Partial<SubItem>) => {
+    try {
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+        },
+      });
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sub-groups/items/${itemId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setSubItemGroups(groups => 
+            groups.map(group => ({
+              ...group,
+              sub_items: group.sub_items.map(item => 
+                item.id === itemId 
+                  ? { ...item, ...result.data }
+                  : item
+              )
+            }))
+          );
+          setEditingItem(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating item:', error);
+    }
+  };
+
+  console.log(merchant);
+
   return (
     <ProtectedRoute requireRole={['admin']}>
       <div className={styles.subItems}>
         <AdminPageHeader
           backLink={{
             href: `/admin/merchants/${merchantId}`,
-            label: `Back to ${merchant?.business_name || 'Merchant'} Dashboard`
+            label: `Back to ${merchant?.name || 'Merchant'} Dashboard`
           }}
-          adminContext={`Managing sub-items for ${merchant?.business_name || 'merchant'}`}
+          adminContext={`Managing sub-items for ${merchant?.name || 'merchant'}`}
           title="Menu Sub-Items & Option Groups"
           description="Manage option groups (like sizes, add-ons) and their individual items"
         />
 
-        {/* Option Groups List */}
-        <Grid.Container gap="lg">
-          {/* Filters Section */}
-          <Grid.Container gap="lg" className={styles.subItems__filtersSection}>
-            <Grid.Item lg={12} xl={8}>
+        {/* Action Bar */}
+        <Grid.Container gap="lg" justifyContent="center" className={styles.subItems__actionBar}>
+          <Grid.Item sm={16}>
+            <div className={styles.subItems__actions}>
               <div className={styles.subItems__filters}>
                 <Typography variant="body-medium" style={{ fontWeight: '500' }}>
-                  Filter option groups:
+                  Filter:
                 </Typography>
-                <select
+                <FormSelect
                   value={selectedFilter}
                   onChange={(e) => setSelectedFilter(e.target.value)}
-                  className={styles.subItems__itemFilter}
-                >
-                  <option value="all">All Groups</option>
-                  <option value="required">Required Only</option>
-                  <option value="optional">Optional Only</option>
-                  <option value="single">Single Selection</option>
-                  <option value="multiple">Multiple Selection</option>
-                </select>
+                  options={[
+                    { value: 'all', label: 'All Groups' },
+                    { value: 'required', label: 'Required Only' },
+                    { value: 'optional', label: 'Optional Only' },
+                    { value: 'single', label: 'Single Selection' },
+                    { value: 'multiple', label: 'Multiple Selection' }
+                  ]}
+                  size="sm"
+                />
+              </div>
+              <Button variant="primary" onClick={() => setIsCreatingGroup(true)}>
+                Create New Group
+              </Button>
+            </div>
+          </Grid.Item>
+        </Grid.Container>
+
+        {/* Main Content */}
+        <Grid.Container gap="sm">
+          {isLoading ? (
+            <Grid.Item lg={12}>
+              <div className={styles.subItems__loading}>
+                <Typography variant="body-medium">Loading option groups...</Typography>
               </div>
             </Grid.Item>
-          </Grid.Container>
-
-          {/* Main Content */}
-          <Grid.Container gap="lg">
-            {isLoading ? (
-              <Grid.Item className={styles.subItems__loadingWrapper}>
-                <div className={styles.subItems__loading}>
-                  <Typography variant="body-medium">Loading option groups...</Typography>
-                </div>
-              </Grid.Item>
-            ) : filteredGroups.length === 0 ? (
-                <Grid.Item md={12} lg={8}>
-                  <div className={styles.subItems__empty}>
-                    <Typography variant="heading-5">
-                      {selectedFilter === 'all' ? 'No option groups yet' : 'No option groups match the filter'}
-                    </Typography>
-                    <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                      {selectedFilter === 'all' 
-                        ? 'Create the first option group for this merchant'
-                        : 'Try selecting a different filter or create a new option group'
-                      }
-                    </Typography>
-                  </div>
-                </Grid.Item>
-              ) : (
-                filteredGroups.map((group) => (
-                  <Grid.Item md={12} lg={8} key={group.id}>
-                    <div className={styles.subItems__groupItem}>
-                      <div className={styles.subItems__groupHeader}>
-                        <div>
-                          <Typography variant="heading-4">{group.name}</Typography>
-                          <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                            {group.selection_type} • {group.is_required ? 'Required' : 'Optional'} • Used by {group.menu_item_count} menu items • {group.item_count} options
-                          </Typography>
-                        </div>
+          ) : filteredGroups.length === 0 ? (
+            <Grid.Item sm={16} lg={16}>
+              <div className={styles.subItems__empty}>
+                <Typography variant="heading-5">
+                  {selectedFilter === 'all' ? 'No option groups yet' : 'No option groups match the filter'}
+                </Typography>
+                <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)', marginTop: '0.5rem' }}>
+                  {selectedFilter === 'all' 
+                    ? 'Create the first option group for this merchant'
+                    : 'Try selecting a different filter or create a new option group'
+                  }
+                </Typography>
+              </div>
+            </Grid.Item>
+          ) : (
+            filteredGroups.map((group) => (
+              <Grid.Item sm={16} lg={8} key={group.id}>
+                <ExpandableCard
+                  title={group.name}
+                  subtitle={`Used by ${group.menu_item_count} menu items • ${group.item_count} options`}
+                  description={group.description}
+                  badges={[
+                    {
+                      text: group.selection_type === 'single' ? 'Single Choice' : 'Multiple Choice',
+                      variant: group.selection_type as 'single' | 'multiple'
+                    },
+                    {
+                      text: group.is_required ? 'Required' : 'Optional',
+                      variant: group.is_required ? 'required' : 'optional'
+                    },
+                    ...(group.max_selections ? [{
+                      text: `Max: ${group.max_selections}`,
+                      variant: 'info' as const
+                    }] : [])
+                  ]}
+                  defaultExpanded={true}
+                  headerActions={
+                    editingGroup === group.id ? null : (
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleGroupEdit(group.id)}
+                      >
+                        Edit Group
+                      </Button>
+                    )
+                  }
+                  emptyState={
+                    <div className={styles.subItems__emptyGroup}>
+                      <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                        No options in this group yet.
+                      </Typography>
+                      <Button 
+                        variant="primary" 
+                        size="sm"
+                        onClick={() => setIsCreatingItem(group.id)}
+                        className={styles.subItems__addFirstButton}
+                      >
+                        Add First Option
+                      </Button>
+                    </div>
+                  }
+                >
+                  {editingGroup === group.id ? (
+                    <GroupEditForm 
+                      group={group}
+                      onSave={(data) => handleSaveGroup(group.id, data)}
+                      onCancel={() => setEditingGroup(null)}
+                    />
+                  ) : (
+                    <div className={styles.subItems__groupContent}>
+                      <div className={styles.subItems__itemsHeader}>
+                        <Typography variant="heading-6" style={{ color: 'var(--color-text-secondary)' }}>
+                          Options in this group ({group.sub_items?.length || 0})
+                        </Typography>
+                        <Button 
+                          variant="secondary" 
+                          size="sm"
+                          onClick={() => setIsCreatingItem(group.id)}
+                        >
+                          Add Option
+                        </Button>
                       </div>
                       
-                      {/* Sub-items within this group */}
-                      <div className={styles.subItems__groupItems}>
-                        {group.sub_items && group.sub_items.length > 0 ? (
-                          <Grid.Container gap="md">
-                            {group.sub_items.map((subItem) => (
-                              <Grid.Item sm={12} md={6} lg={4} key={subItem.id}>
-                                <div className={styles.subItems__item}>
-                                  <div className={styles.subItems__itemContent}>
-                                    <div className={styles.subItems__itemHeader}>
-                                      <Typography variant="heading-6">{subItem.name}</Typography>
-                                      <Typography 
-                                        variant="body-medium" 
-                                        style={{ 
-                                          color: subItem.additional_price >= 0 ? 'var(--color-success-dark)' : 'var(--color-warning-dark)' 
-                                        }}
-                                      >
-                                        {subItem.additional_price >= 0 
-                                          ? `+$${(subItem.additional_price / 100).toFixed(2)}` 
-                                          : `-$${Math.abs(subItem.additional_price / 100).toFixed(2)}`
-                                        }
-                                      </Typography>
-                                    </div>
-                                    {subItem.description && (
-                                      <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                                        {subItem.description}
-                                      </Typography>
-                                    )}
-                                  </div>
-                                </div>
-                              </Grid.Item>
-                            ))}
-                          </Grid.Container>
-                        ) : (
-                          <div className={styles.subItems__emptyGroup}>
-                            <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                              No items in this group yet.
-                            </Typography>
-                          </div>
+                      <div className={styles.subItems__itemsList}>
+                        {group.sub_items && group.sub_items.length > 0 && (
+                          group.sub_items.map((subItem) => (
+                            <EditableListItem
+                              key={subItem.id}
+                              title={subItem.name}
+                              description={subItem.description}
+                              price={subItem.additional_price}
+                              badges={[
+                                ...(subItem.is_active ? [] : [{ text: 'Inactive', variant: 'warning' as const }])
+                              ]}
+                              isEditing={editingItem === subItem.id}
+                              onEdit={() => handleItemEdit(subItem.id)}
+                              editForm={
+                                <ItemEditForm 
+                                  item={subItem}
+                                  onSave={(data) => handleSaveItem(subItem.id, data)}
+                                  onCancel={() => setEditingItem(null)}
+                                />
+                              }
+                            />
+                          ))
                         )}
                       </div>
                     </div>
-                  </Grid.Item>
-                ))
-              )}
-            </Grid.Container>
-          </Grid.Container>
-        </div>
-      </ProtectedRoute>
-    );
-  }
+                  )}
+                </ExpandableCard>
+              </Grid.Item>
+            ))
+          )}
+        </Grid.Container>
+      </div>
+    </ProtectedRoute>
+  );
+}

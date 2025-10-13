@@ -1,0 +1,111 @@
+.editableListItem {
+  background-color: var(--color-surface-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  &__viewMode {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__editMode {
+    width: 100%;
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__header {
+    margin-bottom: 0.5rem;
+  }
+
+  &__titleSection {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  &__title {
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  &__subtitle {
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  &__price {
+    font-weight: 500;
+    white-space: nowrap;
+
+    &--positive {
+      color: var(--color-success-dark);
+    }
+
+    &--negative {
+      color: var(--color-warning-dark);
+    }
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__description {
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  &__deleteButton {
+    color: var(--color-error) !important;
+
+    &:hover {
+      background-color: var(--color-error-light) !important;
+    }
+  }
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    &__viewMode {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    &__titleSection {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    &__actions {
+      align-self: flex-end;
+      margin-top: 0.5rem;
+    }
+  }
+}

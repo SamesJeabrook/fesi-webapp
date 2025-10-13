@@ -14,9 +14,7 @@ interface MenuCategory {
   name: string;
   description?: string;
   display_order: number;
-  is_active: boolean;
   created_at: string;
-  updated_at: string;
 }
 
 interface Merchant {
@@ -45,15 +43,15 @@ export default function AdminMenuCategoriesPage() {
         },
       });
 
-      // Fetch merchant details and menu data (which includes categories) in parallel
-      const [merchantResponse, menuResponse] = await Promise.all([
+      // Fetch merchant details and categories in parallel
+      const [merchantResponse, categoriesResponse] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories?merchant_id=${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -66,20 +64,10 @@ export default function AdminMenuCategoriesPage() {
         setMerchant(merchantData.data);
       }
 
-      if (menuResponse.ok) {
-        const menuData = await menuResponse.json();
-        // Extract categories from menu data - the API returns menu organized by categories
-        if (menuData.success && menuData.data && menuData.data.menu) {
-          const categoryList = menuData.data.menu.map((category: any, index: number) => ({
-            id: category.name, // Use category name as ID since that's how it's structured
-            name: category.name,
-            description: '', // Categories from menu don't have descriptions
-            display_order: category.display_order || index + 1,
-            is_active: true, // Categories with items are considered active
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }));
-          setCategories(categoryList);
+      if (categoriesResponse.ok) {
+        const categoriesData = await categoriesResponse.json();
+        if (categoriesData.success && categoriesData.data) {
+          setCategories(categoriesData.data);
         }
       }
     } catch (error) {
@@ -106,8 +94,8 @@ export default function AdminMenuCategoriesPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          merchant_id: merchantId,
           name: newCategory.name,
-          description: newCategory.description,
           display_order: categories.length + 1,
         }),
       });
@@ -116,36 +104,16 @@ export default function AdminMenuCategoriesPage() {
         setNewCategory({ name: '', description: '' });
         setIsCreating(false);
         fetchData();
+      } else {
+        const errorData = await response.json();
+        console.error('Error creating category:', errorData);
       }
     } catch (error) {
       console.error('Error creating category:', error);
     }
   };
 
-  const toggleCategoryStatus = async (categoryId: string, isActive: boolean) => {
-    try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories/${categoryId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ is_active: !isActive }),
-      });
-
-      if (response.ok) {
-        fetchData();
-      }
-    } catch (error) {
-      console.error('Error updating category:', error);
-    }
-  };
 
   useEffect(() => {
     if (merchantId) {
@@ -197,18 +165,6 @@ export default function AdminMenuCategoriesPage() {
                   />
                 </div>
                 
-                <div className={styles.categories__formGroup}>
-                  <label htmlFor="categoryDescription">Description (Optional)</label>
-                  <textarea
-                    id="categoryDescription"
-                    value={newCategory.description}
-                    onChange={(e) => setNewCategory(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Brief description of this category"
-                    className={styles.categories__textarea}
-                    rows={3}
-                  />
-                </div>
-                
                 <div className={styles.categories__formActions}>
                   <Button variant="secondary" onClick={() => setIsCreating(false)}>
                     Cancel
@@ -248,11 +204,6 @@ export default function AdminMenuCategoriesPage() {
                       <Typography variant="heading-5">
                         {category.name}
                       </Typography>
-                      <span className={`${styles.categories__status} ${
-                        category.is_active ? styles['categories__status--active'] : styles['categories__status--inactive']
-                      }`}>
-                        {category.is_active ? 'Active' : 'Inactive'}
-                      </span>
                     </div>
                     {category.description && (
                       <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
@@ -264,13 +215,6 @@ export default function AdminMenuCategoriesPage() {
                     </Typography>
                   </div>
                   <div className={styles.categories__itemActions}>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => toggleCategoryStatus(category.id, category.is_active)}
-                    >
-                      {category.is_active ? 'Deactivate' : 'Activate'}
-                    </Button>
                     <Link href={`/admin/merchants/${merchantId}/menu/categories/${category.id}/edit`}>
                       <Button variant="primary" size="sm">
                         Edit

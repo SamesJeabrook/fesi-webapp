@@ -10,6 +10,8 @@
   width: 100%;
   max-width: 1400px;
   box-sizing: border-box;
+  margin: auto;
+  padding: 0 20px;
   
   // Gap variants with more precise gap compensation
   // Formula: For N items in a row, total gap space = (N-1) * gap-size
@@ -172,12 +174,18 @@
 // Generate base column classes (mobile-first)
 @include generate-columns();
 
-// Generate responsive classes for each breakpoint using project breakpoints
+// Generate sm classes as base mobile-first (from 0px) - these should work from the start
+@include generate-columns('sm');
+
+// Generate responsive classes for larger breakpoints only
 @each $breakpoint, $min-width in bp.$breakpoints {
   $class-name: if($breakpoint == '2xl', 'xxl', $breakpoint);
   
-  @media (min-width: #{$min-width}) {
-    @include generate-columns($class-name);
+  // Skip sm since we already generated it as base mobile-first
+  @if $breakpoint != 'sm' {
+    @media (min-width: #{$min-width}) {
+      @include generate-columns($class-name);
+    }
   }
 }
 
