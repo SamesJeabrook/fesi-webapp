@@ -7,6 +7,7 @@ import { Typography, Button, Grid } from '@/components/atoms';
 import { AdminPageHeader } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
+import { EditCategoryModal } from './components/EditCategoryModal';
 import styles from './adminCategories.module.scss';
 
 interface MenuCategory {
@@ -31,6 +32,7 @@ export default function AdminMenuCategoriesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', description: '' });
+  const [editingCategory, setEditingCategory] = useState<MenuCategory | null>(null);
 
   const merchantId = params?.merchantId as string;
 
@@ -113,7 +115,41 @@ export default function AdminMenuCategoriesPage() {
     }
   };
 
+  const handleEditCategory = (category: MenuCategory) => {
+    setEditingCategory(category);
+  };
 
+  const handleUpdateCategory = async (updatedData: Partial<MenuCategory>) => {
+    if (!editingCategory) return;
+
+    try {
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+        },
+      });
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories/${editingCategory.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (response.ok) {
+        fetchData(); // Refresh the categories list
+      } else {
+        const errorData = await response.json();
+        console.error('Error updating category:', errorData);
+        throw new Error(errorData.message || 'Failed to update category');
+      }
+    } catch (error) {
+      console.error('Error updating category:', error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     if (merchantId) {
@@ -215,17 +251,29 @@ export default function AdminMenuCategoriesPage() {
                     </Typography>
                   </div>
                   <div className={styles.categories__itemActions}>
-                    <Link href={`/admin/merchants/${merchantId}/menu/categories/${category.id}/edit`}>
-                      <Button variant="primary" size="sm">
-                        Edit
-                      </Button>
-                    </Link>
+                    <Button 
+                      variant="primary" 
+                      size="sm"
+                      onClick={() => handleEditCategory(category)}
+                    >
+                      Edit
+                    </Button>
                   </div>
                 </div>
               </Grid.Item>
             ))
           )}
         </Grid.Container>
+
+        {/* Edit Category Modal */}
+        {editingCategory && (
+          <EditCategoryModal
+            category={editingCategory}
+            isOpen={!!editingCategory}
+            onClose={() => setEditingCategory(null)}
+            onSave={handleUpdateCategory}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );

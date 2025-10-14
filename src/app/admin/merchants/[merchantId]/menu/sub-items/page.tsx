@@ -10,10 +10,19 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
 import styles from './adminSubItems.module.scss';
 
+interface SubGroup {
+  id: string;
+  name: string;
+  selection_type: 'single' | 'multiple';
+  is_required: boolean;
+  max_selections?: number;
+  display_order: number;
+  sub_items: SubItem[];
+}
+
 interface SubItemGroup {
   id: string;
   name: string;
-  description?: string;
   selection_type: 'single' | 'multiple';
   is_required: boolean;
   max_selections?: number;
@@ -24,19 +33,16 @@ interface SubItemGroup {
   menu_item_count: number;
   sub_items: SubItem[];
   created_at: string;
-  updated_at?: string;
 }
 
 interface SubItem {
   id: string;
   name: string;
-  description?: string;
   additional_price: number;
   display_order: number;
   is_active: boolean;
   group_id: string;
   created_at: string;
-  updated_at?: string;
 }
 
 interface Merchant {
@@ -53,7 +59,6 @@ const GroupEditForm: React.FC<{
 }> = ({ group, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     name: group.name,
-    description: group.description || '',
     selection_type: group.selection_type,
     is_required: group.is_required,
     max_selections: group.max_selections?.toString() || ''
@@ -63,7 +68,6 @@ const GroupEditForm: React.FC<{
     e.preventDefault();
     onSave({
       name: formData.name,
-      description: formData.description,
       selection_type: formData.selection_type,
       is_required: formData.is_required,
       max_selections: formData.max_selections ? parseInt(formData.max_selections) : undefined
@@ -78,13 +82,6 @@ const GroupEditForm: React.FC<{
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
-          size="md"
-        />
-        
-        <FormInput
-          label="Description (optional)"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           size="md"
         />
         
@@ -139,7 +136,6 @@ const ItemEditForm: React.FC<{
 }> = ({ item, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     name: item.name,
-    description: item.description || '',
     additional_price: (item.additional_price / 100).toFixed(2),
     is_active: item.is_active
   });
@@ -148,7 +144,6 @@ const ItemEditForm: React.FC<{
     e.preventDefault();
     onSave({
       name: formData.name,
-      description: formData.description,
       additional_price: Math.round(parseFloat(formData.additional_price) * 100),
       is_active: formData.is_active
     });
@@ -172,13 +167,6 @@ const ItemEditForm: React.FC<{
           value={formData.additional_price}
           onChange={(e) => setFormData({ ...formData, additional_price: e.target.value })}
           helpText="Enter 0 for no charge, negative for discount"
-          size="md"
-        />
-        
-        <FormInput
-          label="Description (optional)"
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           size="md"
         />
       </div>
@@ -450,7 +438,6 @@ export default function AdminMenuSubItemsPage() {
                 <ExpandableCard
                   title={group.name}
                   subtitle={`Used by ${group.menu_item_count} menu items • ${group.item_count} options`}
-                  description={group.description}
                   badges={[
                     {
                       text: group.selection_type === 'single' ? 'Single Choice' : 'Multiple Choice',
@@ -520,7 +507,6 @@ export default function AdminMenuSubItemsPage() {
                             <EditableListItem
                               key={subItem.id}
                               title={subItem.name}
-                              description={subItem.description}
                               price={subItem.additional_price}
                               badges={[
                                 ...(subItem.is_active ? [] : [{ text: 'Inactive', variant: 'warning' as const }])

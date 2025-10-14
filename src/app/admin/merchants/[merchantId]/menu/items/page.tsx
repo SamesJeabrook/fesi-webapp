@@ -7,6 +7,7 @@ import { Typography, Button, Grid } from '@/components/atoms';
 import { AdminPageHeader } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
+import EditItemModal from './components/EditItemModal';
 import styles from './adminItems.module.scss';
 
 interface MenuItem {
@@ -42,6 +43,7 @@ export default function AdminMenuItemsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [newItem, setNewItem] = useState({
     name: '',
     description: '',
@@ -212,6 +214,47 @@ export default function AdminMenuItemsPage() {
     }
   };
 
+  const handleEditItem = (item: MenuItem) => {
+    setEditingItem(item);
+  };
+
+  const handleUpdateItem = async (updatedData: Partial<MenuItem>) => {
+    if (!editingItem) return;
+
+    try {
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+        },
+      });
+
+      console.log('Updating item with data:', updatedData);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${editingItem.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Menu item updated successfully:', result);
+        fetchData(); // Refresh the list
+        setEditingItem(null);
+      } else {
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        throw new Error(errorData.error || 'Failed to update item');
+      }
+    } catch (error) {
+      console.error('Error updating item:', error);
+      throw error; // Re-throw so modal can handle it
+    }
+  };
+
   const formatPrice = (priceInCents: number) => {
     return (priceInCents / 100).toFixed(2);
   };
@@ -366,7 +409,7 @@ export default function AdminMenuItemsPage() {
             )}
 
             {/* Items List Section */}
-            <Grid.Container gap="lg" className={styles.items__listSection}>
+            <Grid.Container gap="lg" justifyContent="start" className={styles.items__listSection}>
               {isLoading ? (
                 <Grid.Item>
                   <div className={styles.items__loading}>
@@ -389,7 +432,7 @@ export default function AdminMenuItemsPage() {
                 </Grid.Item>
               ) : (
                 filteredItems.map((item) => (
-                  <Grid.Item sm={16} md={8} lg={4} xl={4} key={item.id}>
+                  <Grid.Item sm={16} md={8} xl={4} key={item.id}>
                     <div className={`${styles.items__item} ${!item.is_active ? styles['items__item--inactive'] : ''}`}>
                       <div className={styles.items__itemContent}>
                         <div className={styles.items__itemHeader}>
@@ -429,11 +472,13 @@ export default function AdminMenuItemsPage() {
                         >
                           {item.is_active ? 'Make Unavailable' : 'Make Available'}
                         </Button>
-                        <Link href={`/admin/merchants/${merchantId}/menu/items/${item.id}/edit`}>
-                          <Button variant="primary" size="sm">
-                            Edit
-                          </Button>
-                        </Link>
+                        <Button 
+                          variant="primary" 
+                          size="sm"
+                          onClick={() => handleEditItem(item)}
+                        >
+                          Edit
+                        </Button>
                       </div>
                     </div>
                   </Grid.Item>
@@ -441,6 +486,17 @@ export default function AdminMenuItemsPage() {
               )}
             </Grid.Container>
           </>
+        )}
+
+        {/* Edit Item Modal */}
+        {editingItem && (
+          <EditItemModal
+            item={editingItem}
+            categories={categories}
+            isOpen={!!editingItem}
+            onClose={() => setEditingItem(null)}
+            onSave={handleUpdateItem}
+          />
         )}
       </div>
     </ProtectedRoute>

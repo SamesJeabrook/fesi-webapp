@@ -13,3 +13,4 @@ export * from './MerchantSelector';
 export * from './PublicOrderBoard';
 export * from './EditableListItem';
 export * from './ExpandableCard';
+export * from './Modal';
