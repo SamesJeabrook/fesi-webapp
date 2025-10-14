@@ -54,7 +54,7 @@
     // State styles
     &--error {
       .formCheckbox__indicator {
-        border-color: var(--color-error);
+        border-color: var(--color-error, #ef4444);
       }
     }
 
@@ -63,7 +63,7 @@
       opacity: 0.6;
       
       .formCheckbox__label {
-        color: var(--color-text-disabled);
+        color: var(--color-text-disabled, #9ca3af);
       }
     }
 
@@ -73,8 +73,8 @@
         width: 2.5rem;
         height: 1.25rem;
         border-radius: 0.625rem;
-        background-color: var(--color-surface-tertiary);
-        border: 1px solid var(--color-border);
+        background-color: var(--color-surface-tertiary, #f3f4f6);
+        border: 1px solid var(--color-border, #d1d5db);
         position: relative;
         transition: all 0.2s ease;
 
@@ -97,8 +97,8 @@
       }
 
       .formCheckbox__input:checked + .formCheckbox__indicator {
-        background-color: var(--color-primary);
-        border-color: var(--color-primary);
+        background-color: var(--color-primary, #3b82f6);
+        border-color: var(--color-primary, #3b82f6);
 
         &::after {
           transform: translateX(1.25rem);
@@ -110,16 +110,24 @@
   &__input {
     position: absolute;
     opacity: 0;
-    pointer-events: none;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 1;
 
     &:checked + .formCheckbox__indicator {
-      background-color: var(--color-primary);
-      border-color: var(--color-primary);
-      color: white;
+      background-color: var(--color-primary, #3b82f6);
+      border-color: var(--color-primary, #3b82f6);
+      
+      &::after {
+        opacity: 1;
+      }
     }
 
     &:focus + .formCheckbox__indicator {
-      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
   }
 
@@ -128,19 +136,35 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--color-surface-primary);
-    border: 1px solid var(--color-border);
+    background-color: var(--color-surface-primary, #ffffff);
+    border: 2px solid var(--color-border, #d1d5db);
     border-radius: 0.25rem;
     transition: all 0.2s ease;
     color: transparent;
+    position: relative;
+
+    // CSS checkmark
+    &::after {
+      content: '';
+      position: absolute;
+      width: 5px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: translate(-50%, -60%) rotate(45deg);
+      left: 50%;
+      top: 50%;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
 
     svg {
-      transition: all 0.2s ease;
+      display: none; // Hide SVG, use CSS checkmark instead
     }
   }
 
   &__label {
-    color: var(--color-text-primary);
+    color: var(--color-text-primary, #374151);
     font-weight: 400;
     line-height: 1.4;
     cursor: pointer;
@@ -155,13 +179,13 @@
   }
 
   &__error {
-    color: var(--color-error);
+    color: var(--color-error, #ef4444);
     display: flex;
     align-items: center;
     gap: 0.25rem;
   }
 
   &__helpText {
-    color: var(--color-text-secondary);
+    color: var(--color-text-secondary, #6b7280);
   }
 }

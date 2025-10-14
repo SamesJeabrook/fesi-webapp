@@ -14,3 +14,4 @@ export * from './PublicOrderBoard';
 export * from './EditableListItem';
 export * from './ExpandableCard';
 export * from './Modal';
+export * from './ConfirmationModal';

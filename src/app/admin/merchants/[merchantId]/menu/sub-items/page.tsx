@@ -4,11 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid, FormInput, FormSelect, FormCheckbox } from '@/components/atoms';
-import { AdminPageHeader, ExpandableCard, EditableListItem } from '@/components/molecules';
+import { AdminPageHeader, ExpandableCard, EditableListItem, ConfirmationModal } from '@/components/molecules';
 import { Badge } from '@/components/atoms/Badge';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
 import styles from './adminSubItems.module.scss';
+import { AddSubItemModal } from './components/AddSubItemModal';
+import { AddSubGroupModal } from './components/AddSubGroupModal';
 
 interface SubGroup {
   id: string;
@@ -197,10 +199,16 @@ export default function AdminMenuSubItemsPage() {
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
-  const [isCreatingItem, setIsCreatingItem] = useState<string | null>(null);
+  const [addingItemToGroup, setAddingItemToGroup] = useState<SubItemGroup | null>(null);
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [editingGroup, setEditingGroup] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<SubItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [groupDeleteConfirmOpen, setGroupDeleteConfirmOpen] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<SubItemGroup | null>(null);
+  const [isDeletingGroup, setIsDeletingGroup] = useState(false);
 
   const merchantId = params?.merchantId as string;
 
@@ -367,6 +375,139 @@ export default function AdminMenuSubItemsPage() {
     }
   };
 
+  const handleAddItemToGroup = (group: SubItemGroup) => {
+    setAddingItemToGroup(group);
+  };
+
+  const handleCreateSubItem = async (groupId: string, subItemData: Partial<SubItem>) => {
+    try {
+      const token = await getAccessTokenSilently();
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sub-groups/${groupId}/items`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(subItemData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create sub-item');
+      }
+
+      // Refresh the data to show the new item
+      await fetchData();
+      setAddingItemToGroup(null);
+    } catch (error) {
+      console.error('Error creating sub-item:', error);
+      throw error; // Re-throw so the modal can handle it
+    }
+  };
+
+  const handleCreateSubGroup = async (groupData: Partial<SubItemGroup>) => {
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sub-groups`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(groupData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create sub-group');
+      }
+
+      // Refresh the data to show the new group
+      await fetchData();
+      setIsCreatingGroup(false);
+    } catch (error) {
+      console.error('Error creating sub-group:', error);
+      throw error; // Re-throw so the modal can handle it
+    }
+  };
+
+  const handleDeleteClick = (item: SubItem) => {
+    setItemToDelete(item);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sub-groups/items/${itemToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete sub-item');
+      }
+
+      // Refresh the data to remove the deleted item
+      await fetchData();
+      setDeleteConfirmOpen(false);
+      setItemToDelete(null);
+    } catch (error) {
+      console.error('Error deleting sub-item:', error);
+      alert('Error deleting option. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmOpen(false);
+    setItemToDelete(null);
+  };
+
+  const handleGroupDeleteClick = (group: SubItemGroup) => {
+    setGroupToDelete(group);
+    setGroupDeleteConfirmOpen(true);
+  };
+
+  const handleGroupDeleteConfirm = async () => {
+    if (!groupToDelete) return;
+
+    setIsDeletingGroup(true);
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sub-groups/${groupToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete sub-item group');
+      }
+
+      // Refresh the data to remove the deleted group
+      await fetchData();
+      setGroupDeleteConfirmOpen(false);
+      setGroupToDelete(null);
+    } catch (error) {
+      console.error('Error deleting sub-item group:', error);
+      alert('Error deleting option group. Please try again.');
+    } finally {
+      setIsDeletingGroup(false);
+    }
+  };
+
+  const handleGroupDeleteCancel = () => {
+    setGroupDeleteConfirmOpen(false);
+    setGroupToDelete(null);
+  };
+
   console.log(merchant);
 
   return (
@@ -455,13 +596,22 @@ export default function AdminMenuSubItemsPage() {
                   defaultExpanded={true}
                   headerActions={
                     editingGroup === group.id ? null : (
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleGroupEdit(group.id)}
-                      >
-                        Edit Group
-                      </Button>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleGroupEdit(group.id)}
+                        >
+                          Edit Group
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleGroupDeleteClick(group)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     )
                   }
                   emptyState={
@@ -472,7 +622,7 @@ export default function AdminMenuSubItemsPage() {
                       <Button 
                         variant="primary" 
                         size="sm"
-                        onClick={() => setIsCreatingItem(group.id)}
+                        onClick={() => handleAddItemToGroup(group)}
                         className={styles.subItems__addFirstButton}
                       >
                         Add First Option
@@ -495,7 +645,7 @@ export default function AdminMenuSubItemsPage() {
                         <Button 
                           variant="secondary" 
                           size="sm"
-                          onClick={() => setIsCreatingItem(group.id)}
+                          onClick={() => handleAddItemToGroup(group)}
                         >
                           Add Option
                         </Button>
@@ -513,6 +663,8 @@ export default function AdminMenuSubItemsPage() {
                               ]}
                               isEditing={editingItem === subItem.id}
                               onEdit={() => handleItemEdit(subItem.id)}
+                              onDelete={() => handleDeleteClick(subItem)}
+                              canDelete={true}
                               editForm={
                                 <ItemEditForm 
                                   item={subItem}
@@ -531,6 +683,47 @@ export default function AdminMenuSubItemsPage() {
             ))
           )}
         </Grid.Container>
+
+        {/* Add Sub-Item Modal */}
+        {addingItemToGroup && (
+          <AddSubItemModal
+            group={addingItemToGroup}
+            isOpen={!!addingItemToGroup}
+            onClose={() => setAddingItemToGroup(null)}
+            onSave={handleCreateSubItem}
+          />
+        )}
+
+        <ConfirmationModal
+          isOpen={deleteConfirmOpen}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          title="Delete Option"
+          message={`Are you sure you want to delete "${itemToDelete?.name}"? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+          isLoading={isDeleting}
+        />
+
+        <ConfirmationModal
+          isOpen={groupDeleteConfirmOpen}
+          onClose={handleGroupDeleteCancel}
+          onConfirm={handleGroupDeleteConfirm}
+          title="Delete Option Group"
+          message={`Are you sure you want to delete "${groupToDelete?.name}"? This will also delete all options in this group. This action cannot be undone.`}
+          confirmText="Delete Group"
+          cancelText="Cancel"
+          variant="danger"
+          isLoading={isDeletingGroup}
+        />
+
+        <AddSubGroupModal
+          merchantId={merchantId}
+          isOpen={isCreatingGroup}
+          onClose={() => setIsCreatingGroup(false)}
+          onSave={handleCreateSubGroup}
+        />
       </div>
     </ProtectedRoute>
   );
