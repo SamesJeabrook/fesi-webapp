@@ -1,0 +1,35 @@
+// SubItemsPageTemplate Styles
+// Template page wrapper styles
+
+.subItemsPage {
+  min-height: 100vh;
+  background-color: var(--color-background-primary);
+  position: relative;
+  
+  // Ensure proper spacing and layout
+  > * {
+    width: 100%;
+  }
+  
+  &__notification {
+    position: fixed;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    z-index: 1000;
+    max-width: 400px;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .subItemsPage {
+    min-height: calc(100vh - 60px); // Account for mobile header
+    
+    &__notification {
+      top: var(--spacing-md);
+      right: var(--spacing-md);
+      left: var(--spacing-md);
+      max-width: none;
+    }
+  }
+}

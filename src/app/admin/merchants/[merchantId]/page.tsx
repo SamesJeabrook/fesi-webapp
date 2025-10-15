@@ -48,6 +48,13 @@ const dashboardItems = [
     color: 'info'
   },
   {
+    title: 'Events Management',
+    description: 'Manage merchant events and schedules',
+    icon: '🎉',
+    href: '/admin/merchants/[merchantId]/events',
+    color: 'secondary'
+  },
+  {
     title: 'Merchant Settings',
     description: 'Restaurant settings and configuration',
     icon: '🏪',

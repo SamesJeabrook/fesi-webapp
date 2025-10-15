@@ -1,0 +1,163 @@
+// Event Card Styles
+.eventCard {
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &__compact {
+    padding: 0.75rem;
+  }
+
+  &__header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  &__titleSection {
+    width: 100%;
+  }
+
+  &__title {
+    margin: 0 0 0.5rem 0;
+    color: #1a202c;
+    font-size: 1.125rem;
+  }
+
+  &__merchantName {
+    font-weight: 400;
+    color: #718096;
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
+  }
+
+  &__badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #4a5568;
+  }
+
+  &__dateRange {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__singleDate {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  &__location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__schedules {
+    background: #f7fafc;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+  }
+
+  &__schedulesTitle {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #2d3748;
+  }
+
+  &__schedulesList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__scheduleItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+  }
+
+  &__scheduleDay {
+    color: #718096;
+  }
+
+  &__scheduleTime {
+    color: #2d3748;
+
+    &__inactive {
+      color: #a0aec0;
+      text-decoration: line-through;
+    }
+  }
+
+  &__scheduleMore {
+    font-size: 0.75rem;
+    color: #718096;
+    text-align: center;
+    margin-top: 0.25rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  &__deleteButton {
+    color: #e53e3e;
+
+    &:hover {
+      background: #fed7d7;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .eventCard {
+    &__singleDate {
+      span {
+        font-size: 0.8rem;
+      }
+    }
+
+    &__actions {
+      justify-content: center;
+    }
+
+    &__scheduleItem {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.125rem;
+    }
+  }
+}

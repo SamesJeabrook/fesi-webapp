@@ -1,0 +1,105 @@
+// SubGroupCard Organism Styles
+// Individual sub-group card with edit forms
+
+.subGroupCard {
+  &__badges {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+  }
+  
+  &__content {
+    padding: var(--spacing-md);
+  }
+  
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background-color: var(--color-background-secondary);
+    border-radius: var(--border-radius-sm);
+  }
+  
+  &__empty {
+    text-align: center;
+    padding: var(--spacing-lg);
+    border: 1px dashed var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    background-color: var(--color-background-tertiary);
+  }
+  
+  &__items {
+    margin-top: var(--spacing-md);
+    
+    h6 {
+      color: var(--color-text-primary);
+      border-bottom: 1px solid var(--color-border-secondary);
+      padding-bottom: var(--spacing-xs);
+    }
+    
+    > div {
+      margin-bottom: var(--spacing-sm);
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+// Edit form styles
+.editForm {
+  padding: var(--spacing-md);
+  background-color: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border-primary);
+  
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  &__actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border-secondary);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .subGroupCard {
+    &__badges {
+      gap: var(--spacing-xxs);
+    }
+    
+    &__content {
+      padding: var(--spacing-sm);
+    }
+    
+    &__info {
+      gap: var(--spacing-xxs);
+    }
+  }
+  
+  .editForm {
+    padding: var(--spacing-sm);
+    
+    &__grid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-sm);
+    }
+    
+    &__actions {
+      flex-direction: column-reverse;
+      gap: var(--spacing-xs);
+    }
+  }
+}

@@ -15,7 +15,7 @@ export interface GridItemProps {
   className?: string;
   style?: React.CSSProperties;
   // Column spans for different breakpoints (1-16)
-  sm?: number; 
+  sm?: number;
   md?: number;
   lg?: number;
   xl?: number;

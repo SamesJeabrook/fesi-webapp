@@ -1,0 +1,1 @@
+export { EventManagementTemplate } from './EventManagementTemplate';

@@ -1,0 +1,64 @@
+// SubItemsManager Organism Styles
+// Main container for sub-items management interface
+
+.subItemsManager {
+  width: 100%;
+  min-height: 100vh;
+  
+  &__content {
+    padding: var(--spacing-lg);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  &__loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-xl);
+  }
+  
+  &__empty {
+    text-align: center;
+    padding: var(--spacing-xl);
+    
+    h4 {
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text-primary);
+    }
+    
+    p {
+      margin-bottom: var(--spacing-lg);
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+  
+  &__emptyButton {
+    margin-top: var(--spacing-md);
+  }
+  
+  &__groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .subItemsManager {
+    &__content {
+      padding: var(--spacing-md);
+    }
+    
+    &__empty {
+      padding: var(--spacing-lg);
+      
+      p {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

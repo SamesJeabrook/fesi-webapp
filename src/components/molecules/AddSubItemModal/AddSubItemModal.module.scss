@@ -1,0 +1,43 @@
+// AddSubItemModal Styles
+// Modal for creating new sub-items
+
+.modalFooter {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    
+    h6 {
+      color: var(--color-text-primary);
+      margin-bottom: 0;
+      border-bottom: 1px solid var(--color-border-secondary);
+      padding-bottom: var(--spacing-xs);
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .modalFooter {
+    flex-direction: column-reverse;
+    gap: var(--spacing-xs);
+  }
+  
+  .form {
+    gap: var(--spacing-md);
+    
+    &__section {
+      gap: var(--spacing-sm);
+    }
+  }
+}

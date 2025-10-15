@@ -4,3 +4,4 @@ export * from './MerchantOrderDashboard';
 export * from './CustomerOrderTracker';
 export * from './MerchantOrderDashboard';
 export * from './CustomerOrderTracker';
+export * from './EventManagementTemplate';

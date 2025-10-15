@@ -87,7 +87,7 @@ export default function AdminMerchantsPage() {
         />
 
         {/* Search Section */}
-        <Grid.Container gap="lg" className={styles.merchants__searchSection}>
+        <Grid.Container gap="lg" justifyContent="start" className={styles.merchants__searchSection}>
           <Grid.Item lg={12} xl={10}>
             <div className={styles.merchants__search}>
               <input
@@ -102,7 +102,7 @@ export default function AdminMerchantsPage() {
         </Grid.Container>
 
         {/* Merchants List Section */}
-        <Grid.Container gap="lg" className={styles.merchants__listSection}>
+        <Grid.Container gap="lg" justifyContent='start' className={styles.merchants__listSection}>
           {isLoading ? (
             <Grid.Item>
               <div className={styles.merchants__loading}>
@@ -122,7 +122,7 @@ export default function AdminMerchantsPage() {
             </Grid.Item>
           ) : (
             filteredMerchants.map((merchant) => (
-              <Grid.Item sm={8} md={8} lg={6} xl={4} key={merchant.id}>
+              <Grid.Item sm={16} md={8} lg={4} key={merchant.id}>
                 <Link
                   href={`/admin/merchants/${merchant.id}`}
                   className={styles.merchants__item}

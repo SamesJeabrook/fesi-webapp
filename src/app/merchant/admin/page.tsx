@@ -36,6 +36,13 @@ const dashboardItems = [
     href: '/merchant/admin/menu/sub-items',
     color: 'info'
   },
+  {
+    title: 'Events Management',
+    description: 'Create and manage multi-day events',
+    icon: '🎉',
+    href: '/merchant/admin/events',
+    color: 'secondary'
+  },
   // Future expansion items (commented for now)
   // {
   //   title: 'Analytics',
@@ -55,7 +62,7 @@ const dashboardItems = [
 
 export default function MerchantAdminDashboard() {
   return (
-    <ProtectedRoute requireRole={['merchant', 'admin']}>
+    <ProtectedRoute requireRole={['merchant']}>
       <div className={styles.dashboard}>
         <div className={styles.dashboard__header}>
           <Typography variant="heading-2">
