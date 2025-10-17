@@ -185,7 +185,7 @@ export const SubGroupCard: React.FC<SubGroupCardProps> = ({
     setDeletingItem(null);
   };
 
-  const itemToDelete = group.sub_items.find(item => item.id === deletingItem);
+  const itemToDelete = group.sub_items?.find(item => item.id === deletingItem);
 
   return (
     <>
@@ -201,14 +201,14 @@ export const SubGroupCard: React.FC<SubGroupCardProps> = ({
             variant: 'required' as const
           }] : []),
           {
-            text: `${group.sub_items.length} ${group.sub_items.length === 1 ? 'item' : 'items'}`,
+            text: `${group.sub_items?.length || 0} ${(group.sub_items?.length || 0) === 1 ? 'item' : 'items'}`,
             variant: 'default' as const
           }
         ]}
         headerActions={
-          <div style={{ display: 'flex', gap: 'var(--spacing-sm)', alignItems: 'center' }}>
+          <div className={styles.subGroupCard__headerActions}>
             {showMerchantName && group.merchant_name && (
-              <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
+              <Typography variant="body-small" className={styles.subGroupCard__merchantName}>
                 {group.merchant_name}
               </Typography>
             )}
@@ -257,15 +257,15 @@ export const SubGroupCard: React.FC<SubGroupCardProps> = ({
               </Typography>
             </div>
 
-            {group.sub_items.length === 0 ? (
+            {!group.sub_items || group.sub_items.length === 0 ? (
               <div className={styles.subGroupCard__empty}>
-                <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                <Typography variant="body-medium">
                   No options added yet. Click "Add Option" to create the first one.
                 </Typography>
               </div>
             ) : (
               <div className={styles.subGroupCard__items}>
-                <Typography variant="heading-6" style={{ marginBottom: 'var(--spacing-sm)' }}>
+                <Typography variant="heading-6">
                   Options ({group.sub_items.length})
                 </Typography>
                 
@@ -287,6 +287,8 @@ export const SubGroupCard: React.FC<SubGroupCardProps> = ({
                             variant: item.is_active ? 'success' : 'default'
                           }
                         ]}
+                        canEdit={true}
+                        canDelete={true}
                         onEdit={() => setEditingItem(item.id)}
                         onDelete={() => setDeletingItem(item.id)}
                       />
@@ -316,7 +318,7 @@ export const SubGroupCard: React.FC<SubGroupCardProps> = ({
         <ConfirmationModal
           isOpen={true}
           onClose={() => setDeletingItem(null)}
-          onConfirm={() => handleDeleteItem(deletingItem)}
+          onConfirm={() => handleDeleteItem(deletingItem!)}
           title="Delete Option"
           message={`Are you sure you want to delete "${itemToDelete.name}"?`}
           confirmText="Delete"

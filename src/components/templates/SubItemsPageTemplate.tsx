@@ -13,6 +13,7 @@ export interface SubItemsPageTemplateProps {
   description: string;
   showMerchantName?: boolean;
   backLink?: { label: string; href: string };
+  adminContext?: string;
   requiredRoles: string[];
 }
 
@@ -22,6 +23,7 @@ export const SubItemsPageTemplate: React.FC<SubItemsPageTemplateProps> = ({
   description,
   showMerchantName = false,
   backLink,
+  adminContext,
   requiredRoles
 }) => {
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +50,7 @@ export const SubItemsPageTemplate: React.FC<SubItemsPageTemplateProps> = ({
           description={description}
           showMerchantName={showMerchantName}
           backLink={backLink}
+          adminContext={adminContext}
           onError={handleError}
         />
 

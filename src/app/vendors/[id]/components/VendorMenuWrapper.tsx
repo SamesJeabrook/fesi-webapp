@@ -185,7 +185,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
           const orderIds = orders.map(order => order.id);
           if (orderIds.length === 0) return;
 
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/batch`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/orders/batch`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

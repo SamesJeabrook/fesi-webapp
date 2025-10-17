@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Typography, Button } from '@/components/atoms';
-import { Modal } from '@/components/molecules';
+import { Modal, AdminPageHeader, LocationPicker } from '@/components/molecules';
 import { createEventAPI, EventAPIInterface } from '@/services/eventAPI';
 import { Event, EventFormData, DailySchedule } from '@/types/events';
 import { DailyScheduleCard } from '@/components/molecules/DailyScheduleCard';
@@ -25,12 +25,16 @@ interface EventManagementTemplateProps {
   context: 'admin' | 'merchant';
   merchantId?: string;
   pageTitle?: string;
+  backLink?: { label: string; href: string };
+  adminContext?: string;
 }
 
 export function EventManagementTemplate({
   context,
   merchantId,
-  pageTitle = 'Event Management'
+  pageTitle = 'Event Management',
+  backLink,
+  adminContext
 }: EventManagementTemplateProps) {
   const { getAccessTokenSilently } = useAuth0();
   
@@ -56,21 +60,47 @@ export function EventManagementTemplate({
   // Form state for creating/editing events
   const [eventForm, setEventForm] = useState<EventFormData>({
     name: '',
+    latitude: 51.5074, // Default to London coordinates
+    longitude: -0.1278,
     eventType: 'multi_day',
     isOpen: false,
     schedules: [createDefaultSchedule(1)]
   });
 
   // API instance
-  const [api] = useState<EventAPIInterface>(() => createEventAPI(context));
+  const [api, setApi] = useState<EventAPIInterface | null>(null);
 
-  // Load events on mount
+  // Initialize API when Auth0 is ready
   useEffect(() => {
-    loadEvents();
-    if (context === 'admin' && merchantId) {
-      fetchMerchant();
+    const initializeAPI = async () => {
+      try {
+        const getToken = async () => {
+          return await getAccessTokenSilently({
+            authorizationParams: {
+              audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+            },
+          });
+        };
+        
+        const apiInstance = createEventAPI(context, getToken, merchantId);
+        setApi(apiInstance);
+      } catch (error) {
+        console.error('Failed to initialize API:', error);
+      }
+    };
+
+    initializeAPI();
+  }, [context, getAccessTokenSilently]);
+
+  // Load events when API is ready
+  useEffect(() => {
+    if (api) {
+      loadEvents();
+      if (context === 'admin' && merchantId) {
+        fetchMerchant();
+      }
     }
-  }, [merchantId]);
+  }, [api, merchantId]);
 
   const fetchMerchant = async () => {
     if (!merchantId) return;
@@ -83,7 +113,7 @@ export function EventManagementTemplate({
         },
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/merchants/${merchantId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -104,6 +134,8 @@ export function EventManagementTemplate({
   };
 
   const loadEvents = async () => {
+    if (!api) return;
+    
     try {
       setLoading(true);
       const eventData = await api.getMerchantEvents();
@@ -115,13 +147,22 @@ export function EventManagementTemplate({
     }
   };
 
-  const handleCreateEvent = async () => {
+    const handleCreateEvent = async () => {
+    if (!api) return;
+    
     try {
       setSubmitting(true);
-      await api.createEvent(eventForm);
+      await api.createEvent(eventForm, merchantId);
       await loadEvents();
       setIsCreateModalOpen(false);
-      resetForm();
+      setEventForm({
+        name: '',
+        latitude: 51.5074, // Default to London coordinates
+        longitude: -0.1278,
+        eventType: 'multi_day',
+        isOpen: false,
+        schedules: [createDefaultSchedule(1)]
+      });
     } catch (error) {
       console.error('Failed to create event:', error);
     } finally {
@@ -132,10 +173,72 @@ export function EventManagementTemplate({
   const resetForm = () => {
     setEventForm({
       name: '',
+      latitude: 51.5074, // Default to London coordinates
+      longitude: -0.1278,
       eventType: 'multi_day',
       isOpen: false,
       schedules: [createDefaultSchedule(1)]
     });
+  };
+
+  const handleEditEvent = (event: Event) => {
+    // Populate the form with the event data
+    setEventForm({
+      name: event.name || '',
+      latitude: event.latitude,
+      longitude: event.longitude,
+      eventType: event.event_type as 'single_day' | 'multi_day',
+      isOpen: event.is_open,
+      schedules: event.schedules?.map((schedule, index) => ({
+        dayNumber: index + 1,
+        date: schedule.date,
+        startTime: schedule.start_time,
+        endTime: schedule.end_time,
+        isActive: schedule.is_active
+      })) || [createDefaultSchedule(1)]
+    });
+    
+    setSelectedEvent(event);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateEvent = async () => {
+    if (!api || !selectedEvent) return;
+    
+    // Debug: Check what methods are available on the API instance
+    console.log('API methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(api)));
+    console.log('Has updateEvent:', typeof api.updateEvent);
+    
+    try {
+      setSubmitting(true);
+      
+      // Update basic event details (name, location, status)
+      await api.updateEvent(selectedEvent.id, {
+        name: eventForm.name,
+        latitude: eventForm.latitude,
+        longitude: eventForm.longitude,
+        isOpen: eventForm.isOpen
+      });
+      
+      // If it's a multi-day event, also update schedules
+      if (eventForm.eventType === 'multi_day' && eventForm.schedules) {
+        await api.updateEventSchedules(selectedEvent.id, {
+          schedules: eventForm.schedules.map((schedule, index) => ({
+            ...schedule,
+            dayNumber: index + 1
+          }))
+        });
+      }
+      
+      await loadEvents();
+      setIsEditModalOpen(false);
+      setSelectedEvent(null);
+      resetForm();
+    } catch (error) {
+      console.error('Failed to update event:', error);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const addScheduleDay = () => {
@@ -169,6 +272,8 @@ export function EventManagementTemplate({
   };
 
   const toggleEventStatus = async (event: Event) => {
+    if (!api) return;
+    
     try {
       await api.toggleEventStatus(event.id, !event.is_open);
       await loadEvents();
@@ -187,36 +292,41 @@ export function EventManagementTemplate({
   return (
     <div className={styles.eventManagement}>
       {/* Header */}
-      <div className={styles.eventManagement__header}>
-        <div>
-          <Typography variant="heading-2" className={styles.eventManagement__title}>
-            {context === 'admin' && merchant
-              ? `Events: ${merchant.business_name || merchant.name}`
-              : pageTitle
-            }
+      <AdminPageHeader
+        backLink={backLink}
+        adminContext={adminContext || (context === 'admin' && merchant 
+          ? `Managing events for ${merchant.business_name || merchant.name}`
+          : context === 'admin' 
+            ? 'Manage events across all merchants' 
+            : undefined
+        )}
+        title={context === 'admin' && merchant
+          ? `Events: ${merchant.business_name || merchant.name}`
+          : pageTitle
+        }
+        description={context === 'admin' && merchant
+          ? `Managing events for ${merchant.email} • @${merchant.username}`
+          : context === 'admin' 
+            ? 'Manage events across all merchants' 
+            : 'Create and manage your multi-day events'
+        }
+        actions={
+          <Button
+            variant="primary"
+            onClick={() => setIsCreateModalOpen(true)}
+          >
+            ➕ Create Event
+          </Button>
+        }
+      />
+
+      {merchantLoading && (
+        <div className={styles.eventManagement__loading}>
+          <Typography variant="body-small">
+            Loading merchant details...
           </Typography>
-          <Typography variant="body-medium" className={styles.eventManagement__subtitle}>
-            {context === 'admin' && merchant
-              ? `Managing events for ${merchant.email} • @${merchant.username}`
-              : context === 'admin' 
-                ? 'Manage events across all merchants' 
-                : 'Create and manage your multi-day events'
-            }
-          </Typography>
-          {merchantLoading && (
-            <Typography variant="body-small" className={styles.eventManagement__loading}>
-              Loading merchant details...
-            </Typography>
-          )}
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setIsCreateModalOpen(true)}
-          className={styles.eventManagement__createButton}
-        >
-          ➕ Create Event
-        </Button>
-      </div>
+      )}
 
       {/* Events List */}
       <div className={styles.eventManagement__content}>
@@ -264,6 +374,13 @@ export function EventManagementTemplate({
                   </div>
 
                   <div className={styles.eventCard__actions}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditEvent(event)}
+                    >
+                      ✏️ Edit
+                    </Button>
                     <Button
                       variant="secondary"
                       size="sm"
@@ -316,6 +433,23 @@ export function EventManagementTemplate({
           </div>
 
           <div className={styles.eventForm__section}>
+            <Typography variant="heading-6">Event Location</Typography>
+            <LocationPicker
+              latitude={eventForm.latitude}
+              longitude={eventForm.longitude}
+              onLocationChange={(lat, lng) => {
+                setEventForm(prev => ({ 
+                  ...prev, 
+                  latitude: lat, 
+                  longitude: lng 
+                }));
+              }}
+              label="Set event location"
+              height="400px"
+            />
+          </div>
+
+          <div className={styles.eventForm__section}>
             <div className={styles.eventForm__sectionHeader}>
               <Typography variant="heading-6">Daily Schedules</Typography>
               <Button
@@ -358,6 +492,107 @@ export function EventManagementTemplate({
               isDisabled={submitting || !eventForm.name.trim()}
             >
               {submitting ? 'Creating...' : 'Create Event'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Event Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedEvent(null);
+          resetForm();
+        }}
+        title={`Edit Event: ${selectedEvent?.name || 'Event'}`}
+      >
+        <div className={styles.eventForm}>
+          <div className={styles.eventForm__section}>
+            <Typography variant="heading-6">Event Details</Typography>
+            
+            <div className={styles.eventForm__field}>
+              <label className={styles.eventForm__label}>Event Name</label>
+              <input
+                type="text"
+                value={eventForm.name}
+                onChange={(e) => setEventForm(prev => ({ ...prev, name: e.target.value }))}
+                className={styles.eventForm__input}
+                placeholder="Enter event name"
+              />
+            </div>
+
+            <div className={styles.eventForm__field}>
+              <label className={styles.eventForm__checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={eventForm.isOpen}
+                  onChange={(e) => setEventForm(prev => ({ ...prev, isOpen: e.target.checked }))}
+                />
+                Event is open for orders
+              </label>
+            </div>
+          </div>
+
+          <div className={styles.eventForm__section}>
+            <Typography variant="heading-6">Event Location</Typography>
+            <LocationPicker
+              latitude={eventForm.latitude}
+              longitude={eventForm.longitude}
+              onLocationChange={(lat, lng) => {
+                setEventForm(prev => ({ 
+                  ...prev, 
+                  latitude: lat, 
+                  longitude: lng 
+                }));
+              }}
+              label="Set event location"
+              height="400px"
+            />
+          </div>
+
+          <div className={styles.eventForm__section}>
+            <div className={styles.eventForm__sectionHeader}>
+              <Typography variant="heading-6">Daily Schedules</Typography>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={addScheduleDay}
+              >
+                ➕ Add Day
+              </Button>
+            </div>
+
+            <div className={styles.eventForm__schedules}>
+              {eventForm.schedules?.map((schedule, index) => (
+                <DailyScheduleCard
+                  key={index}
+                  schedule={schedule}
+                  onUpdate={(updatedSchedule) => updateSchedule(index, updatedSchedule)}
+                  onRemove={() => removeSchedule(index)}
+                  canRemove={(eventForm.schedules?.length || 0) > 1}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.eventForm__actions}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsEditModalOpen(false);
+                setSelectedEvent(null);
+                resetForm();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleUpdateEvent}
+              isDisabled={submitting || !eventForm.name.trim()}
+            >
+              {submitting ? 'Updating...' : 'Update Event'}
             </Button>
           </div>
         </div>

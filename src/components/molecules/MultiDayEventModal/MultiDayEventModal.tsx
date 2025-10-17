@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Typography } from '@/components/atoms';
-import { Modal } from '@/components/molecules';
+import { Modal, LocationPicker } from '@/components/molecules';
 import { DailyScheduleCard } from '@/components/molecules/DailyScheduleCard';
 import { DailySchedule, EventFormData, Event } from '@/types/events';
 import styles from './MultiDayEventModal.module.scss';
@@ -29,6 +29,8 @@ export function MultiDayEventModal({
 }: MultiDayEventModalProps) {
   const [formData, setFormData] = useState<EventFormData>({
     name: '',
+    latitude: 51.5074, // Default to London coordinates
+    longitude: -0.1278,
     eventType: 'multi_day',
     isOpen: false,
     schedules: []
@@ -40,6 +42,8 @@ export function MultiDayEventModal({
     if (initialData) {
       setFormData({
         name: initialData.name || '',
+        latitude: initialData.latitude || 51.5074,
+        longitude: initialData.longitude || -0.1278,
         groupEventId: initialData.group_event_id,
         isOpen: initialData.is_open,
         eventType: initialData.event_type,
@@ -55,6 +59,8 @@ export function MultiDayEventModal({
       // Reset form for new event
       setFormData({
         name: '',
+        latitude: 51.5074, // Default to London coordinates
+        longitude: -0.1278,
         eventType: 'multi_day',
         isOpen: false,
         schedules: [createDefaultSchedule(1)]
@@ -154,6 +160,8 @@ export function MultiDayEventModal({
   const handleClose = () => {
     setFormData({
       name: '',
+      latitude: 51.5074, // Default to London coordinates
+      longitude: -0.1278,
       eventType: 'multi_day',
       isOpen: false,
       schedules: [createDefaultSchedule(1)]
@@ -202,6 +210,23 @@ export function MultiDayEventModal({
                 Event is open for orders
               </label>
             </div>
+          </div>
+
+          {/* Event Location */}
+          <div className={styles.multiDayModal__section}>
+            <Typography variant="heading-5">Event Location</Typography>
+            <LocationPicker
+              latitude={formData.latitude}
+              longitude={formData.longitude}
+              onLocationChange={(lat, lng) => {
+                setFormData(prev => ({ 
+                  ...prev, 
+                  latitude: lat, 
+                  longitude: lng 
+                }));
+              }}
+              height="300px"
+            />
           </div>
 
           {/* Daily Schedules */}

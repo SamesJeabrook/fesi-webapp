@@ -80,7 +80,7 @@ export class AdminSubItemsAPI implements SubItemsAPIInterface {
   private merchantId: string;
   private baseUrl: string;
 
-  constructor(merchantId: string, baseUrl: string = '/api/sub-groups') {
+  constructor(merchantId: string, baseUrl: string = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sub-groups`) {
     this.merchantId = merchantId;
     this.baseUrl = baseUrl;
   }
@@ -88,7 +88,8 @@ export class AdminSubItemsAPI implements SubItemsAPIInterface {
   async getGroups(filters?: { selection_type?: string; is_required?: boolean }): Promise<SubItemGroup[]> {
     const params = new URLSearchParams({
       merchant_id: this.merchantId,
-      ...filters
+      ...(filters?.selection_type && { selection_type: filters.selection_type }),
+      ...(filters?.is_required !== undefined && { is_required: filters.is_required.toString() })
     });
     
     const response = await fetch(`${this.baseUrl}?${params}`, {
@@ -206,12 +207,16 @@ export class AdminSubItemsAPI implements SubItemsAPIInterface {
 export class MerchantSubItemsAPI implements SubItemsAPIInterface {
   private baseUrl: string;
 
-  constructor(baseUrl: string = '/api/sub-groups/merchant') {
+  constructor(baseUrl: string = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sub-groups/merchant`) {
     this.baseUrl = baseUrl;
   }
 
   async getGroups(filters?: { selection_type?: string; is_required?: boolean }): Promise<SubItemGroup[]> {
-    const params = new URLSearchParams(filters || {});
+    const queryParams: Record<string, string> = {};
+    if (filters?.selection_type) queryParams.selection_type = filters.selection_type;
+    if (filters?.is_required !== undefined) queryParams.is_required = filters.is_required.toString();
+    
+    const params = new URLSearchParams(queryParams);
     const queryString = params.toString() ? `?${params}` : '';
     
     const response = await fetch(`${this.baseUrl}/groups${queryString}`, {

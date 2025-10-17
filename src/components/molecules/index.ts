@@ -20,3 +20,4 @@ export * from './AddSubItemModal';
 export * from './DailyScheduleCard';
 export * from './MultiDayEventModal';
 export * from './EventCard';
+export * from './LocationPicker';

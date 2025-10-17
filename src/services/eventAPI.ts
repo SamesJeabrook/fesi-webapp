@@ -1,7 +1,6 @@
 // Event API Service
 // Provides API abstraction for event management with admin and merchant contexts
 
-import { getAccessToken } from '@auth0/nextjs-auth0';
 import { 
   Event, 
   MultiDayEventData, 
@@ -11,14 +10,17 @@ import {
   DailySchedule 
 } from '@/types/events';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/';
+
+type GetAccessTokenFunction = () => Promise<string>;
 
 interface EventAPIInterface {
   // Event CRUD operations
-  createEvent(data: EventFormData): Promise<Event>;
-  createMultiDayEvent(data: MultiDayEventData): Promise<Event>;
+  createEvent(data: EventFormData, merchantId?: string): Promise<Event>;
+  createMultiDayEvent(data: MultiDayEventData, merchantId?: string): Promise<Event>;
   getEventById(eventId: string): Promise<Event>;
   getEventWithSchedules(eventId: string): Promise<Event>;
+  updateEvent(eventId: string, data: Partial<EventFormData>): Promise<Event>;
   updateEventSchedules(eventId: string, data: UpdateSchedulesRequest): Promise<Event>;
   deleteEvent(eventId: string): Promise<void>;
   
@@ -32,41 +34,43 @@ interface EventAPIInterface {
 }
 
 class AdminEventAPI implements EventAPIInterface {
+  constructor(private getAccessToken: GetAccessTokenFunction, private merchantId?: string) {}
+
   private async getAuthHeaders() {
-    const { accessToken } = await getAccessToken();
+    const accessToken = await this.getAccessToken();
     return {
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     };
   }
 
-  async createEvent(data: EventFormData): Promise<Event> {
+  async createEvent(data: EventFormData, merchantId?: string): Promise<Event> {
     if (data.eventType === 'multi_day' && data.schedules) {
       return this.createMultiDayEvent({
         eventData: {
           name: data.name,
-          latitude: 0, // Will be set by admin
-          longitude: 0, // Will be set by admin
+          latitude: data.latitude,
+          longitude: data.longitude,
           groupEventId: data.groupEventId,
           isOpen: data.isOpen
         },
         schedules: data.schedules
-      });
+      }, merchantId);
     }
 
-    // Single day event creation
-    const response = await fetch(`${API_BASE_URL}/events`, {
+    // Single day event creation (admin specifies merchant)
+    const response = await fetch(`${API_BASE_URL}/api/events`, {
       method: 'POST',
       headers: await this.getAuthHeaders(),
       body: JSON.stringify({
-        merchant_id: data.merchantId, // Admin specifies merchant
         name: data.name,
         group_event_id: data.groupEventId,
-        latitude: 0, // Admin sets location
-        longitude: 0,
+        latitude: data.latitude,
+        longitude: data.longitude,
         start_time: data.date && data.startTime ? `${data.date}T${data.startTime}` : undefined,
         end_time: data.date && data.endTime ? `${data.date}T${data.endTime}` : undefined,
-        is_open: data.isOpen
+        is_open: data.isOpen,
+        merchant_id: merchantId // Admin specifies merchant
       }),
     });
 
@@ -77,11 +81,14 @@ class AdminEventAPI implements EventAPIInterface {
     return response.json();
   }
 
-  async createMultiDayEvent(data: MultiDayEventData): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/events/multi-day`, {
+  async createMultiDayEvent(data: MultiDayEventData, merchantId?: string): Promise<Event> {
+    const response = await fetch(`${API_BASE_URL}/api/events/multi-day`, {
       method: 'POST',
       headers: await this.getAuthHeaders(),
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        merchant_id: merchantId // Admin specifies merchant
+      }),
     });
 
     if (!response.ok) {
@@ -92,7 +99,7 @@ class AdminEventAPI implements EventAPIInterface {
   }
 
   async getEventById(eventId: string): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -104,7 +111,7 @@ class AdminEventAPI implements EventAPIInterface {
   }
 
   async getEventWithSchedules(eventId: string): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}/schedules`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/schedules`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -116,7 +123,7 @@ class AdminEventAPI implements EventAPIInterface {
   }
 
   async updateEventSchedules(eventId: string, data: UpdateSchedulesRequest): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}/schedules`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/schedules`, {
       method: 'PUT',
       headers: await this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -130,7 +137,7 @@ class AdminEventAPI implements EventAPIInterface {
   }
 
   async deleteEvent(eventId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
       method: 'DELETE',
       headers: await this.getAuthHeaders(),
     });
@@ -141,8 +148,8 @@ class AdminEventAPI implements EventAPIInterface {
   }
 
   async toggleEventStatus(eventId: string, isOpen: boolean): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}/status`, {
-      method: 'PUT',
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/toggle-open`, {
+      method: 'POST',
       headers: await this.getAuthHeaders(),
       body: JSON.stringify({ is_open: isOpen }),
     });
@@ -155,7 +162,7 @@ class AdminEventAPI implements EventAPIInterface {
   }
 
   async isEventActiveNow(eventId: string): Promise<EventActiveResponse> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}/active-now`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/active-now`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -168,10 +175,11 @@ class AdminEventAPI implements EventAPIInterface {
 
   async getMerchantEvents(params?: { limit?: number; offset?: number }): Promise<Event[]> {
     const queryParams = new URLSearchParams();
+    if (this.merchantId) queryParams.append('merchant_id', this.merchantId);
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.offset) queryParams.append('offset', params.offset.toString());
 
-    const response = await fetch(`${API_BASE_URL}/events/merchant?${queryParams}`, {
+    const response = await fetch(`${API_BASE_URL}/api/events?${queryParams}`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -189,7 +197,7 @@ class AdminEventAPI implements EventAPIInterface {
     });
     if (params.radius) queryParams.append('radius_km', params.radius.toString());
 
-    const response = await fetch(`${API_BASE_URL}/events/nearby?${queryParams}`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/nearby?${queryParams}`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -199,24 +207,45 @@ class AdminEventAPI implements EventAPIInterface {
 
     return response.json();
   }
+
+  async updateEvent(eventId: string, data: Partial<EventFormData>): Promise<Event> {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
+      method: 'PUT',
+      headers: await this.getAuthHeaders(),
+      body: JSON.stringify({
+        name: data.name,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        is_open: data.isOpen
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update event: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
 }
 
 class MerchantEventAPI implements EventAPIInterface {
+  constructor(private getAccessToken: GetAccessTokenFunction) {}
+
   private async getAuthHeaders() {
-    const { accessToken } = await getAccessToken();
+    const accessToken = await this.getAccessToken();
     return {
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     };
   }
 
-  async createEvent(data: EventFormData): Promise<Event> {
+  async createEvent(data: EventFormData, merchantId?: string): Promise<Event> {
     if (data.eventType === 'multi_day' && data.schedules) {
       return this.createMultiDayEvent({
         eventData: {
           name: data.name,
-          latitude: data.latitude || 0,
-          longitude: data.longitude || 0,
+          latitude: data.latitude,
+          longitude: data.longitude,
           groupEventId: data.groupEventId,
           isOpen: data.isOpen
         },
@@ -231,8 +260,8 @@ class MerchantEventAPI implements EventAPIInterface {
       body: JSON.stringify({
         name: data.name,
         group_event_id: data.groupEventId,
-        latitude: data.latitude || 0,
-        longitude: data.longitude || 0,
+        latitude: data.latitude,
+        longitude: data.longitude,
         start_time: data.date && data.startTime ? `${data.date}T${data.startTime}` : undefined,
         end_time: data.date && data.endTime ? `${data.date}T${data.endTime}` : undefined,
         is_open: data.isOpen
@@ -246,8 +275,8 @@ class MerchantEventAPI implements EventAPIInterface {
     return response.json();
   }
 
-  async createMultiDayEvent(data: MultiDayEventData): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/events/multi-day`, {
+  async createMultiDayEvent(data: MultiDayEventData, merchantId?: string): Promise<Event> {
+    const response = await fetch(`${API_BASE_URL}/api/events/multi-day`, {
       method: 'POST',
       headers: await this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -261,7 +290,7 @@ class MerchantEventAPI implements EventAPIInterface {
   }
 
   async getEventById(eventId: string): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -273,7 +302,7 @@ class MerchantEventAPI implements EventAPIInterface {
   }
 
   async getEventWithSchedules(eventId: string): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}/schedules`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/schedules`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -285,7 +314,7 @@ class MerchantEventAPI implements EventAPIInterface {
   }
 
   async updateEventSchedules(eventId: string, data: UpdateSchedulesRequest): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}/schedules`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/schedules`, {
       method: 'PUT',
       headers: await this.getAuthHeaders(),
       body: JSON.stringify(data),
@@ -299,7 +328,7 @@ class MerchantEventAPI implements EventAPIInterface {
   }
 
   async deleteEvent(eventId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
       method: 'DELETE',
       headers: await this.getAuthHeaders(),
     });
@@ -310,7 +339,7 @@ class MerchantEventAPI implements EventAPIInterface {
   }
 
   async toggleEventStatus(eventId: string, isOpen: boolean): Promise<Event> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}/status`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/toggle-open`, {
       method: 'PUT',
       headers: await this.getAuthHeaders(),
       body: JSON.stringify({ is_open: isOpen }),
@@ -324,7 +353,7 @@ class MerchantEventAPI implements EventAPIInterface {
   }
 
   async isEventActiveNow(eventId: string): Promise<EventActiveResponse> {
-    const response = await fetch(`${API_BASE_URL}/events/${eventId}/active-now`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/active-now`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -340,7 +369,7 @@ class MerchantEventAPI implements EventAPIInterface {
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.offset) queryParams.append('offset', params.offset.toString());
 
-    const response = await fetch(`${API_BASE_URL}/events/merchant?${queryParams}`, {
+    const response = await fetch(`${API_BASE_URL}/events?${queryParams}`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -358,7 +387,7 @@ class MerchantEventAPI implements EventAPIInterface {
     });
     if (params.radius) queryParams.append('radius_km', params.radius.toString());
 
-    const response = await fetch(`${API_BASE_URL}/events/nearby?${queryParams}`, {
+    const response = await fetch(`${API_BASE_URL}/api/events/nearby?${queryParams}`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -368,19 +397,37 @@ class MerchantEventAPI implements EventAPIInterface {
 
     return response.json();
   }
+
+  async updateEvent(eventId: string, data: Partial<EventFormData>): Promise<Event> {
+    const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
+      method: 'PUT',
+      headers: await this.getAuthHeaders(),
+      body: JSON.stringify({
+        name: data.name,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        is_open: data.isOpen
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update event: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
 }
 
 // Factory function to create the appropriate API instance
-export function createEventAPI(context: 'admin' | 'merchant'): EventAPIInterface {
+export function createEventAPI(context: 'admin' | 'merchant', getAccessToken: GetAccessTokenFunction, merchantId?: string): EventAPIInterface {
   switch (context) {
     case 'admin':
-      return new AdminEventAPI();
+      return new AdminEventAPI(getAccessToken, merchantId);
     case 'merchant':
-      return new MerchantEventAPI();
+      return new MerchantEventAPI(getAccessToken);
     default:
       throw new Error(`Unknown event API context: ${context}`);
   }
 }
 
-export { AdminEventAPI, MerchantEventAPI };
 export type { EventAPIInterface };

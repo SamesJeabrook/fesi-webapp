@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Typography, Button } from '@/components/atoms';
+import { Typography, Button, GridContainer, GridItem } from '@/components/atoms';
 import { AdminPageHeader, ConfirmationModal, AddSubGroupModal } from '@/components/molecules';
 import { SubItemsAPIInterface, SubItemGroup, CreateSubGroupData } from '@/services/subItemsAPI';
 import { SubGroupCard } from './SubGroupCard';
@@ -14,6 +14,7 @@ export interface SubItemsManagerProps {
   description: string;
   showMerchantName?: boolean;
   backLink?: { label: string; href: string };
+  adminContext?: string;
   onError?: (error: string) => void;
 }
 
@@ -23,6 +24,7 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
   description,
   showMerchantName = false,
   backLink,
+  adminContext,
   onError
 }) => {
   const { getAccessTokenSilently } = useAuth0();
@@ -167,6 +169,7 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
         title={title}
         description={description}
         backLink={backLink}
+        adminContext={adminContext}
         actions={
           <Button
             variant="primary"
@@ -178,7 +181,7 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
         }
       />
 
-      <div className={styles.subItemsManager__content}>
+      <GridContainer>
         {loading ? (
           <div className={styles.subItemsManager__loading}>
             <Typography variant="body-medium">Loading sub-groups...</Typography>
@@ -198,22 +201,23 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
             </Button>
           </div>
         ) : (
-          <div className={styles.subItemsManager__groups}>
+          <>
             {subGroups.map(group => (
-              <SubGroupCard
-                key={group.id}
-                group={group}
-                showMerchantName={showMerchantName}
-                onUpdateGroup={(data) => handleUpdateGroup(group.id, data)}
-                onDeleteGroup={() => setDeletingGroup(group.id)}
-                onCreateItem={(data) => handleCreateItem(group.id, data)}
-                onUpdateItem={handleUpdateItem}
-                onDeleteItem={handleDeleteItem}
-              />
+              <GridItem sm={16} md={8} key={group.id}>
+                <SubGroupCard
+                  group={group}
+                  showMerchantName={showMerchantName}
+                  onUpdateGroup={(data) => handleUpdateGroup(group.id, data)}
+                  onDeleteGroup={() => setDeletingGroup(group.id)}
+                  onCreateItem={(data) => handleCreateItem(group.id, data)}
+                  onUpdateItem={handleUpdateItem}
+                  onDeleteItem={handleDeleteItem}
+                />
+              </GridItem>
             ))}
-          </div>
+          </>
         )}
-      </div>
+      </GridContainer>
 
       {/* Add Group Modal */}
       {showAddGroupModal && (

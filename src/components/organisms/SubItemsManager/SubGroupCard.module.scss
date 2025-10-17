@@ -2,45 +2,60 @@
 // Individual sub-group card with edit forms
 
 .subGroupCard {
+  &__headerActions {
+    display: flex;
+    gap: var(--spacing-2);
+    align-items: center;
+  }
+
+  &__merchantName {
+    color: var(--color-neutral-600);
+  }
+
   &__badges {
     display: flex;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-1);
     flex-wrap: wrap;
   }
   
   &__content {
-    padding: var(--spacing-md);
+    padding: var(--spacing-4);
   }
   
   &__info {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
-    margin-bottom: var(--spacing-md);
-    padding: var(--spacing-sm);
-    background-color: var(--color-background-secondary);
+    gap: var(--spacing-1);
+    margin-bottom: var(--spacing-4);
+    padding: var(--spacing-3);
+    background-color: var(--color-secondary-100);
     border-radius: var(--border-radius-sm);
   }
   
   &__empty {
     text-align: center;
-    padding: var(--spacing-lg);
-    border: 1px dashed var(--color-border-secondary);
+    padding: var(--spacing-8);
+    border: 1px dashed var(--color-neutral-300);
     border-radius: var(--border-radius-md);
-    background-color: var(--color-background-tertiary);
+    background-color: var(--color-neutral-50);
+
+    p {
+      color: var(--color-neutral-600);
+    }
   }
   
   &__items {
-    margin-top: var(--spacing-md);
+    margin-top: var(--spacing-4);
     
     h6 {
-      color: var(--color-text-primary);
-      border-bottom: 1px solid var(--color-border-secondary);
-      padding-bottom: var(--spacing-xs);
+      color: var(--color-neutral-900);
+      border-bottom: 1px solid var(--color-neutral-300);
+      padding-bottom: var(--spacing-1);
+      margin-bottom: var(--spacing-2);
     }
     
     > div {
-      margin-bottom: var(--spacing-sm);
+      margin-bottom: var(--spacing-3);
       
       &:last-child {
         margin-bottom: 0;
@@ -51,25 +66,25 @@
 
 // Edit form styles
 .editForm {
-  padding: var(--spacing-md);
-  background-color: var(--color-background-secondary);
+  padding: var(--spacing-4);
+  background-color: var(--color-secondary-100);
   border-radius: var(--border-radius-md);
-  border: 1px solid var(--color-border-primary);
+  border: 1px solid var(--color-neutral-300);
   
   &__grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
   }
   
   &__actions {
     display: flex;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-3);
     justify-content: flex-end;
-    margin-top: var(--spacing-lg);
-    padding-top: var(--spacing-md);
-    border-top: 1px solid var(--color-border-secondary);
+    margin-top: var(--spacing-8);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--color-neutral-300);
   }
 }
 
@@ -77,29 +92,29 @@
 @media (max-width: 768px) {
   .subGroupCard {
     &__badges {
-      gap: var(--spacing-xxs);
+      gap: var(--spacing-1);
     }
     
     &__content {
-      padding: var(--spacing-sm);
+      padding: var(--spacing-3);
     }
     
     &__info {
-      gap: var(--spacing-xxs);
+      gap: var(--spacing-1);
     }
   }
   
   .editForm {
-    padding: var(--spacing-sm);
+    padding: var(--spacing-3);
     
     &__grid {
       grid-template-columns: 1fr;
-      gap: var(--spacing-sm);
+      gap: var(--spacing-3);
     }
     
     &__actions {
       flex-direction: column-reverse;
-      gap: var(--spacing-xs);
+      gap: var(--spacing-1);
     }
   }
 }

@@ -68,7 +68,7 @@ export const MerchantSelector: React.FC<MerchantSelectorProps> = ({
       }
 
       console.log('📡 Calling merchants API...');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/merchants`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
