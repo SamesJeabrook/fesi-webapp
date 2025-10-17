@@ -7,9 +7,10 @@ import { Typography } from '@/components/atoms/Typography';
 // Generate metadata for the page
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
+  const fetchUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/merchants/${id}`;
+  console.log(fetchUrl);
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/merchants/${id}`);
+    const response = await fetch(fetchUrl);
     
     if (!response.ok) {
       return {
@@ -61,7 +62,7 @@ export default async function VendorPage({
   try {
     console.log('Fetching menu data for:', id);
     // Use the menu API endpoint that returns the correct structure
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/menu/merchant/${id}`);
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/menu/merchant/${id}`);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch menu: ${response.status}`);
@@ -69,7 +70,7 @@ export default async function VendorPage({
     
     menuData = await response.json();
 
-    const activeEventResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/merchants/${menuData.data.merchant.id}/active-event`);
+    const activeEventResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/merchants/${menuData.data.merchant.id}/active-event`);
     if (activeEventResponse.ok) {
       const activeEventData = await activeEventResponse.json();
       activeEvent = activeEventData.hasActiveEvent;

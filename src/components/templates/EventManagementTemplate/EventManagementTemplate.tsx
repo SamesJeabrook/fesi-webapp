@@ -44,6 +44,8 @@ export function EventManagementTemplate({
   const [loading, setLoading] = useState(true);
   const [merchantLoading, setMerchantLoading] = useState(context === 'admin' && !!merchantId);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isQuickEventModalOpen, setIsQuickEventModalOpen] = useState(false);
+  const [quickEventLocation, setQuickEventLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -181,6 +183,35 @@ export function EventManagementTemplate({
     });
   };
 
+  const handleQuickEvent = async() => {
+    if (!quickEventLocation || !merchantId) {
+      alert('Merchant ID and location are required.');
+      return;
+    }
+    const now = new Date();
+    const end = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    const dateStr = now.toISOString().split('T')[0];
+    const startTime = now.toTimeString().slice(0,5);
+    const endTime = end.toTimeString().slice(0,5);
+    const eventName = `event - ${dateStr}`;
+    setEventForm({
+      name: eventName,
+      latitude: quickEventLocation.latitude,
+      longitude: quickEventLocation.longitude,
+      eventType: 'single_day',
+      isOpen: true,
+      schedules: [{
+        dayNumber: 1,
+        date: dateStr,
+        startTime,
+        endTime,
+        isActive: true
+      }]
+    });
+    setIsQuickEventModalOpen(false);
+    await handleCreateEvent();
+  }
+
   const handleEditEvent = (event: Event) => {
     // Populate the form with the event data
     setEventForm({
@@ -311,12 +342,23 @@ export function EventManagementTemplate({
             : 'Create and manage your multi-day events'
         }
         actions={
-          <Button
-            variant="primary"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            ➕ Create Event
-          </Button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Button
+              variant="primary"
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              ➕ Create Event
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setQuickEventLocation({ latitude: 51.5074, longitude: -0.1278 });
+                setIsQuickEventModalOpen(true);
+              }}
+            >
+              ⚡ Quick Event
+            </Button>
+          </div>
         }
       />
 
@@ -395,6 +437,41 @@ export function EventManagementTemplate({
           </div>
         )}
       </div>
+
+      {/* Quick Event Modal */}
+      <Modal
+        isOpen={isQuickEventModalOpen}
+        onClose={() => setIsQuickEventModalOpen(false)}
+        title="Quick Event Location"
+      >
+        <div className={styles.eventForm}>
+          <div className={styles.eventForm__section}>
+            <Typography variant="heading-6">Confirm Event Location</Typography>
+            <LocationPicker
+              latitude={quickEventLocation?.latitude || 51.5074}
+              longitude={quickEventLocation?.longitude || -0.1278}
+              onLocationChange={(lat, lng) => setQuickEventLocation({ latitude: lat, longitude: lng })}
+              label="Set event location"
+              height="400px"
+            />
+          </div>
+          <div className={styles.eventForm__actions}>
+            <Button
+              variant="secondary"
+              onClick={() => setIsQuickEventModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleQuickEvent}
+              isDisabled={submitting || !merchantId || !quickEventLocation}
+            >
+              {submitting ? 'Creating...' : 'Confirm & Create'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Create Event Modal */}
       <Modal

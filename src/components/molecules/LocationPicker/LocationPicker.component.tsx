@@ -27,54 +27,60 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
   useEffect(() => {
     const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-    
     if (!accessToken) {
       setError('Mapbox access token is required');
       setIsLoading(false);
       return;
     }
-
     if (!mapContainer.current) return;
-
-    // Initialize Mapbox
-    mapboxgl.accessToken = accessToken;
-
-    try {
-      // Create map instance
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: mapStyle,
-        center: [longitude, latitude],
-        zoom: zoom,
-      });
-
-      // Handle map move events
-      map.current.on('moveend', () => {
-        if (map.current) {
-          const center = map.current.getCenter();
-          setCurrentCenter({ lat: center.lat, lng: center.lng });
-          onLocationChange(center.lat, center.lng);
+    // Try to get user's current location
+    const setupMap = (lat: number, lng: number) => {
+      mapboxgl.accessToken = accessToken;
+      try {
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current!, // non-null
+          style: mapStyle,
+          center: [lng, lat],
+          zoom: zoom,
+        });
+        map.current.on('moveend', () => {
+          if (map.current) {
+            const center = map.current.getCenter();
+            setCurrentCenter({ lat: center.lat, lng: center.lng });
+            onLocationChange(center.lat, center.lng);
+          }
+        });
+        map.current.on('load', () => {
+          setIsLoading(false);
+        });
+        map.current.on('error', (e) => {
+          console.error('Mapbox error:', e);
+          setError('Failed to load map');
+          setIsLoading(false);
+        });
+      } catch (err) {
+        console.error('Failed to initialize map:', err);
+        setError('Failed to initialize map');
+        setIsLoading(false);
+      }
+    };
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          setCurrentCenter({ lat, lng });
+          onLocationChange(lat, lng);
+          setupMap(lat, lng);
+        },
+        (err) => {
+          // Fallback to provided props
+          setupMap(latitude, longitude);
         }
-      });
-
-      // Handle map load
-      map.current.on('load', () => {
-        setIsLoading(false);
-      });
-
-      // Handle map errors
-      map.current.on('error', (e) => {
-        console.error('Mapbox error:', e);
-        setError('Failed to load map');
-        setIsLoading(false);
-      });
-
-    } catch (err) {
-      console.error('Failed to initialize map:', err);
-      setError('Failed to initialize map');
-      setIsLoading(false);
+      );
+    } else {
+      setupMap(latitude, longitude);
     }
-
     // Cleanup
     return () => {
       if (map.current) {
