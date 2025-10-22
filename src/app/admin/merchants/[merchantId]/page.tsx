@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button } from '@/components/atoms';
+import { MerchantQrModal } from '@/components/molecules/MerchantQrModal/MerchantQrModal';
 import { Card } from '@/components/atoms/Card';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
@@ -69,6 +70,7 @@ export default function AdminMerchantDashboard() {
   const { getAccessTokenSilently } = useAuth0();
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [qrOpen, setQrOpen] = useState(false);
 
   const merchantId = params?.merchantId as string;
 
@@ -158,6 +160,20 @@ export default function AdminMerchantDashboard() {
                 {merchant.status}
               </span>
             </div>
+            <div style={{ marginTop: 24 }}>
+              <Button variant="secondary" size="sm" onClick={() => setQrOpen(true)}>
+                Show QR Code
+              </Button>
+            </div>
+            <MerchantQrModal
+              merchant={{
+                ...merchant,
+                phone: (merchant as any).phone || '',
+                created_at: (merchant as any).created_at || ''
+              }}
+              open={qrOpen}
+              onClose={() => setQrOpen(false)}
+            />
           </div>
         </div>
 

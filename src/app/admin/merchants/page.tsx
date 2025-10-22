@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
@@ -24,6 +24,7 @@ export default function AdminMerchantsPage() {
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  // Removed QR modal state from listing page
 
   const fetchMerchants = async () => {
     try {
@@ -138,22 +139,11 @@ export default function AdminMerchantsPage() {
                         {merchant.status}
                       </span>
                     </div>
-                    <div className={styles.merchants__itemDetails}>
-                      <Typography variant="body-medium" style={{ color: 'var(--color-neutral-500)' }}>
-                        {merchant.email}
-                      </Typography>
-                      <Typography variant="body-small" style={{ color: 'var(--color-neutral-500)' }}>
-                        @{merchant.username} • {merchant.phone}
-                      </Typography>
+                    <div className={styles.merchants__itemActions}>
+                      <Button variant="primary" size="sm">
+                        Manage →
+                      </Button>
                     </div>
-                    <Typography variant="body-small" style={{ color: 'var(--color-neutral-500)' }}>
-                      Joined: {new Date(merchant.created_at).toLocaleDateString()}
-                    </Typography>
-                  </div>
-                  <div className={styles.merchants__itemActions}>
-                    <Button variant="primary" size="sm">
-                      Manage →
-                    </Button>
                   </div>
                 </Link>
               </Grid.Item>
