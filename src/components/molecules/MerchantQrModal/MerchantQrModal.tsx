@@ -38,7 +38,7 @@ export const MerchantQrModal: React.FC<MerchantQrModalProps> = ({ merchant, open
   useEffect(() => {
     if (!merchant) return;
     let objectUrl: string | null = null;
-    const qrValue = `${process.env.NEXT_PUBLIC_WEBAPP_URL || ''}/menu/${merchant.id}`;
+    const qrValue = `${process.env.NEXT_PUBLIC_WEBAPP_URL || 'http://localhost:3000'}/menu/${merchant.id}`;
     qrCode = new QRCodeStyling({
       width: QR_SIZE,
       height: QR_SIZE,
@@ -46,7 +46,7 @@ export const MerchantQrModal: React.FC<MerchantQrModalProps> = ({ merchant, open
       image: '/images/fesi-logo.png',
       imageOptions: {
         crossOrigin: 'anonymous',
-        imageSize: QR_SIZE * 0.28,
+        imageSize: 0.5,
       },
       dotsOptions: {
         color: '#111827',
@@ -77,9 +77,9 @@ export const MerchantQrModal: React.FC<MerchantQrModalProps> = ({ merchant, open
     <div className={styles.overlay} style={{ display: open ? undefined : 'none' }}>
       <div className={styles.modal}>
         <div className={styles.title}>{merchant.business_name || merchant.name}</div>
-        <div className={styles.qrWrapper} ref={qrWrapperRef} style={{ position: 'relative', width: QR_SIZE, height: QR_SIZE }}>
+        <div className={styles.qrWrapper} ref={qrWrapperRef} style={{width: QR_SIZE, height: QR_SIZE }}>
           {!qrDataUrl && (
-            <div style={{ width: QR_SIZE, height: QR_SIZE, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6' }}>
+            <div className={styles.qrPlaceholder} style={{ width: QR_SIZE, height: QR_SIZE}}>
               Generating QR...
             </div>
           )}

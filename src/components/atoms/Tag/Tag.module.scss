@@ -1,0 +1,24 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-neutral-50);
+  color: var(--color-neutral-800);
+  border-radius: 16px;
+  padding: 0.25em 0.75em;
+  font-size: 0.95em;
+  margin: 0.15em;
+}
+.close {
+  background: none;
+  border: none;
+  color: var(--color-neutrual-700);
+  font-size: 1.1em;
+  margin-left: 0.5em;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+.close:hover {
+  background: var(--color-neutral-200);
+  color: var(--color-danger);
+}

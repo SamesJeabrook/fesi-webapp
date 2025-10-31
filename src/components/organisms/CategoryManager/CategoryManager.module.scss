@@ -1,0 +1,16 @@
+.manager {
+  margin-bottom: 1.5em;
+}
+.addCategoryRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.5em;
+}
+.categorySelect {
+  min-width: 120px;
+  padding: 0.3em 0.6em;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1em;
+}

@@ -61,6 +61,13 @@
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
+.qrPlaceholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-secondary-100);
+}
+
 .actions {
   margin-top: 24px;
   display: flex;
