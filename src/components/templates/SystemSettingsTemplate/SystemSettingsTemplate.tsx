@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useAuth0 } from '@auth0/auth0-react';
+import { Modal } from '@/components/molecules/Modal/Modal';
 import { TagGroup } from "@/components/molecules/TagGroup/TagGroup";
 import { CategoryManager } from "@/components/organisms/CategoryManager/CategoryManager";
 import { Typography, Input } from "@/components/atoms";
@@ -31,7 +33,11 @@ interface SystemSettingsTemplateProps {
   availableTags: { id: string; label: string }[];
 }
 
-  export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({ company, loading, availableTags }) => {
+export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({ company, loading, availableTags }) => {
+  const { getAccessTokenSilently } = useAuth0();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
     const [form, setForm] = useState({
       name: "",
       description: "",
@@ -69,15 +75,49 @@ interface SystemSettingsTemplateProps {
       }
     };
 
+
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
-      // TODO: Call API to update company details and categories
-      alert("Company details updated (API integration pending)");
+      setIsModalOpen(true);
+    };
+
+    const handleModalConfirm = async () => {
+      setIsSaving(true);
+      setSaveError(null);
+      try {
+        const token = await getAccessTokenSilently({
+          authorizationParams: {
+            audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+          },
+        });
+        // Compose payload
+        const payload = {
+          ...form,
+          categories: selectedTags.map(tag => tag.id),
+          version: company?.version,
+        };
+        // API endpoint (assume company.id is available)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/merchants/${company?.id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error('Failed to save changes');
+        setIsModalOpen(false);
+      } catch (err: any) {
+        setSaveError(err.message || 'Unknown error');
+      } finally {
+        setIsSaving(false);
+      }
     };
 
     if (loading) return <div className={styles.loading}>Loading...</div>;
 
     return (
+      <>
       <form className={styles.form} onSubmit={handleSubmit}>
         <Typography variant="heading-2" as="h2">System Settings</Typography>
         {/* Basic Info Section */}
@@ -136,5 +176,20 @@ interface SystemSettingsTemplateProps {
 
         <Button type="submit" variant="primary">Save Changes</Button>
       </form>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Save Changes Warning"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setIsModalOpen(false)} isDisabled={isSaving}>Cancel</Button>
+            <Button variant="primary" onClick={handleModalConfirm} isDisabled={isSaving}>Continue & Save</Button>
+          </>
+        }
+      >
+        <Typography variant="body-medium">Are you sure you want to save these changes? This will update the company settings immediately.</Typography>
+        {saveError && <div style={{ color: 'red', marginTop: 8 }}>{saveError}</div>}
+      </Modal>
+      </>
     );
   };
