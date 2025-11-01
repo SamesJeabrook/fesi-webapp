@@ -93,7 +93,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({ 
         // Compose payload
         const payload = {
           ...form,
-          categories: selectedTags.map(tag => tag.id),
+          categoryIds: selectedTags.map(tag => tag.id),
           version: company?.version,
         };
         // API endpoint (assume company.id is available)
