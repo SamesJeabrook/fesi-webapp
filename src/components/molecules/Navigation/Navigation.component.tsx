@@ -40,16 +40,27 @@ export const Navigation: React.FC<NavigationProps> = ({
                   <Link href="/admin/merchants" className={styles.navigation__link}>
                     <Typography variant="body-medium">Admin Dashboard</Typography>
                   </Link>
-                  <Link href="/merchant/admin/orders" className={styles.navigation__link}>
-                    <Typography variant="body-medium">Merchant Orders</Typography>
+                  <Link href="/merchant/admin" className={styles.navigation__link}>
+                    <Typography variant="body-medium">Merchant Dashboard</Typography>
+                  </Link>
+                  <Link href="/merchant/admin/settings" className={styles.navigation__link}>
+                    <Typography variant="body-medium">Merchant Settings</Typography>
                   </Link>
                 </>
               )}
               
               {(isMerchant && !isAdmin) && (
-                <Link href="/merchant/admin/orders" className={styles.navigation__link}>
-                  <Typography variant="body-medium">My Orders</Typography>
-                </Link>
+                <>
+                  <Link href="/merchant/admin" className={styles.navigation__link}>
+                    <Typography variant="body-medium">Dashboard</Typography>
+                  </Link>
+                  <Link href="/merchant/admin/orders" className={styles.navigation__link}>
+                    <Typography variant="body-medium">Orders</Typography>
+                  </Link>
+                  <Link href="/merchant/admin/settings" className={styles.navigation__link}>
+                    <Typography variant="body-medium">Settings</Typography>
+                  </Link>
+                </>
               )}
             </>
           )}

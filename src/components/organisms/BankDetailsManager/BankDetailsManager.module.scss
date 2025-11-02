@@ -1,0 +1,138 @@
+@use '@/styles/mixins/index' as *;
+@use '@/styles/tokens/typography' as *;
+
+.bankDetailsManager {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.description {
+  color: var(--color-neutral-600);
+  margin-bottom: var(--spacing-2);
+}
+
+.loading {
+  padding: var(--spacing-8);
+  text-align: center;
+  color: var(--color-neutral-500);
+}
+
+.statusCard {
+  padding: var(--spacing-6);
+}
+
+.statusItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.statusLabel {
+  color: var(--color-neutral-600);
+  font-weight: var(--font-weight-medium);
+}
+
+.statusValue {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--radius-full);
+  @extend %body-small;
+  font-weight: var(--font-weight-medium);
+
+  &[data-status='not-setup'] {
+    background-color: var(--color-neutral-100);
+    color: var(--color-neutral-700);
+  }
+
+  &[data-status='incomplete'] {
+    background-color: var(--color-warning-100);
+    color: var(--color-warning-700);
+  }
+
+  &[data-status='active'] {
+    background-color: var(--color-success-100);
+    color: var(--color-success-700);
+  }
+}
+
+.iconCheck {
+  color: var(--color-success-600);
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.iconCross {
+  color: var(--color-error-600);
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.requirements {
+  margin-top: var(--spacing-4);
+  padding: var(--spacing-4);
+  background-color: var(--color-warning-50);
+  border: 1px solid var(--color-warning-200);
+  border-radius: var(--radius-md);
+}
+
+.requirementsTitle {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-warning-800);
+  margin-bottom: var(--spacing-2);
+}
+
+.requirementsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+
+  li {
+    padding-left: var(--spacing-4);
+    position: relative;
+    color: var(--color-warning-700);
+
+    &::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+    }
+  }
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-3);
+  flex-wrap: wrap;
+}
+
+.notice {
+  padding: var(--spacing-4);
+  background-color: var(--color-info-50);
+  border: 1px solid var(--color-info-200);
+  border-radius: var(--radius-md);
+}
+
+.noticeText {
+  color: var(--color-info-800);
+}
+
+@include mobile {
+  .actions {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { TagGroup } from "@/components/molecules/TagGroup/TagGroup";
-import { Typography, Button } from "@/components/atoms";
+import { Typography, Button, SearchableSelect } from "@/components/atoms";
+import type { SearchableSelectOption } from "@/components/atoms";
 import styles from "./CategoryManager.module.scss";
 
 export interface CategoryTag {
@@ -16,22 +17,26 @@ export interface CategoryManagerProps {
 }
 
 export const CategoryManager: React.FC<CategoryManagerProps> = ({ availableTags, selectedTags, onRemoveTag, onAddTag }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string>(availableTags[0]?.id || "");
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
 
-  useEffect(() => {
-    if (availableTags.length > 0) {
-      setSelectedCategory(availableTags[0].id);
-    }
-  }, [availableTags]);
+  // Convert CategoryTag to SearchableSelectOption format
+  const searchableOptions: SearchableSelectOption[] = availableTags
+    .filter(tag => !selectedTags.some(selected => selected.id === tag.id))
+    .map(tag => ({
+      id: tag.id,
+      label: tag.label,
+      value: tag.id,
+    }));
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedCategory(e.target.value);
-  };
-
-  const handleAddTag = () => {
-    const found = availableTags.find(cat => cat.id === selectedCategory);
-    if (found && !selectedTags.some(tag => tag.id === found.id)) {
-      onAddTag(found);
+  const handleSelectChange = (option: SearchableSelectOption | null) => {
+    if (option) {
+      setSelectedCategory(option.id);
+      // Automatically add the category when selected
+      const found = availableTags.find(cat => cat.id === option.id);
+      if (found && !selectedTags.some(tag => tag.id === found.id)) {
+        onAddTag(found);
+        setSelectedCategory(""); // Reset selection after adding
+      }
     }
   };
 
@@ -40,12 +45,16 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({ availableTags,
       <Typography variant="heading-4" as="h3">Categories</Typography>
       <TagGroup tags={selectedTags} onRemoveTag={onRemoveTag} />
       <div className={styles.addCategoryRow}>
-        <select value={selectedCategory} onChange={handleSelectChange} className={styles.categorySelect}>
-          {availableTags.map(cat => (
-            <option key={cat.id} value={cat.id}>{cat.label}</option>
-          ))}
-        </select>
-        <Button type="button" variant="secondary" onClick={handleAddTag}>Add</Button>
+        <SearchableSelect
+          id="category-select"
+          options={searchableOptions}
+          value={selectedCategory}
+          onChange={handleSelectChange}
+          placeholder="Search and select a category..."
+          searchPlaceholder="Type to search categories..."
+          noResultsText="No categories found"
+          fullWidth
+        />
       </div>
     </div>
   );

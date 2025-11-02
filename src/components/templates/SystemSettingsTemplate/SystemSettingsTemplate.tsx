@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from "react";
 import { useAuth0 } from '@auth0/auth0-react';
 import { Modal } from '@/components/molecules/Modal/Modal';
+import { AdminPageHeader } from '@/components/molecules';
 import { TagGroup } from "@/components/molecules/TagGroup/TagGroup";
 import { CategoryManager } from "@/components/organisms/CategoryManager/CategoryManager";
-import { Typography, Input } from "@/components/atoms";
+import { BankDetailsManager } from "@/components/organisms/BankDetailsManager";
+import { Typography, Input, GridContainer, GridItem, Button } from "@/components/atoms";
 import { FormTextArea } from "@/components/atoms/FormTextArea";
 import styles from "./SystemSettingsTemplate.module.scss";
-import { Button } from "@/components/atoms";
 
 interface Category {
   id: string;
@@ -25,15 +26,24 @@ interface Company {
   currency?: string;
   created_at?: string;
   updated_at?: string;
+  version?: number;
 }
 
 interface SystemSettingsTemplateProps {
   company: Company | null;
   loading: boolean;
   availableTags: { id: string; label: string }[];
+  backLink?: { label: string; href: string };
+  adminContext?: string;
 }
 
-export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({ company, loading, availableTags }) => {
+export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({ 
+  company, 
+  loading, 
+  availableTags,
+  backLink,
+  adminContext 
+}) => {
   const { getAccessTokenSilently } = useAuth0();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -97,7 +107,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({ 
           version: company?.version,
         };
         // API endpoint (assume company.id is available)
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/merchants/${company?.id}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${company?.id}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -118,12 +128,22 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({ 
 
     return (
       <>
+      <AdminPageHeader
+        title="System Settings"
+        description="Manage your merchant settings, categories, and business information"
+        backLink={backLink}
+        adminContext={adminContext}
+      />
       <form className={styles.form} onSubmit={handleSubmit}>
-        <Typography variant="heading-2" as="h2">System Settings</Typography>
-        {/* Basic Info Section */}
-        <div className={styles.section}>
-          <Typography variant="heading-4" as="h3">Basic Info</Typography>
-          <div className={styles._label}>
+        <GridContainer>
+          {/* Basic Info Section */}
+          <GridItem sm={16} md={16}>
+            <div className={styles.section}>
+              <Typography variant="heading-4" as="h3">Basic Info</Typography>
+            </div>
+          </GridItem>
+
+          <GridItem sm={16} md={8}>
             <Input
               id="company-name"
               name="name"
@@ -132,17 +152,9 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({ 
               onChange={e => handleChange(e)}
               fullWidth
             />
-          </div>
-          <div className={styles._label}>
-            <FormTextArea
-              id="company-description"
-              label="Description"
-              value={form.description}
-              onChange={e => handleChange(e)}
-              rows={3}
-            />
-          </div>
-          <div className={styles._label}>
+          </GridItem>
+
+          <GridItem sm={16} md={8}>
             <Input
               id="company-username"
               name="username"
@@ -151,30 +163,62 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({ 
               onChange={e => handleChange(e)}
               fullWidth
             />
-          </div>
-        </div>
+          </GridItem>
 
-        {/* Categories Section */}
-        <div className={styles.section}>
-          <CategoryManager
-            availableTags={availableTags}
-            selectedTags={selectedTags}
-            onRemoveTag={handleRemoveTag}
-            onAddTag={handleAddTag}
-          />
-        </div>
+          <GridItem sm={16} md={16}>
+            <FormTextArea
+              id="company-description"
+              label="Description"
+              value={form.description}
+              onChange={e => handleChange(e)}
+              rows={3}
+            />
+          </GridItem>
 
-        {/* Other Details Section (optional) */}
-        <div className={styles.section}>
-          <Typography variant="heading-4" as="h3">Other Details</Typography>
-          <div className={styles.otherDetails}>
-            <div><strong>Currency:</strong> {company?.currency}</div>
-            <div><strong>Created:</strong> {company?.created_at ? new Date(company.created_at).toLocaleDateString() : '-'}</div>
-            <div><strong>Updated:</strong> {company?.updated_at ? new Date(company.updated_at).toLocaleDateString() : '-'}</div>
-          </div>
-        </div>
+          {/* Categories Section */}
+          <GridItem sm={16} md={16}>
+            <div className={styles.section}>
+              <CategoryManager
+                availableTags={availableTags}
+                selectedTags={selectedTags}
+                onRemoveTag={handleRemoveTag}
+                onAddTag={handleAddTag}
+              />
+            </div>
+          </GridItem>
 
-        <Button type="submit" variant="primary">Save Changes</Button>
+          {/* Bank Details Section */}
+          <GridItem sm={16} md={16}>
+            <div className={styles.section}>
+              <BankDetailsManager
+                merchantId={company?.id || ''}
+                onUpdate={() => {
+                  // Optionally reload company data after bank details update
+                  console.log('Bank details updated');
+                }}
+                onError={(error) => {
+                  setSaveError(error);
+                }}
+              />
+            </div>
+          </GridItem>
+
+          {/* Other Details Section */}
+          <GridItem sm={16} md={16}>
+            <div className={styles.section}>
+              <Typography variant="heading-4" as="h3">Other Details</Typography>
+              <div className={styles.otherDetails}>
+                <div><strong>Currency:</strong> {company?.currency}</div>
+                <div><strong>Created:</strong> {company?.created_at ? new Date(company.created_at).toLocaleDateString() : '-'}</div>
+                <div><strong>Updated:</strong> {company?.updated_at ? new Date(company.updated_at).toLocaleDateString() : '-'}</div>
+              </div>
+            </div>
+          </GridItem>
+
+          <GridItem sm={16} md={16}>
+            <Button type="submit" variant="primary">Save Changes</Button>
+          </GridItem>
+        </GridContainer>
       </form>
       <Modal
         isOpen={isModalOpen}
