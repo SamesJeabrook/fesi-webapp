@@ -7,10 +7,11 @@ import { formatPrice } from '@/utils/menu';
 
 const MenuItemDetails: React.FC<MenuItemDetailsProps> = ({ item, selectedOptions, onOptionsChange, onAddToOrder, onCancel, disabled }) => {
   const [quantity, setQuantity] = useState(1);
+  
   if (!item) return (<Typography variant='heading-2' as='h2'>No item selected</Typography>)
 
   // Check if all required option groups have a selection
-  const allRequiredSelected = item.option_groups
+  const allRequiredSelected = (item.option_groups || [])
     .filter((group: any) => group.is_required)
     .every((group: any) => (selectedOptions[group.id] && selectedOptions[group.id].length > 0));
 
@@ -37,7 +38,7 @@ const MenuItemDetails: React.FC<MenuItemDetailsProps> = ({ item, selectedOptions
         </div>
       </div>
       <div className={styles.options}>
-        {item.option_groups.map((group: any) => (
+        {(item.option_groups || []).map((group: any) => (
           <MenuOptionGroup
             key={group.id}
             group={group}

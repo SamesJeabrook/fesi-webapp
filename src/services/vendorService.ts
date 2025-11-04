@@ -266,21 +266,21 @@ export class VendorService {
   }
 
   /**
-   * Fetch sub-groups (option groups) for a menu item
+   * Fetch menu item with option groups
    */
   static async getMenuSubGroups(itemId: string): Promise<MenuItem> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/menu/${itemId}/sub-groups`, {
+      const response = await fetch(`${API_BASE_URL}/api/menu/${itemId}`, {
         next: { revalidate: 300 },
       });
       if (!response.ok) {
-        throw new Error(`Failed to fetch sub-groups: ${response.statusText}`);
+        throw new Error(`Failed to fetch menu item: ${response.statusText}`);
       }
       const data = await response.json();
-      // Expecting { success: true, data: [...] }
+      // API returns the menu item directly with option_groups included
       return data;
     } catch (error) {
-      console.error('Error fetching menu sub-groups:', error);
+      console.error('Error fetching menu item with options:', error);
       throw error;
     }
   }
