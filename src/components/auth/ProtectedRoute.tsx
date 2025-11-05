@@ -4,6 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { ReactNode, useEffect, useRef } from 'react';
 import { Typography } from '@/components/atoms';
 import LoginButton from './LoginButton';
+import { getDevToken } from '@/utils/devAuth';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -29,6 +30,14 @@ export default function ProtectedRoute({
   // Store token in localStorage for API calls and sync user
   useEffect(() => {
     const storeTokenAndSyncUser = async () => {
+      // Check for dev token first
+      const devToken = getDevToken();
+      if (devToken) {
+        console.log('[DEV MODE] Using development token:', devToken);
+        localStorage.setItem('auth-token', devToken);
+        return; // Skip Auth0 flow
+      }
+
       if (isAuthenticated && user && user.sub) {
         // Prevent multiple syncs for the same user session
         if (syncedRef.current === user.sub) {
@@ -81,7 +90,13 @@ export default function ProtectedRoute({
             console.log('🔄 Consent required - redirecting to login...');
             // Clear the cache and redirect to login
             localStorage.removeItem('auth-token');
-            window.location.href = '/api/auth/login';
+            
+            // Check if we're on a merchant page - use custom merchant login
+            if (typeof window !== 'undefined' && window.location.pathname.startsWith('/merchant')) {
+              window.location.href = `/merchant/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+            } else {
+              window.location.href = '/api/auth/login';
+            }
             return;
           }
         }
@@ -94,7 +109,11 @@ export default function ProtectedRoute({
     storeTokenAndSyncUser();
   }, [isAuthenticated, user?.sub, getAccessTokenSilently]); // Only depend on authentication state and user ID
 
-  if (isLoading) {
+  // Check for dev token - bypass authentication checks
+  const devToken = getDevToken();
+  const isDevMode = !!devToken;
+
+  if (isLoading && !isDevMode) {
     return (
       <div style={{ 
         display: 'flex', 
@@ -107,7 +126,7 @@ export default function ProtectedRoute({
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isDevMode) {
     return fallback || (
       <div style={{ 
         display: 'flex', 
@@ -126,8 +145,8 @@ export default function ProtectedRoute({
     );
   }
 
-  // Check role if required
-  if (requireRole) {
+  // Check role if required (skip for dev mode)
+  if (requireRole && !isDevMode) {
     const userRoles = user?.['https://fesi.app/roles'] || [];
     const requiredRoles = Array.isArray(requireRole) ? requireRole : [requireRole];
     

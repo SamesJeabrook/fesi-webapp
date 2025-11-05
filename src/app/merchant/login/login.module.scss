@@ -1,0 +1,142 @@
+@import '../../../styles/mixins';
+
+.loginPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-primary-500) 100%);
+  padding: var(--spacing-6);
+}
+
+.centered {
+  margin: 0 auto;
+}
+
+.loginCard {
+  background: var(--color-neutral-white);
+  border-radius: var(--border-radius-2xl);
+  padding: var(--spacing-8);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  max-width: 500px;
+  width: 100%;
+  margin: auto;
+
+  @include mobile {
+    padding: var(--spacing-6);
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--spacing-6);
+}
+
+.title {
+  color: var(--color-neutral-900);
+  margin-bottom: var(--spacing-2);
+}
+
+.subtitle {
+  color: var(--color-neutral-600);
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  padding: var(--spacing-4);
+  background: var(--color-neutral-50);
+  border-radius: var(--border-radius-xl);
+
+  @include mobile {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-3);
+  }
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.featureIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.actions {
+  margin-bottom: var(--spacing-4);
+}
+
+.loginButton,
+.signupButton {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.loginButton {
+  margin-bottom: var(--spacing-3);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin: var(--spacing-4) 0;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--color-neutral-200);
+}
+
+.dividerText {
+  color: var(--color-neutral-500);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.footer {
+  text-align: center;
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.footerText {
+  color: var(--color-neutral-400);
+}
+
+.loadingContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-primary-500) 100%);
+}
+
+.lockContainer {
+  margin-bottom: var(--spacing-4);
+  
+  // Override Auth0 Lock styles to match our design
+  :global {
+    .auth0-lock-header {
+      display: none !important; // Hide Auth0's default header since we have our own
+    }
+    
+    .auth0-lock-widget {
+      box-shadow: none !important;
+      overflow: visible !important;
+    }
+    
+    .auth0-lock-cred-pane {
+      border-radius: var(--border-radius-lg) !important;
+    }
+  }
+}

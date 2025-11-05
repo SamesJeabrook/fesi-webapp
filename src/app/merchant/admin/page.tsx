@@ -43,6 +43,13 @@ const dashboardItems = [
     href: '/merchant/admin/events',
     color: 'secondary'
   },
+  {
+    title: 'Point of Sale',
+    description: 'Take orders directly at the counter',
+    icon: '💳',
+    href: '/merchant/admin/pos',
+    color: 'primary'
+  },
   // Future expansion items (commented for now)
   // {
   //   title: 'Analytics',

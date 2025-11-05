@@ -33,6 +33,12 @@ export const Navigation: React.FC<NavigationProps> = ({
         </div>
 
         <div className={styles.navigation__links}>
+          {!isAuthenticated && (
+            <Link href="/merchant/login" className={styles.navigation__link}>
+              <Typography variant="body-medium">Merchant Login</Typography>
+            </Link>
+          )}
+          
           {isAuthenticated && (
             <>
               {isAdmin && (

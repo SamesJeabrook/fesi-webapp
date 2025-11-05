@@ -1,18 +1,13 @@
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  max-width: 480px;
-  margin: 2rem auto;
-  background: #fff;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  background: var(--color-neutral-50);
+  padding: var(--spacing-6) 0;
 }
-.legend {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #888;
+
+.section {
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--spacing-4);
+  background: var(--color-neutral-white);
 }
 
 .loading {

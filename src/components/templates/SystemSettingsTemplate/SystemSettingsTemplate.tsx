@@ -137,46 +137,38 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
       <form className={styles.form} onSubmit={handleSubmit}>
         <GridContainer>
           {/* Basic Info Section */}
-          <GridItem sm={16} md={16}>
+          <GridItem sm={16} md={8}>
             <div className={styles.section}>
               <Typography variant="heading-4" as="h3">Basic Info</Typography>
+
+              <Input
+                id="company-name"
+                name="name"
+                label="Company Name"
+                value={form.name}
+                onChange={e => handleChange(e)}
+                fullWidth
+              />
+              <Input
+                id="company-username"
+                name="username"
+                label="Username"
+                value={form.username}
+                onChange={e => handleChange(e)}
+                fullWidth
+              />
+              <FormTextArea
+                id="company-description"
+                label="Description"
+                value={form.description}
+                onChange={e => handleChange(e)}
+                rows={3}
+              />
             </div>
           </GridItem>
 
-          <GridItem sm={16} md={8}>
-            <Input
-              id="company-name"
-              name="name"
-              label="Company Name"
-              value={form.name}
-              onChange={e => handleChange(e)}
-              fullWidth
-            />
-          </GridItem>
-
-          <GridItem sm={16} md={8}>
-            <Input
-              id="company-username"
-              name="username"
-              label="Username"
-              value={form.username}
-              onChange={e => handleChange(e)}
-              fullWidth
-            />
-          </GridItem>
-
-          <GridItem sm={16} md={16}>
-            <FormTextArea
-              id="company-description"
-              label="Description"
-              value={form.description}
-              onChange={e => handleChange(e)}
-              rows={3}
-            />
-          </GridItem>
-
           {/* Categories Section */}
-          <GridItem sm={16} md={16}>
+          <GridItem sm={16} md={8}>
             <div className={styles.section}>
               <CategoryManager
                 availableTags={availableTags}
@@ -188,7 +180,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
           </GridItem>
 
           {/* Bank Details Section */}
-          <GridItem sm={16} md={16}>
+          <GridItem sm={16} md={8}>
             <div className={styles.section}>
               <BankDetailsManager
                 merchantId={company?.id || ''}
@@ -204,7 +196,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
           </GridItem>
 
           {/* Other Details Section */}
-          <GridItem sm={16} md={16}>
+          <GridItem sm={16} md={8}>
             <div className={styles.section}>
               <Typography variant="heading-4" as="h3">Other Details</Typography>
               <div className={styles.otherDetails}>
@@ -215,7 +207,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
             </div>
           </GridItem>
 
-          <GridItem sm={16} md={16}>
+          <GridItem sm={16} md={8}>
             <Button type="submit" variant="primary">Save Changes</Button>
           </GridItem>
         </GridContainer>

@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Typography, Button } from '@/components/atoms';
+import { Typography, Button, Grid } from '@/components/atoms';
+import { MenuItemManagementCard } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { getAuthToken } from '@/utils/devAuth';
 import Link from 'next/link';
 import styles from './items.module.scss';
 
@@ -32,6 +34,7 @@ export default function MenuItemsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isMounted, setIsMounted] = useState(false);
   const [newItem, setNewItem] = useState({
     name: '',
     description: '',
@@ -39,24 +42,47 @@ export default function MenuItemsPage() {
     category_id: '',
   });
 
+  // Prevent hydration issues
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
 
-      // Fetch categories and items in parallel
-      const [categoriesResponse, itemsResponse] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories`, {
+      // Extract merchant ID from dev token if present
+      let merchantId: string;
+      if (token.startsWith('dev-merchant-')) {
+        merchantId = token.replace('dev-merchant-', '');
+      } else {
+        // For real Auth0 tokens, get merchant data from /me endpoint
+        const merchantResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!merchantResponse.ok) {
+          console.error('Failed to fetch merchant data');
+          return;
+        }
+
+        const merchantData = await merchantResponse.json();
+        merchantId = merchantData.id;
+      }
+
+      // Fetch categories and menu items in parallel
+      const [categoriesResponse, menuResponse] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories?merchant_id=${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/items`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -66,12 +92,22 @@ export default function MenuItemsPage() {
 
       if (categoriesResponse.ok) {
         const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData.categories || []);
+        setCategories(categoriesData.data || []);
       }
 
-      if (itemsResponse.ok) {
-        const itemsData = await itemsResponse.json();
-        setItems(itemsData.items || []);
+      if (menuResponse.ok) {
+        const menuData = await menuResponse.json();
+        // The menu endpoint returns an array of categories with items
+        const allItems = menuData.data.menu?.flatMap((cat: any) => 
+          cat.items?.map((item: any) => ({
+            ...item,
+            name: item.title, 
+            price: item.base_price,
+            is_available: item.is_active,
+            category_name: cat.name
+          })) || []
+        ) || [];
+        setItems(allItems);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -84,13 +120,9 @@ export default function MenuItemsPage() {
     if (!newItem.name.trim() || !newItem.price || !newItem.category_id) return;
 
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/items`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -98,7 +130,7 @@ export default function MenuItemsPage() {
         },
         body: JSON.stringify({
           ...newItem,
-          price: parseFloat(newItem.price) * 100, // Convert to cents
+          base_price: parseFloat(newItem.price) * 100, // Convert to cents - API expects base_price
           display_order: items.length + 1,
         }),
       });
@@ -115,19 +147,15 @@ export default function MenuItemsPage() {
 
   const toggleItemAvailability = async (itemId: string, isAvailable: boolean) => {
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/items/${itemId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${itemId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ is_available: !isAvailable }),
+        body: JSON.stringify({ is_active: !isAvailable }), // API uses is_active, not is_available
       });
 
       if (response.ok) {
@@ -149,6 +177,11 @@ export default function MenuItemsPage() {
   const formatPrice = (price: number) => {
     return `$${(price / 100).toFixed(2)}`;
   };
+
+  // Prevent hydration mismatch by only rendering after client mount
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <ProtectedRoute requireRole={['merchant', 'admin']}>
@@ -254,69 +287,43 @@ export default function MenuItemsPage() {
           </div>
         )}
 
-        <div className={styles.items__list}>
+        <Grid.Container gap="lg" justifyContent="start" className={styles.items__list}>
           {isLoading ? (
-            <div className={styles.items__loading}>
-              <Typography variant="body-medium">Loading menu items...</Typography>
-            </div>
+            <Grid.Item>
+              <div className={styles.items__loading}>
+                <Typography variant="body-medium">Loading menu items...</Typography>
+              </div>
+            </Grid.Item>
           ) : filteredItems.length === 0 ? (
-            <div className={styles.items__empty}>
-              <Typography variant="heading-5">No menu items found</Typography>
-              <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                {selectedCategory === 'all' 
-                  ? 'Create your first menu item to get started'
-                  : 'No items in this category yet'
-                }
-              </Typography>
-            </div>
+            <Grid.Item sm={16} md={8} lg={4}>
+              <div className={styles.items__empty}>
+                <Typography variant="heading-5">No menu items found</Typography>
+                <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                  {selectedCategory === 'all' 
+                    ? 'Create your first menu item to get started'
+                    : 'No items in this category yet'
+                  }
+                </Typography>
+              </div>
+            </Grid.Item>
           ) : (
             filteredItems.map((item) => (
-              <div key={item.id} className={styles.items__item}>
-                <div className={styles.items__itemContent}>
-                  <div className={styles.items__itemHeader}>
-                    <Typography variant="heading-5">
-                      {item.name}
-                    </Typography>
-                    <div className={styles.items__itemPrice}>
-                      <Typography variant="heading-6">
-                        {formatPrice(item.price)}
-                      </Typography>
-                    </div>
-                  </div>
-                  <div className={styles.items__itemMeta}>
-                    <span className={styles.items__category}>
-                      {categories.find(cat => cat.id === item.category_id)?.name || 'Unknown Category'}
-                    </span>
-                    <span className={`${styles.items__status} ${
-                      item.is_available ? styles['items__status--available'] : styles['items__status--unavailable']
-                    }`}>
-                      {item.is_available ? 'Available' : 'Unavailable'}
-                    </span>
-                  </div>
-                  {item.description && (
-                    <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                      {item.description}
-                    </Typography>
-                  )}
-                </div>
-                <div className={styles.items__itemActions}>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => toggleItemAvailability(item.id, item.is_available)}
-                  >
-                    {item.is_available ? 'Mark Unavailable' : 'Mark Available'}
-                  </Button>
-                  <Link href={`/merchant/admin/menu/items/${item.id}/edit`}>
-                    <Button variant="primary" size="sm">
-                      Edit
-                    </Button>
-                  </Link>
-                </div>
-              </div>
+              <Grid.Item sm={16} md={8} xl={4} key={item.id}>
+                <MenuItemManagementCard
+                  id={item.id}
+                  title={item.name}
+                  description={item.description}
+                  basePrice={item.price}
+                  categoryName={categories.find(cat => cat.id === item.category_id)?.name || 'Unknown Category'}
+                  isActive={item.is_available}
+                  displayOrder={item.display_order}
+                  onToggleAvailability={toggleItemAvailability}
+                  onEdit={(id) => window.location.href = `/merchant/admin/menu/items/${id}/edit`}
+                />
+              </Grid.Item>
             ))
           )}
-        </div>
+        </Grid.Container>
       </div>
     </ProtectedRoute>
   );

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import { AdminPageHeader } from '@/components/molecules';
+import { AdminPageHeader, MenuItemManagementCard } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
 import EditItemModal from './components/EditItemModal';
@@ -433,54 +433,17 @@ export default function AdminMenuItemsPage() {
               ) : (
                 filteredItems.map((item) => (
                   <Grid.Item sm={16} md={8} xl={4} key={item.id}>
-                    <div className={`${styles.items__item} ${!item.is_active ? styles['items__item--inactive'] : ''}`}>
-                      <div className={styles.items__itemContent}>
-                        <div className={styles.items__itemHeader}>
-                          <div className={styles.items__itemTitle}>
-                            <Typography variant="heading-5">
-                              {item.title}
-                            </Typography>
-                            <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                              {categories.find(cat => cat.id === item.category_id)?.name || 'Unknown Category'}
-                            </Typography>
-                          </div>
-                          <div className={styles.items__itemMeta}>
-                            <Typography variant="heading-5" style={{ color: 'var(--color-primary)' }}>
-                              £{formatPrice(item.base_price)}
-                            </Typography>
-                            <span className={`${styles.items__status} ${
-                              item.is_active ? styles['items__status--available'] : styles['items__status--unavailable']
-                            }`}>
-                              {item.is_active ? 'Available' : 'Unavailable'}
-                            </span>
-                          </div>
-                        </div>
-                        {item.description && (
-                          <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                            {item.description}
-                          </Typography>
-                        )}
-                        <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                          Order: {item.display_order}
-                        </Typography>
-                      </div>
-                      <div className={styles.items__itemActions}>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => toggleItemAvailability(item.id, item.is_active)}
-                        >
-                          {item.is_active ? 'Make Unavailable' : 'Make Available'}
-                        </Button>
-                        <Button 
-                          variant="primary" 
-                          size="sm"
-                          onClick={() => handleEditItem(item)}
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    </div>
+                    <MenuItemManagementCard
+                      id={item.id}
+                      title={item.title}
+                      description={item.description}
+                      basePrice={item.base_price}
+                      categoryName={categories.find(cat => cat.id === item.category_id)?.name || 'Unknown Category'}
+                      isActive={item.is_active}
+                      displayOrder={item.display_order}
+                      onToggleAvailability={toggleItemAvailability}
+                      onEdit={() => handleEditItem(item)}
+                    />
                   </Grid.Item>
                 ))
               )}

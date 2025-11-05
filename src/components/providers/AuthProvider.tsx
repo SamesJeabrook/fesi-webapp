@@ -1,10 +1,47 @@
 'use client';
 
-import { Auth0Provider } from '@auth0/auth0-react';
-import { ReactNode } from 'react';
+import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
+import { ReactNode, createContext, useContext } from 'react';
+import { getDevToken } from '@/utils/devAuth';
 
 interface AuthProviderProps {
   children: ReactNode;
+}
+
+interface DevAuthContextType {
+  getToken: () => Promise<string>;
+}
+
+const DevAuthContext = createContext<DevAuthContextType | null>(null);
+
+export function useDevAuth() {
+  return useContext(DevAuthContext);
+}
+
+function DevAuthWrapper({ children }: { children: ReactNode }) {
+  const { getAccessTokenSilently } = useAuth0();
+
+  const getToken = async (): Promise<string> => {
+    // Check for dev token first
+    const devToken = getDevToken();
+    if (devToken) {
+      console.log('[DEV MODE] Using development token:', devToken);
+      return devToken;
+    }
+
+    // Fall back to Auth0
+    return await getAccessTokenSilently({
+      authorizationParams: {
+        audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+      },
+    });
+  };
+
+  return (
+    <DevAuthContext.Provider value={{ getToken }}>
+      {children}
+    </DevAuthContext.Provider>
+  );
 }
 
 export default function AuthProvider({ children }: AuthProviderProps) {
@@ -29,7 +66,9 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       authorizationParams={authorizationParams}
       cacheLocation="localstorage"
     >
-      {children}
+      <DevAuthWrapper>
+        {children}
+      </DevAuthWrapper>
     </Auth0Provider>
   );
 }
