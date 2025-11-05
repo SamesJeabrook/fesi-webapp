@@ -65,25 +65,7 @@ export default function POSPage() {
       try {
         const token = await getAuthToken(getAccessTokenSilently);
         
-        // Fetch events
-        const eventsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (eventsResponse.ok) {
-          const eventsData = await eventsResponse.json();
-          const openEvents = eventsData.filter((e: Event) => e.is_open);
-          setEvents(openEvents);
-          // Auto-select first open event
-          if (openEvents.length > 0) {
-            setSelectedEvent(openEvents[0].id);
-          }
-        }
-
-        // Fetch menu items
+        // Get merchant ID first
         let merchantId: string;
         if (token.startsWith('dev-merchant-')) {
             merchantId = token.replace('dev-merchant-', '');
@@ -103,6 +85,26 @@ export default function POSPage() {
 
             const merchantData = await merchantResponse.json();
             merchantId = merchantData.id;
+        }
+
+        // Fetch only active events where this merchant is participating
+        const eventsResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/events?merchant_id=${merchantId}&is_open=true`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        
+        if (eventsResponse.ok) {
+          const eventsData = await eventsResponse.json();
+          setEvents(eventsData);
+          // Auto-select first event
+          if (eventsData.length > 0) {
+            setSelectedEvent(eventsData[0].id);
+          }
         }
 
         const menuResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}`, {
@@ -280,9 +282,23 @@ export default function POSPage() {
     if (newQuantity === 0) {
       setCart(cart.filter(item => item.id !== itemId));
     } else {
-      setCart(cart.map(item =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      ));
+      setCart(cart.map(item => {
+        if (item.id === itemId) {
+          // Recalculate item_total based on base price + customizations
+          const customizationsTotal = item.customizations.reduce(
+            (sum, custom) => sum + custom.price_modifier,
+            0
+          );
+          const itemTotalForOne = item.item_base_price + customizationsTotal;
+          
+          return {
+            ...item,
+            quantity: newQuantity,
+            item_total: itemTotalForOne * newQuantity
+          };
+        }
+        return item;
+      }));
     }
   };
 
@@ -294,13 +310,15 @@ export default function POSPage() {
 
   const clearCart = () => {
     setCart([]);
+    setCustomerEmail('');
     setCustomerName('');
     setCustomerPhone('');
     setOrderNumber(null);
   };
 
   const calculateTotal = () => {
-    return cart.reduce((total, item) => total + (item.item_total * item.quantity), 0);
+    // item_total already includes quantity, so just sum all item_total values
+    return cart.reduce((total, item) => total + item.item_total, 0);
   };
 
   const submitOrder = async () => {
@@ -311,12 +329,6 @@ export default function POSPage() {
 
     if (!selectedEvent) {
       alert('Please select an event');
-      return;
-    }
-
-    // Require email for POS orders to match API requirements
-    if (!customerEmail) {
-      alert('Please enter customer email');
       return;
     }
 
@@ -332,8 +344,9 @@ export default function POSPage() {
         },
         body: JSON.stringify({
           event_id: selectedEvent,
+          order_source: 'pos', // Indicates this is a POS order (email optional)
           guest_info: {
-            email: customerEmail,
+            email: customerEmail || null,
             first_name: customerName || 'Walk-in',
             last_name: 'Customer',
             phone: customerPhone || null,

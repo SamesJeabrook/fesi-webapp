@@ -99,10 +99,9 @@ export const POSOrderSummary: React.FC<POSOrderSummaryProps> = ({
         <Input
           id="customer-email"
           type="email"
-          placeholder="Customer Email (required)"
+          placeholder="Customer Email (optional)"
           value={customerEmail}
           onChange={(e) => onCustomerEmailChange(e.target.value)}
-          isRequired
         />
         <Input
           id="customer-name"
@@ -167,7 +166,7 @@ export const POSOrderSummary: React.FC<POSOrderSummaryProps> = ({
             onClick={onSubmitOrder}
             variant="primary"
             fullWidth
-            isDisabled={cart.length === 0 || isSubmitting || !customerEmail}
+            isDisabled={cart.length === 0 || isSubmitting}
           >
             {isSubmitting ? 'Processing...' : 'Complete Order'}
           </Button>
