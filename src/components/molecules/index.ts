@@ -25,3 +25,4 @@ export * from './LocationPicker';
 export * from './POSMenuItemCard';
 export * from './POSCartItem';
 export * from './POSCategoryFilter';
+export * from './CategoryCard';

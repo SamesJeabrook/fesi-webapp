@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import { AdminPageHeader } from '@/components/molecules';
+import { AdminPageHeader, CategoryCard } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { getAuthToken } from '@/utils/devAuth';
 import Link from 'next/link';
 import { EditCategoryModal } from './components/EditCategoryModal';
 import styles from './adminCategories.module.scss';
@@ -39,11 +40,7 @@ export default function AdminMenuCategoriesPage() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
 
       // Fetch merchant details and categories in parallel
       const [merchantResponse, categoriesResponse] = await Promise.all([
@@ -71,9 +68,17 @@ export default function AdminMenuCategoriesPage() {
         if (categoriesData.success && categoriesData.data) {
           setCategories(categoriesData.data);
         }
+      } else {
+        const errorData = await categoriesResponse.json();
+        console.error('❌ Categories fetch error:', errorData);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      // If it's an Auth0 error, show more details
+      if (error && typeof error === 'object' && 'error' in error && error.error === 'login_required') {
+        console.error('⚠️ Auth0 session expired. User needs to log in again.');
+        alert('Your session has expired. Please log in again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -83,11 +88,7 @@ export default function AdminMenuCategoriesPage() {
     if (!newCategory.name.trim()) return;
 
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories`, {
         method: 'POST',
@@ -123,11 +124,7 @@ export default function AdminMenuCategoriesPage() {
     if (!editingCategory) return;
 
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories/${editingCategory.id}`, {
         method: 'PUT',
@@ -233,33 +230,14 @@ export default function AdminMenuCategoriesPage() {
             </Grid.Item>
           ) : (
             categories.map((category) => (
-              <Grid.Item sm={8} md={8} lg={4} xl={4} key={category.id}>
-                <div className={styles.categories__item}>
-                  <div className={styles.categories__itemContent}>
-                    <div className={styles.categories__itemHeader}>
-                      <Typography variant="heading-5">
-                        {category.name}
-                      </Typography>
-                    </div>
-                    {category.description && (
-                      <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                        {category.description}
-                      </Typography>
-                    )}
-                    <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                      Order: {category.display_order}
-                    </Typography>
-                  </div>
-                  <div className={styles.categories__itemActions}>
-                    <Button 
-                      variant="primary" 
-                      size="sm"
-                      onClick={() => handleEditCategory(category)}
-                    >
-                      Edit
-                    </Button>
-                  </div>
-                </div>
+              <Grid.Item sm={16} md={8} xl={4} key={category.id}>
+                <CategoryCard
+                  id={category.id}
+                  name={category.name}
+                  description={category.description}
+                  displayOrder={category.display_order}
+                  onEdit={handleEditCategory}
+                />
               </Grid.Item>
             ))
           )}

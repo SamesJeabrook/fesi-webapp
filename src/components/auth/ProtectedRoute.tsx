@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth0 } from '@auth0/auth0-react';
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Typography } from '@/components/atoms';
 import LoginButton from './LoginButton';
 import { getDevToken } from '@/utils/devAuth';
@@ -24,8 +24,16 @@ export default function ProtectedRoute({
     getAccessTokenSilently 
   } = useAuth0();
 
+  // Prevent hydration mismatch
+  const [isMounted, setIsMounted] = useState(false);
+
   // Use ref to track if we've already synced this user session
   const syncedRef = useRef<string | null>(null);
+
+  // Mount effect
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Store token in localStorage for API calls and sync user
   useEffect(() => {
@@ -113,14 +121,14 @@ export default function ProtectedRoute({
   const devToken = getDevToken();
   const isDevMode = !!devToken;
 
+  // Prevent hydration mismatch - don't render until mounted
+  if (!isMounted) {
+    return null;
+  }
+
   if (isLoading && !isDevMode) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh' 
-      }}>
+      <div className="protected-route-loading">
         <Typography variant="body-medium">Loading...</Typography>
       </div>
     );
@@ -128,14 +136,7 @@ export default function ProtectedRoute({
 
   if (!isAuthenticated && !isDevMode) {
     return fallback || (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        gap: '1rem'
-      }}>
+      <div className="protected-route-auth-required">
         <Typography variant="heading-4">Authentication Required</Typography>
         <Typography variant="body-medium">
           Please log in to access this page.
@@ -156,14 +157,7 @@ export default function ProtectedRoute({
     
     if (!hasAccess) {
       return (
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          gap: '1rem'
-        }}>
+        <div className="protected-route-access-denied">
           <Typography variant="heading-4">Access Denied</Typography>
           <Typography variant="body-medium">
             You don't have permission to access this page.

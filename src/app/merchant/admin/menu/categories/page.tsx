@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Typography, Button } from '@/components/atoms';
+import { Typography, Button, Grid } from '@/components/atoms';
+import { CategoryCard } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { getAuthToken, getMerchantIdFromDevToken } from '@/utils/devAuth';
 import Link from 'next/link';
 import styles from './categories.module.scss';
 
@@ -22,18 +24,47 @@ export default function MenuCategoriesPage() {
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [merchantId, setMerchantId] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState({ name: '', description: '' });
+
+  // Get merchant ID from dev token or API
+  useEffect(() => {
+    const getMerchantId = async () => {
+      // Check for dev token first
+      const devMerchantId = getMerchantIdFromDevToken();
+      if (devMerchantId) {
+        setMerchantId(devMerchantId);
+        return;
+      }
+
+      // Otherwise, get from /me endpoint
+      try {
+        const token = await getAuthToken(getAccessTokenSilently);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setMerchantId(data.id);
+        }
+      } catch (error) {
+        console.error('Error fetching merchant ID:', error);
+      }
+    };
+
+    getMerchantId();
+  }, [getAccessTokenSilently]);
 
   const fetchCategories = async () => {
     try {
       setIsLoading(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories?merchant_id=${merchantId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -42,7 +73,7 @@ export default function MenuCategoriesPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setCategories(data.categories || []);
+        setCategories(data.data || []);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -52,14 +83,10 @@ export default function MenuCategoriesPage() {
   };
 
   const createCategory = async () => {
-    if (!newCategory.name.trim()) return;
+    if (!newCategory.name.trim() || !merchantId) return;
 
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories`, {
         method: 'POST',
@@ -71,6 +98,7 @@ export default function MenuCategoriesPage() {
           name: newCategory.name,
           description: newCategory.description,
           display_order: categories.length + 1,
+          merchant_id: merchantId,
         }),
       });
 
@@ -86,11 +114,7 @@ export default function MenuCategoriesPage() {
 
   const toggleCategoryStatus = async (categoryId: string, isActive: boolean) => {
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories/${categoryId}`, {
         method: 'PUT',
@@ -110,8 +134,10 @@ export default function MenuCategoriesPage() {
   };
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (merchantId) {
+      fetchCategories();
+    }
+  }, [merchantId]);
 
   return (
     <ProtectedRoute requireRole={['merchant', 'admin']}>
@@ -172,59 +198,41 @@ export default function MenuCategoriesPage() {
           </div>
         )}
 
-        <div className={styles.categories__list}>
+        <Grid.Container gap="lg" justifyContent="start" className={styles.categories__list}>
           {isLoading ? (
-            <div className={styles.categories__loading}>
-              <Typography variant="body-medium">Loading categories...</Typography>
-            </div>
+            <Grid.Item>
+              <div className={styles.categories__loading}>
+                <Typography variant="body-medium">Loading categories...</Typography>
+              </div>
+            </Grid.Item>
           ) : categories.length === 0 ? (
-            <div className={styles.categories__empty}>
-              <Typography variant="heading-5">No categories yet</Typography>
-              <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                Create your first menu category to get started
-              </Typography>
-            </div>
+            <Grid.Item sm={16} md={8} lg={4}>
+              <div className={styles.categories__empty}>
+                <Typography variant="heading-5">No categories yet</Typography>
+                <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                  Create your first menu category to get started
+                </Typography>
+              </div>
+            </Grid.Item>
           ) : (
             categories.map((category) => (
-              <div key={category.id} className={styles.categories__item}>
-                <div className={styles.categories__itemContent}>
-                  <div className={styles.categories__itemHeader}>
-                    <Typography variant="heading-5">
-                      {category.name}
-                    </Typography>
-                    <span className={`${styles.categories__status} ${
-                      category.is_active ? styles['categories__status--active'] : styles['categories__status--inactive']
-                    }`}>
-                      {category.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                  {category.description && (
-                    <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
-                      {category.description}
-                    </Typography>
-                  )}
-                  <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                    Order: {category.display_order}
-                  </Typography>
-                </div>
-                <div className={styles.categories__itemActions}>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => toggleCategoryStatus(category.id, category.is_active)}
-                  >
-                    {category.is_active ? 'Deactivate' : 'Activate'}
-                  </Button>
-                  <Link href={`/merchant/admin/menu/categories/${category.id}/edit`}>
-                    <Button variant="primary" size="sm">
-                      Edit
-                    </Button>
-                  </Link>
-                </div>
-              </div>
+              <Grid.Item sm={16} md={8} xl={4} key={category.id}>
+                <CategoryCard
+                  id={category.id}
+                  name={category.name}
+                  description={category.description}
+                  displayOrder={category.display_order}
+                  isActive={category.is_active}
+                  showStatus={true}
+                  onEdit={(id) => {
+                    window.location.href = `/merchant/admin/menu/categories/${id}/edit`;
+                  }}
+                  onToggleStatus={toggleCategoryStatus}
+                />
+              </Grid.Item>
             ))
           )}
-        </div>
+        </Grid.Container>
       </div>
     </ProtectedRoute>
   );

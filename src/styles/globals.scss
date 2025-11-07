@@ -247,3 +247,20 @@ img {
 .sr-only {
   @extend .visually-hidden;
 }
+
+// Protected Route States
+.protected-route-loading,
+.protected-route-auth-required,
+.protected-route-access-denied {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  gap: var(--spacing-lg);
+}
+
+.protected-route-loading {
+  flex-direction: row;
+  gap: var(--spacing-md);
+}
