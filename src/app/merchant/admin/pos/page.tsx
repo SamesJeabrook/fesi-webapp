@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Input } from '@/components/atoms';
 import {
@@ -327,29 +328,47 @@ export default function POSPage() {
       return;
     }
 
-    if (!selectedEvent) {
-      alert('Please select an event');
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const token = await getAuthToken(getAccessTokenSilently);
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders`, {
+      // Get merchant ID
+      let merchantId: string;
+      if (token.startsWith('dev-merchant-')) {
+        merchantId = token.replace('dev-merchant-', '');
+      } else {
+        const merchantResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!merchantResponse.ok) {
+          alert('Failed to get merchant information');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const merchantData = await merchantResponse.json();
+        merchantId = merchantData.id;
+      }
+      
+      // Use POS-specific endpoint with lenient validation
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/merchant/${merchantId}/pos`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          event_id: selectedEvent,
-          order_source: 'pos', // Indicates this is a POS order (email optional)
           guest_info: {
-            email: customerEmail || null,
-            first_name: customerName || 'Walk-in',
+            // Database constraint requires guest_email for anonymous orders
+            // Use placeholder for walk-in customers who don't provide email
+            email: customerEmail?.trim() || `walkin-${Date.now()}@pos.local`,
+            first_name: customerName?.trim() || 'Walk-in',
             last_name: 'Customer',
-            phone: customerPhone || null,
+            phone: customerPhone?.trim() || null,
           },
           items: cart.map(item => ({
             menu_item_id: item.menu_item_id,
@@ -359,17 +378,19 @@ export default function POSPage() {
           notes: cart
             .filter(item => item.notes)
             .map(item => `${item.menu_item_name}: ${item.notes}`)
-            .join('; ') || null,
+            .join('; ') || undefined,
         }),
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const result = await response.json();
+        const data = result.data || result;
         setOrderNumber(data.order_number || data.id);
         // Don't clear cart immediately - show success message first
       } else {
         const errorData = await response.json();
-        alert(`Failed to create order: ${errorData.error || 'Please try again'}`);
+        console.error('Order creation error:', errorData);
+        alert(`Failed to create order: ${errorData.error || errorData.details?.[0]?.msg || 'Please try again'}`);
       }
     } catch (error) {
       console.error('Error submitting order:', error);
@@ -388,6 +409,9 @@ export default function POSPage() {
     <ProtectedRoute requireRole={['merchant']}>
       <div className={styles.pos}>
         <div className={styles.pos__header}>
+          <Link href="/merchant/admin" className={styles.pos__backLink}>
+            ← Back to Dashboard
+          </Link>
           <Typography variant="heading-2">Point of Sale</Typography>
           <Typography variant="body-large" style={{ color: 'var(--color-text-secondary)' }}>
             Take orders directly at the counter

@@ -1,10 +1,18 @@
 /**
  * Development authentication helper
  * Allows overriding Auth0 authentication with dev tokens for testing
+ * 
+ * ⚠️ WARNING: Dev tokens are ONLY enabled in development mode
+ * They will be rejected by the API in production environments
  */
 
 export const getDevToken = (): string | null => {
   if (typeof window === 'undefined') return null;
+  
+  // Only allow dev tokens in development
+  if (process.env.NODE_ENV !== 'development') {
+    return null;
+  }
   
   // Check for dev token in localStorage
   const devToken = localStorage.getItem('dev_token');
@@ -16,7 +24,7 @@ export const getDevToken = (): string | null => {
 };
 
 export const isDevMode = (): boolean => {
-  return !!getDevToken();
+  return process.env.NODE_ENV === 'development' && !!getDevToken();
 };
 
 export const getMerchantIdFromDevToken = (): string | null => {
@@ -29,15 +37,18 @@ export const getMerchantIdFromDevToken = (): string | null => {
 };
 
 /**
- * Get authorization token - checks for dev token first, then falls back to provided token
+ * Get authorization token - checks for dev token first, then falls back to Auth0
+ * 
+ * ⚠️ Dev tokens only work in development mode
  */
 export const getAuthToken = async (
-  getAccessTokenSilently?: () => Promise<string>
+  getAccessTokenSilently?: any
 ): Promise<string> => {
-  // Check for dev token first
+  // Check for dev token first (only in development)
   const devToken = getDevToken();
   if (devToken) {
     console.log('[DEV MODE] Using development token:', devToken);
+    console.warn('⚠️ WARNING: Development tokens are NOT allowed in production');
     return devToken;
   }
   

@@ -4,9 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
 import { MenuItemManagementCard } from '@/components/molecules';
+import { CreateMenuItemForm } from '@/components/organisms';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getAuthToken } from '@/utils/devAuth';
 import Link from 'next/link';
+import EditItemModal from './components/EditItemModal';
 import styles from './items.module.scss';
 
 interface MenuItem {
@@ -33,14 +35,10 @@ export default function MenuItemsPage() {
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isMounted, setIsMounted] = useState(false);
-  const [newItem, setNewItem] = useState({
-    name: '',
-    description: '',
-    price: '',
-    category_id: '',
-  });
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
 
   // Prevent hydration issues
   useEffect(() => {
@@ -82,7 +80,8 @@ export default function MenuItemsPage() {
             'Content-Type': 'application/json',
           },
         }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}`, {
+        // Use admin endpoint to get ALL items including inactive ones
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}/admin`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -116,9 +115,13 @@ export default function MenuItemsPage() {
     }
   };
 
-  const createItem = async () => {
-    if (!newItem.name.trim() || !newItem.price || !newItem.category_id) return;
-
+  const createItem = async (itemData: {
+    name: string;
+    description: string;
+    price: string;
+    category_id: string;
+  }) => {
+    setIsSubmitting(true);
     try {
       const token = await getAuthToken(getAccessTokenSilently);
 
@@ -129,19 +132,26 @@ export default function MenuItemsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...newItem,
-          base_price: parseFloat(newItem.price) * 100, // Convert to cents - API expects base_price
+          title: itemData.name.trim(),
+          description: itemData.description?.trim() || '',
+          base_price: Math.round(parseFloat(itemData.price) * 100), // Convert pounds to pence
+          category_id: itemData.category_id || null,
           display_order: items.length + 1,
         }),
       });
 
       if (response.ok) {
-        setNewItem({ name: '', description: '', price: '', category_id: '' });
         setIsCreating(false);
-        fetchData();
+        await fetchData();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create item');
       }
     } catch (error) {
       console.error('Error creating item:', error);
+      throw error; // Re-throw so form can handle it
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -149,13 +159,13 @@ export default function MenuItemsPage() {
     try {
       const token = await getAuthToken(getAccessTokenSilently);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${itemId}`, {
-        method: 'PUT',
+      // Use the toggle endpoint that works for merchants
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${itemId}/toggle-active`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ is_active: !isAvailable }), // API uses is_active, not is_available
       });
 
       if (response.ok) {
@@ -163,6 +173,43 @@ export default function MenuItemsPage() {
       }
     } catch (error) {
       console.error('Error updating item:', error);
+    }
+  };
+
+  const handleEditItem = (item: MenuItem) => {
+    setEditingItem(item);
+  };
+
+  const handleUpdateItem = async (updatedData: any) => {
+    if (!editingItem) return;
+
+    try {
+      const token = await getAuthToken(getAccessTokenSilently);
+
+      console.log('Updating item with data:', updatedData);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${editingItem.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Menu item updated successfully:', result);
+        fetchData(); // Refresh the list
+        setEditingItem(null);
+      } else {
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        throw new Error(errorData.error || 'Failed to update item');
+      }
+    } catch (error) {
+      console.error('Error updating item:', error);
+      throw error; // Re-throw so modal can handle it
     }
   };
 
@@ -223,68 +270,12 @@ export default function MenuItemsPage() {
         </div>
 
         {isCreating && (
-          <div className={styles.items__createForm}>
-            <div className={styles.items__formRow}>
-              <div className={styles.items__formGroup}>
-                <label htmlFor="itemName">Item Name</label>
-                <input
-                  id="itemName"
-                  type="text"
-                  value={newItem.name}
-                  onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., Chicken Caesar Salad"
-                  className={styles.items__input}
-                />
-              </div>
-              <div className={styles.items__formGroup}>
-                <label htmlFor="itemPrice">Price ($)</label>
-                <input
-                  id="itemPrice"
-                  type="number"
-                  step="0.01"
-                  value={newItem.price}
-                  onChange={(e) => setNewItem(prev => ({ ...prev, price: e.target.value }))}
-                  placeholder="12.99"
-                  className={styles.items__input}
-                />
-              </div>
-            </div>
-            <div className={styles.items__formGroup}>
-              <label htmlFor="itemCategory">Category</label>
-              <select
-                id="itemCategory"
-                value={newItem.category_id}
-                onChange={(e) => setNewItem(prev => ({ ...prev, category_id: e.target.value }))}
-                className={styles.items__select}
-              >
-                <option value="">Select a category</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className={styles.items__formGroup}>
-              <label htmlFor="itemDescription">Description (Optional)</label>
-              <textarea
-                id="itemDescription"
-                value={newItem.description}
-                onChange={(e) => setNewItem(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Fresh romaine lettuce, grilled chicken, parmesan cheese..."
-                className={styles.items__textarea}
-                rows={3}
-              />
-            </div>
-            <div className={styles.items__formActions}>
-              <Button variant="secondary" onClick={() => setIsCreating(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={createItem}>
-                Create Item
-              </Button>
-            </div>
-          </div>
+          <CreateMenuItemForm
+            categories={categories}
+            onSubmit={createItem}
+            onCancel={() => setIsCreating(false)}
+            isSubmitting={isSubmitting}
+          />
         )}
 
         <Grid.Container gap="lg" justifyContent="start" className={styles.items__list}>
@@ -318,12 +309,23 @@ export default function MenuItemsPage() {
                   isActive={item.is_available}
                   displayOrder={item.display_order}
                   onToggleAvailability={toggleItemAvailability}
-                  onEdit={(id) => window.location.href = `/merchant/admin/menu/items/${id}/edit`}
+                  onEdit={() => handleEditItem(item)}
                 />
               </Grid.Item>
             ))
           )}
         </Grid.Container>
+
+        {/* Edit Item Modal */}
+        {editingItem && (
+          <EditItemModal
+            item={editingItem}
+            categories={categories}
+            isOpen={!!editingItem}
+            onClose={() => setEditingItem(null)}
+            onSave={handleUpdateItem}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );

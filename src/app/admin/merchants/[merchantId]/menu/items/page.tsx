@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
 import { AdminPageHeader, MenuItemManagementCard } from '@/components/molecules';
+import { CreateMenuItemForm } from '@/components/organisms';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
 import EditItemModal from './components/EditItemModal';
@@ -42,14 +43,9 @@ export default function AdminMenuItemsPage() {
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  const [newItem, setNewItem] = useState({
-    name: '',
-    description: '',
-    price: '',
-    category_id: '',
-  });
 
   const merchantId = params?.merchantId as string;
 
@@ -131,21 +127,13 @@ export default function AdminMenuItemsPage() {
     }
   };
 
-  const createItem = async () => {
-    // Validate required fields
-    if (!newItem.name.trim()) {
-      alert('Item name is required');
-      return;
-    }
-    if (!newItem.price || isNaN(parseFloat(newItem.price)) || parseFloat(newItem.price) <= 0) {
-      alert('Valid price is required');
-      return;
-    }
-    if (!merchantId) {
-      alert('Merchant ID is missing');
-      return;
-    }
-
+  const createItem = async (itemData: {
+    name: string;
+    description: string;
+    price: string;
+    category_id: string;
+  }) => {
+    setIsSubmitting(true);
     try {
       const token = await getAccessTokenSilently({
         authorizationParams: {
@@ -154,10 +142,10 @@ export default function AdminMenuItemsPage() {
       });
 
       const requestData = {
-        title: newItem.name.trim(),
-        description: newItem.description?.trim() || '',
-        base_price: Math.round(parseFloat(newItem.price) * 100), // Convert pounds to pence
-        category_id: newItem.category_id || null,
+        title: itemData.name.trim(),
+        description: itemData.description?.trim() || '',
+        base_price: Math.round(parseFloat(itemData.price) * 100), // Convert pounds to pence
+        category_id: itemData.category_id || null,
         merchant_id: merchantId,
         display_order: items.length + 1,
       };
@@ -176,17 +164,18 @@ export default function AdminMenuItemsPage() {
       if (response.ok) {
         const result = await response.json();
         console.log('Menu item created successfully:', result);
-        setNewItem({ name: '', description: '', price: '', category_id: '' });
         setIsCreating(false);
-        fetchData();
+        await fetchData();
       } else {
         const errorData = await response.json();
         console.error('API Error Response:', errorData);
-        alert(`Error creating item: ${errorData.error || 'Unknown error'}`);
+        throw new Error(errorData.error || 'Failed to create item');
       }
     } catch (error) {
-      console.error('Network/Request Error:', error);
-      alert('Error creating item. Please check the console for details.');
+      console.error('Error creating item:', error);
+      throw error; // Re-throw so form can handle it
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -337,73 +326,12 @@ export default function AdminMenuItemsPage() {
             {isCreating && (
               <Grid.Container gap="lg" className={styles.items__createSection}>
                 <Grid.Item lg={12} xl={10}>
-                  <div className={styles.items__createForm}>
-                    <Typography variant="heading-5" className={styles.items__formTitle}>
-                      Create New Menu Item
-                    </Typography>
-                    
-                    <div className={styles.items__formRow}>
-                      <div className={styles.items__formGroup}>
-                        <label htmlFor="itemName">Item Name</label>
-                        <input
-                          id="itemName"
-                          type="text"
-                          value={newItem.name}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="e.g., Margherita Pizza"
-                          className={styles.items__input}
-                        />
-                      </div>
-                      <div className={styles.items__formGroup}>
-                        <label htmlFor="itemPrice">Price (£)</label>
-                        <input
-                          id="itemPrice"
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={newItem.price}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, price: e.target.value }))}
-                          placeholder="5.99"
-                          className={styles.items__input}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.items__formGroup}>
-                      <label htmlFor="itemCategory">Category</label>
-                      <select
-                        id="itemCategory"
-                        value={newItem.category_id}
-                        onChange={(e) => setNewItem(prev => ({ ...prev, category_id: e.target.value }))}
-                        className={styles.items__select}
-                      >
-                        <option value="">Select a category</option>
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className={styles.items__formGroup}>
-                      <label htmlFor="itemDescription">Description (Optional)</label>
-                      <textarea
-                        id="itemDescription"
-                        value={newItem.description}
-                        onChange={(e) => setNewItem(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Brief description of the item"
-                        className={styles.items__textarea}
-                        rows={3}
-                      />
-                    </div>
-                    <div className={styles.items__formActions}>
-                      <Button variant="secondary" onClick={() => setIsCreating(false)}>
-                        Cancel
-                      </Button>
-                      <Button variant="primary" onClick={createItem}>
-                        Create Item
-                      </Button>
-                    </div>
-                  </div>
+                  <CreateMenuItemForm
+                    categories={categories}
+                    onSubmit={createItem}
+                    onCancel={() => setIsCreating(false)}
+                    isSubmitting={isSubmitting}
+                  />
                 </Grid.Item>
               </Grid.Container>
             )}
