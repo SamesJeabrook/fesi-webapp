@@ -50,11 +50,8 @@ export const BankDetailsManager: React.FC<BankDetailsManagerProps> = ({
   const loadAccountStatus = async () => {
     try {
       setLoading(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const { getAuthToken } = await import('@/utils/devAuth');
+      const token = await getAuthToken(getAccessTokenSilently);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/payments/merchants/account-status`,
@@ -85,11 +82,8 @@ export const BankDetailsManager: React.FC<BankDetailsManagerProps> = ({
   const handleSetupAccount = async () => {
     try {
       setIsCreatingOnboardingLink(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const { getAuthToken } = await import('@/utils/devAuth');
+      const token = await getAuthToken(getAccessTokenSilently);
 
       // First, create the Stripe account if it doesn't exist
       if (!accountStatus?.id) {

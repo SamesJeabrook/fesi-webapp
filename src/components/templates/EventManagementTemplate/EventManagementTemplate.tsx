@@ -10,6 +10,7 @@ import { createEventAPI, EventAPIInterface } from '@/services/eventAPI';
 import { Event, EventFormData, DailySchedule } from '@/types/events';
 import { DailyScheduleCard } from '@/components/molecules/DailyScheduleCard';
 import { useAuth0 } from '@auth0/auth0-react';
+import { getAuthToken } from '@/utils/devAuth';
 import styles from './EventManagementTemplate.module.scss';
 
 interface Merchant {
@@ -77,11 +78,7 @@ export function EventManagementTemplate({
     const initializeAPI = async () => {
       try {
         const getToken = async () => {
-          return await getAccessTokenSilently({
-            authorizationParams: {
-              audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-            },
-          });
+          return await getAuthToken(getAccessTokenSilently);
         };
         
         const apiInstance = createEventAPI(context, getToken, merchantId);
@@ -92,7 +89,7 @@ export function EventManagementTemplate({
     };
 
     initializeAPI();
-  }, [context, getAccessTokenSilently]);
+  }, [context, getAccessTokenSilently, merchantId]);
 
   // Load events when API is ready
   useEffect(() => {
@@ -109,11 +106,7 @@ export function EventManagementTemplate({
     
     try {
       setMerchantLoading(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/merchants/${merchantId}`, {
         headers: {

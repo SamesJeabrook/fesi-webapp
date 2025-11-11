@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { Button, Grid } from '@/components/atoms';
 import { FormInput, FormTextArea } from '@/components/atoms';
 import { Modal } from '@/components/molecules';
@@ -12,10 +14,10 @@ interface MenuCategory {
 }
 
 interface EditCategoryModalProps {
-  category: MenuCategory;
+  category: MenuCategory | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (updatedCategory: Partial<MenuCategory>) => Promise<void>;
+  onSave: (categoryId: string, updatedCategory: Partial<MenuCategory>) => Promise<void>;
 }
 
 export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
@@ -25,11 +27,22 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
   onSave,
 }) => {
   const [formData, setFormData] = useState({
-    name: category.name,
-    description: category.description || '',
-    display_order: category.display_order.toString(),
+    name: '',
+    description: '',
+    display_order: '0',
   });
   const [isSaving, setIsSaving] = useState(false);
+
+  // Update form data when category changes
+  useEffect(() => {
+    if (category) {
+      setFormData({
+        name: category.name,
+        description: category.description || '',
+        display_order: category.display_order.toString(),
+      });
+    }
+  }, [category]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -41,6 +54,8 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
       return;
     }
 
+    if (!category) return;
+
     setIsSaving(true);
     
     try {
@@ -50,7 +65,7 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
         display_order: parseInt(formData.display_order) || 0,
       };
 
-      await onSave(updatedData);
+      await onSave(category.id, updatedData);
       onClose();
     } catch (error) {
       console.error('Error saving category:', error);
@@ -62,11 +77,13 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
 
   const handleClose = () => {
     // Reset form to original values
-    setFormData({
-      name: category.name,
-      description: category.description || '',
-      display_order: category.display_order.toString(),
-    });
+    if (category) {
+      setFormData({
+        name: category.name,
+        description: category.description || '',
+        display_order: category.display_order.toString(),
+      });
+    }
     onClose();
   };
 
@@ -88,6 +105,8 @@ export const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
       </Button>
     </>
   );
+
+  if (!category) return null;
 
   return (
     <Modal

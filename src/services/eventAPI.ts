@@ -229,7 +229,7 @@ class AdminEventAPI implements EventAPIInterface {
 }
 
 class MerchantEventAPI implements EventAPIInterface {
-  constructor(private getAccessToken: GetAccessTokenFunction) {}
+  constructor(private getAccessToken: GetAccessTokenFunction, private merchantId?: string) {}
 
   private async getAuthHeaders() {
     const accessToken = await this.getAccessToken();
@@ -254,7 +254,7 @@ class MerchantEventAPI implements EventAPIInterface {
     }
 
     // Single day event creation (merchant auto-scoped)
-    const response = await fetch(`${API_BASE_URL}/events`, {
+    const response = await fetch(`${API_BASE_URL}/api/events`, {
       method: 'POST',
       headers: await this.getAuthHeaders(),
       body: JSON.stringify({
@@ -340,7 +340,7 @@ class MerchantEventAPI implements EventAPIInterface {
 
   async toggleEventStatus(eventId: string, isOpen: boolean): Promise<Event> {
     const response = await fetch(`${API_BASE_URL}/api/events/${eventId}/toggle-open`, {
-      method: 'PUT',
+      method: 'POST',
       headers: await this.getAuthHeaders(),
       body: JSON.stringify({ is_open: isOpen }),
     });
@@ -366,10 +366,11 @@ class MerchantEventAPI implements EventAPIInterface {
 
   async getMerchantEvents(params?: { limit?: number; offset?: number }): Promise<Event[]> {
     const queryParams = new URLSearchParams();
+    if (this.merchantId) queryParams.append('merchant_id', this.merchantId);
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.offset) queryParams.append('offset', params.offset.toString());
 
-    const response = await fetch(`${API_BASE_URL}/events?${queryParams}`, {
+    const response = await fetch(`${API_BASE_URL}/api/events?${queryParams}`, {
       headers: await this.getAuthHeaders(),
     });
 
@@ -424,7 +425,7 @@ export function createEventAPI(context: 'admin' | 'merchant', getAccessToken: Ge
     case 'admin':
       return new AdminEventAPI(getAccessToken, merchantId);
     case 'merchant':
-      return new MerchantEventAPI(getAccessToken);
+      return new MerchantEventAPI(getAccessToken, merchantId);
     default:
       throw new Error(`Unknown event API context: ${context}`);
   }

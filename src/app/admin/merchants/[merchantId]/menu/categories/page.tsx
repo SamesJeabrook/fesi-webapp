@@ -4,11 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import { AdminPageHeader, CategoryCard } from '@/components/molecules';
+import { AdminPageHeader, CategoryCard, EditCategoryModal } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getAuthToken } from '@/utils/devAuth';
 import Link from 'next/link';
-import { EditCategoryModal } from './components/EditCategoryModal';
 import styles from './adminCategories.module.scss';
 
 interface MenuCategory {
@@ -116,17 +115,18 @@ export default function AdminMenuCategoriesPage() {
     }
   };
 
-  const handleEditCategory = (category: MenuCategory) => {
-    setEditingCategory(category);
+  const handleEditCategory = (id: string) => {
+    const category = categories.find(c => c.id === id);
+    if (category) {
+      setEditingCategory(category);
+    }
   };
 
-  const handleUpdateCategory = async (updatedData: Partial<MenuCategory>) => {
-    if (!editingCategory) return;
-
+  const handleUpdateCategory = async (categoryId: string, updatedData: Partial<MenuCategory>) => {
     try {
       const token = await getAuthToken(getAccessTokenSilently);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories/${editingCategory.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories/${categoryId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

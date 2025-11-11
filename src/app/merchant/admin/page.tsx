@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Typography } from '@/components/atoms';
+import { useAuth0 } from '@auth0/auth0-react';
+import { Typography, Button } from '@/components/atoms';
 import { Card } from '@/components/atoms/Card';
+import { MerchantQrModal } from '@/components/molecules/MerchantQrModal/MerchantQrModal';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { getMerchantIdFromDevToken, getAuthToken } from '@/utils/devAuth';
 import styles from './dashboard.module.scss';
 
 const dashboardItems = [
@@ -32,7 +35,7 @@ const dashboardItems = [
   {
     title: 'Sub-Items & Options',
     description: 'Configure customizations and add-ons',
-    icon: '⚙️',
+    icon: '🔧',
     href: '/merchant/admin/menu/sub-items',
     color: 'info'
   },
@@ -50,6 +53,13 @@ const dashboardItems = [
     href: '/merchant/admin/pos',
     color: 'primary'
   },
+  {
+    title: 'System Settings',
+    description: 'Configure your merchant settings and preferences',
+    icon: '⚙️',
+    href: '/merchant/admin/settings',
+    color: 'warning'
+  },
   // Future expansion items (commented for now)
   // {
   //   title: 'Analytics',
@@ -58,16 +68,71 @@ const dashboardItems = [
   //   href: '/merchant/admin/analytics',
   //   color: 'secondary'
   // },
-  // {
-  //   title: 'Settings',
-  //   description: 'Restaurant settings and preferences',
-  //   icon: '⚙️',
-  //   href: '/merchant/admin/settings',
-  //   color: 'primary'
-  // },
 ];
 
 export default function MerchantAdminDashboard() {
+  const { getAccessTokenSilently } = useAuth0();
+  const [merchantId, setMerchantId] = useState<string | null>(null);
+  const [merchant, setMerchant] = useState<any>(null);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Get merchant ID and data
+  useEffect(() => {
+    const fetchMerchantData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Check for dev token first
+        const devMerchantId = getMerchantIdFromDevToken();
+        let id: string;
+        
+        if (devMerchantId) {
+          id = devMerchantId;
+        } else {
+          // Get from /me endpoint
+          const token = await getAuthToken(getAccessTokenSilently);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            id = data.id;
+          } else {
+            console.error('Failed to fetch merchant ID');
+            return;
+          }
+        }
+
+        setMerchantId(id);
+
+        // Fetch full merchant details
+        const token = await getAuthToken(getAccessTokenSilently);
+        const merchantResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (merchantResponse.ok) {
+          const merchantData = await merchantResponse.json();
+          setMerchant(merchantData.data);
+        }
+      } catch (error) {
+        console.error('Error fetching merchant data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMerchantData();
+  }, [getAccessTokenSilently]);
+
   return (
     <ProtectedRoute requireRole={['merchant']}>
       <div className={styles.dashboard}>
@@ -78,6 +143,18 @@ export default function MerchantAdminDashboard() {
           <Typography variant="body-large" style={{ color: 'var(--color-text-secondary)' }}>
             Manage your restaurant operations and menu
           </Typography>
+          {merchant && (
+            <div style={{ marginTop: '1.5rem' }}>
+              <Button 
+                variant="primary" 
+                size="md" 
+                onClick={() => setQrOpen(true)}
+              >
+                <span style={{ fontSize: '1.2em', marginRight: '0.5rem' }}>📱</span>
+                Show QR Code
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className={styles.dashboard__grid}>
@@ -108,6 +185,14 @@ export default function MerchantAdminDashboard() {
             More features coming soon...
           </Typography>
         </div>
+
+        {merchant && (
+          <MerchantQrModal
+            merchant={merchant}
+            open={qrOpen}
+            onClose={() => setQrOpen(false)}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );

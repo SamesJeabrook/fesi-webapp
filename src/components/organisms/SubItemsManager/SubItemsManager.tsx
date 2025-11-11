@@ -36,12 +36,16 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
   // Update auth headers function
   const updateAuthHeaders = async () => {
     try {
-      const token = await getAccessTokenSilently();
+      const { getAuthToken } = await import('@/utils/devAuth');
+      const token = await getAuthToken(getAccessTokenSilently);
       localStorage.setItem('auth_token', token);
     } catch (error) {
       console.error('Failed to get access token:', error);
-      if (onError) {
-        onError('Authentication failed');
+      // Don't show error for dev tokens
+      if (error instanceof Error && !error.message.includes('Login required')) {
+        if (onError) {
+          onError('Authentication failed');
+        }
       }
     }
   };

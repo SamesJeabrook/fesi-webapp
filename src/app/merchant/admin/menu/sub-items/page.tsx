@@ -10,7 +10,7 @@ export default function MerchantSubItemsPage() {
 
   const backLink = {
     label: 'Back to Menu',
-    href: '/merchant/admin/menu'
+    href: '/merchant/admin/'
   };
 
   return (

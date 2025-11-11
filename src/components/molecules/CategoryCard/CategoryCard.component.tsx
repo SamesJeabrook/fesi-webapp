@@ -7,10 +7,7 @@ export interface CategoryCardProps {
   name: string;
   description?: string;
   displayOrder: number;
-  isActive?: boolean;
   onEdit?: (id: string) => void;
-  onToggleStatus?: (id: string, currentStatus: boolean) => void;
-  showStatus?: boolean;
 }
 
 export const CategoryCard: React.FC<CategoryCardProps> = ({
@@ -18,25 +15,13 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
   name,
   description,
   displayOrder,
-  isActive = true,
   onEdit,
-  onToggleStatus,
-  showStatus = false,
 }) => {
   return (
     <div className={styles.card}>
       <div className={styles.card__content}>
         <div className={styles.card__header}>
           <Typography variant="heading-5">{name}</Typography>
-          {showStatus && (
-            <span
-              className={`${styles.card__status} ${
-                isActive ? styles['card__status--active'] : styles['card__status--inactive']
-              }`}
-            >
-              {isActive ? 'Active' : 'Inactive'}
-            </span>
-          )}
         </div>
         
         {description && (
@@ -54,11 +39,6 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       </div>
 
       <div className={styles.card__actions}>
-        {onToggleStatus && showStatus && (
-          <Button variant="secondary" size="sm" onClick={() => onToggleStatus(id, isActive)}>
-            {isActive ? 'Deactivate' : 'Activate'}
-          </Button>
-        )}
         {onEdit && (
           <Button variant="primary" size="sm" onClick={() => onEdit(id)}>
             Edit

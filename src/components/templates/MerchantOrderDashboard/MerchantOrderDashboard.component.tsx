@@ -13,6 +13,7 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
   onOrderStatusChange,
   onRefresh,
   getToken,
+  backLink,
   pollingInterval = 30000, // Default 30 seconds
   className,
   'data-testid': dataTestId,
@@ -202,6 +203,11 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.merchantInfo}>
+            {backLink && (
+              <a href={backLink.href} className={styles.backLink}>
+                ← {backLink.label}
+              </a>
+            )}
             <Typography variant="heading-3" className={styles.merchantName}>
               {merchant.name}
             </Typography>

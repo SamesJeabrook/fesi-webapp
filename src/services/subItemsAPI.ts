@@ -65,9 +65,21 @@ export interface SubItemsAPIInterface {
   deleteItem(itemId: string): Promise<void>;
 }
 
+// Import dev auth utility
+import { getDevToken } from '@/utils/devAuth';
+
 // Utility function to get auth headers
 const getAuthHeaders = async () => {
-  // This will be injected by the component using Auth0
+  // Check for dev token first
+  const devToken = getDevToken();
+  if (devToken) {
+    return {
+      'Authorization': `Bearer ${devToken}`,
+      'Content-Type': 'application/json'
+    };
+  }
+  
+  // Otherwise use localStorage token
   const token = localStorage.getItem('auth_token') || '';
   return {
     'Authorization': `Bearer ${token}`,

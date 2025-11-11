@@ -5,6 +5,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { MerchantOrderDashboard } from '@/components/templates';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useAdmin } from '@/components/providers/AdminProvider';
+import { getMerchantIdFromDevToken, getAuthToken } from '@/utils/devAuth';
 
 // Environment configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
@@ -61,12 +62,8 @@ function useMerchantOrders(merchantId: string | null) {
 
     setIsLoading(true);
     try {
-      // Get Auth0 token
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      // Get Auth0 token or dev token
+      const token = await getAuthToken(getAccessTokenSilently);
 
       console.log('Fetching orders for merchant:', merchantId);
       
@@ -134,36 +131,71 @@ function useMerchantOrders(merchantId: string | null) {
 export default function MerchantAdminPage() {
   const { user, isLoading: authLoading, getAccessTokenSilently } = useAuth0();
   const { selectedMerchant, isImpersonating, isAdmin } = useAdmin();
+  const [merchantId, setMerchantId] = useState<string | null>(null);
   
-  // If admin is impersonating, use selectedMerchant, otherwise use user's merchant_id
-  const merchantId = isImpersonating 
-    ? selectedMerchant?.id 
-    : user?.['https://fesi.app/merchant_id'] || null;
+  // Get merchant ID from dev token, impersonation, or user
+  useEffect(() => {
+    const getMerchantId = async () => {
+      // Check for dev token first
+      const devMerchantId = getMerchantIdFromDevToken();
+      if (devMerchantId) {
+        setMerchantId(devMerchantId);
+        return;
+      }
+
+      // If admin is impersonating, use selectedMerchant
+      if (isImpersonating && selectedMerchant) {
+        setMerchantId(selectedMerchant.id);
+        return;
+      }
+
+      // Otherwise, try Auth0 user's merchant_id
+      const userMerchantId = user?.['https://fesi.app/merchant_id'];
+      if (userMerchantId) {
+        setMerchantId(userMerchantId);
+        return;
+      }
+
+      // Finally, try fetching from /me endpoint
+      try {
+        const token = await getAuthToken(getAccessTokenSilently);
+        const response = await fetch(`${API_BASE_URL}/api/merchants/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setMerchantId(data.id);
+        }
+      } catch (error) {
+        console.error('Error fetching merchant ID:', error);
+      }
+    };
+
+    getMerchantId();
+  }, [user, isImpersonating, selectedMerchant, getAccessTokenSilently]);
   
   const { orders, isLoading: ordersLoading, refetch } = useMerchantOrders(merchantId);
 
   // Create merchant object - use selectedMerchant if impersonating, otherwise use Auth0 user data
-  const merchant: Merchant | null = isImpersonating && selectedMerchant
+  const merchant: Merchant | null = merchantId
     ? {
-        id: selectedMerchant.id,
-        name: selectedMerchant.business_name,
-        email: selectedMerchant.email
+        id: merchantId,
+        name: isImpersonating && selectedMerchant 
+          ? selectedMerchant.business_name 
+          : user?.name || user?.nickname || 'Unknown Merchant',
+        email: isImpersonating && selectedMerchant
+          ? selectedMerchant.email
+          : user?.email || 'unknown@merchant.com'
       }
-    : user 
-      ? {
-          id: merchantId || user.sub,
-          name: user.name || user.nickname || 'Unknown Merchant',
-          email: user.email || 'unknown@merchant.com'
-        }
-      : null;
+    : null;
 
   const handleOrderStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const token = await getAuthToken(getAccessTokenSilently);
       
       const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/status`, {
         method: 'PUT',
@@ -193,6 +225,14 @@ export default function MerchantAdminPage() {
     }
   };
 
+  if (!merchantId) {
+    return (
+      <ProtectedRoute requireRole={['merchant', 'admin']}>
+        <div>Loading...</div>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute requireRole={['merchant', 'admin']}>
       <MerchantOrderDashboard
@@ -201,6 +241,10 @@ export default function MerchantAdminPage() {
         isLoading={ordersLoading}
         onOrderStatusChange={handleOrderStatusChange}
         onRefresh={refetch}
+        backLink={{
+          href: '/merchant/admin',
+          label: 'Back to Dashboard'
+        }}
       />
     </ProtectedRoute>
   );

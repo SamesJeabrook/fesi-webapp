@@ -19,6 +19,11 @@ export interface MerchantOrderDashboardProps {
   onRefresh?: () => void;
   /** Function to get authentication token */
   getToken?: () => Promise<string>;
+  /** Back link configuration */
+  backLink?: {
+    href: string;
+    label: string;
+  };
   /** Additional CSS classes */
   className?: string;
   /** Test ID for testing purposes */

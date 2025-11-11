@@ -161,7 +161,8 @@ export default function AdminMerchantDashboard() {
               </span>
             </div>
             <div style={{ marginTop: 24 }}>
-              <Button variant="secondary" size="sm" onClick={() => setQrOpen(true)}>
+              <Button variant="primary" size="md" onClick={() => setQrOpen(true)}>
+                <span style={{ fontSize: '1.2em', marginRight: '0.5rem' }}>📱</span>
                 Show QR Code
               </Button>
             </div>

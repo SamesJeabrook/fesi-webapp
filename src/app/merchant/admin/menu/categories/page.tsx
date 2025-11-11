@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import { CategoryCard } from '@/components/molecules';
+import { CategoryCard, EditCategoryModal } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getAuthToken, getMerchantIdFromDevToken } from '@/utils/devAuth';
 import Link from 'next/link';
@@ -26,6 +26,7 @@ export default function MenuCategoriesPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [merchantId, setMerchantId] = useState<string | null>(null);
   const [newCategory, setNewCategory] = useState({ name: '', description: '' });
+  const [editingCategory, setEditingCategory] = useState<MenuCategory | null>(null);
 
   // Get merchant ID from dev token or API
   useEffect(() => {
@@ -112,7 +113,14 @@ export default function MenuCategoriesPage() {
     }
   };
 
-  const toggleCategoryStatus = async (categoryId: string, isActive: boolean) => {
+  const handleEditCategory = (id: string) => {
+    const category = categories.find(c => c.id === id);
+    if (category) {
+      setEditingCategory(category);
+    }
+  };
+
+  const handleUpdateCategory = async (categoryId: string, updatedData: Partial<MenuCategory>) => {
     try {
       const token = await getAuthToken(getAccessTokenSilently);
 
@@ -122,14 +130,19 @@ export default function MenuCategoriesPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ is_active: !isActive }),
+        body: JSON.stringify(updatedData),
       });
 
       if (response.ok) {
-        fetchCategories();
+        fetchCategories(); // Refresh the categories list
+      } else {
+        const errorData = await response.json();
+        console.error('Error updating category:', errorData);
+        throw new Error(errorData.message || 'Failed to update category');
       }
     } catch (error) {
       console.error('Error updating category:', error);
+      throw error;
     }
   };
 
@@ -222,17 +235,22 @@ export default function MenuCategoriesPage() {
                   name={category.name}
                   description={category.description}
                   displayOrder={category.display_order}
-                  isActive={category.is_active}
-                  showStatus={true}
-                  onEdit={(id) => {
-                    window.location.href = `/merchant/admin/menu/categories/${id}/edit`;
-                  }}
-                  onToggleStatus={toggleCategoryStatus}
+                  onEdit={handleEditCategory}
                 />
               </Grid.Item>
             ))
           )}
         </Grid.Container>
+
+        {/* Edit Category Modal */}
+        {editingCategory && (
+          <EditCategoryModal
+            category={editingCategory}
+            isOpen={!!editingCategory}
+            onClose={() => setEditingCategory(null)}
+            onSave={handleUpdateCategory}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );
