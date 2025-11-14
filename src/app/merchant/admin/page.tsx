@@ -60,14 +60,13 @@ const dashboardItems = [
     href: '/merchant/admin/settings',
     color: 'warning'
   },
-  // Future expansion items (commented for now)
-  // {
-  //   title: 'Analytics',
-  //   description: 'View sales and performance metrics',
-  //   icon: '📊',
-  //   href: '/merchant/admin/analytics',
-  //   color: 'secondary'
-  // },
+  {
+    title: 'Analytics & Reports',
+    description: 'View sales and performance metrics',
+    icon: '📊',
+    href: '/merchant/admin/analytics',
+    color: 'secondary'
+  },
 ];
 
 export default function MerchantAdminDashboard() {

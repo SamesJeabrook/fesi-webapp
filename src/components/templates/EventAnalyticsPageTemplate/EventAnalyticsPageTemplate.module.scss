@@ -1,0 +1,218 @@
+.eventAnalyticsPageTemplate {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--spacing-6);
+
+  &__header {
+    margin-bottom: var(--spacing-8);
+  }
+
+  &__backLink {
+    display: inline-flex;
+    align-items: center;
+    color: var(--color-neutral-600);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: var(--spacing-4);
+    transition: color var(--duration-normal) var(--easing-ease-in-out);
+
+    &:hover {
+      color: var(--color-primary-500);
+    }
+  }
+
+  &__titleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-2);
+  }
+
+  &__title {
+    color: var(--color-neutral-900);
+    margin: 0;
+  }
+
+  &__badge {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--border-radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    
+    &--open {
+      background-color: var(--color-success-light);
+      color: var(--color-success-dark);
+    }
+    
+    &--closed {
+      background-color: var(--color-neutral-200);
+      color: var(--color-neutral-700);
+    }
+  }
+
+  &__dateRange {
+    color: var(--color-neutral-600);
+  }
+
+  &__section {
+    margin-bottom: var(--spacing-8);
+  }
+
+  &__sectionTitle {
+    color: var(--color-neutral-900);
+    margin-bottom: var(--spacing-4);
+  }
+
+  &__statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-4);
+  }
+
+  &__chartContainer {
+    padding: var(--spacing-6);
+    background-color: var(--color-neutral-50);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+  }
+
+  &__hourlyChart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 300px;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-4);
+  }
+
+  &__hourBar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
+
+  &__barContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+  }
+
+  &__bar {
+    width: 100%;
+    background: linear-gradient(to top, var(--color-primary-500), var(--color-primary-300));
+    border-radius: var(--border-radius-base) var(--border-radius-base) 0 0;
+    transition: opacity var(--duration-normal);
+    position: relative;
+    
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  &__barLabel {
+    font-size: var(--font-size-xs);
+    color: var(--color-neutral-600);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  &__tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--color-neutral-900);
+    color: var(--color-neutral-white);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--duration-normal);
+    margin-bottom: var(--spacing-1);
+    z-index: var(--z-index-tooltip);
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: var(--color-neutral-900);
+    }
+  }
+
+  &__barContainer:hover &__tooltip {
+    opacity: 1;
+  }
+
+  &__emptyState {
+    text-align: center;
+    padding: var(--spacing-12);
+    color: var(--color-neutral-600);
+  }
+
+  &__loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-8);
+    color: var(--color-neutral-600);
+  }
+}
+
+@media (max-width: 1024px) {
+  .eventAnalyticsPageTemplate {
+    padding: var(--spacing-4);
+
+    &__statsGrid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    &__hourlyChart {
+      height: 250px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .eventAnalyticsPageTemplate {
+    padding: var(--spacing-3);
+
+    &__header {
+      margin-bottom: var(--spacing-6);
+    }
+
+    &__section {
+      margin-bottom: var(--spacing-6);
+    }
+
+    &__statsGrid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-3);
+    }
+
+    &__titleRow {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    &__hourlyChart {
+      height: 200px;
+      gap: var(--spacing-1);
+    }
+
+    &__barLabel {
+      font-size: 0.625rem;
+    }
+  }
+}

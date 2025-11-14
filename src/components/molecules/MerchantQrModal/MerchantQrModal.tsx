@@ -30,8 +30,7 @@ const QR_SIZE = 256;
 export const MerchantQrModal: React.FC<MerchantQrModalProps> = ({ merchant, open, onClose }) => {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const qrWrapperRef = useRef<HTMLDivElement>(null);
-
-  let qrCode: QRCodeStyling;
+  const qrCodeRef = useRef<QRCodeStyling | null>(null);
 
 
   // Generate QR code with logo using qr-code-with-logo
@@ -39,7 +38,7 @@ export const MerchantQrModal: React.FC<MerchantQrModalProps> = ({ merchant, open
     if (!merchant) return;
     let objectUrl: string | null = null;
     const qrValue = `${process.env.NEXT_PUBLIC_WEBAPP_URL || 'http://localhost:3000'}/menu/${merchant.id}`;
-    qrCode = new QRCodeStyling({
+    const qrCode = new QRCodeStyling({
       width: QR_SIZE,
       height: QR_SIZE,
       data: qrValue,
@@ -64,11 +63,15 @@ export const MerchantQrModal: React.FC<MerchantQrModalProps> = ({ merchant, open
       qrWrapperRef.current.innerHTML = '';
       qrCode.append(qrWrapperRef.current);
     }
+    
+    // Store reference for download
+    qrCodeRef.current = qrCode;
   }, [merchant]);
 
   const handleDownloadQr = () => {
-  if (!qrCode) return;
-    qrCode.download({ name: 'fesi-qr', extension: 'png' });
+    console.log(qrCodeRef.current)
+    if (!qrCodeRef.current) return;
+    qrCodeRef.current.download({ name: 'fesi-qr', extension: 'png' });
   };
 
   if (!merchant) return null;

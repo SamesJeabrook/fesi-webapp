@@ -1,0 +1,145 @@
+.analyticsPageTemplate {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--spacing-6);
+
+  &__header {
+    margin-bottom: var(--spacing-8);
+  }
+
+  &__backLink {
+    display: inline-flex;
+    align-items: center;
+    color: var(--color-neutral-600);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: var(--spacing-4);
+    transition: color var(--duration-normal) var(--easing-ease-in-out);
+
+    &:hover {
+      color: var(--color-primary-500);
+    }
+  }
+
+  &__title {
+    color: var(--color-neutral-900);
+    margin-bottom: var(--spacing-2);
+  }
+
+  &__subtitle {
+    color: var(--color-neutral-600);
+  }
+
+  &__section {
+    margin-bottom: var(--spacing-8);
+  }
+
+  &__sectionTitle {
+    color: var(--color-neutral-900);
+    margin-bottom: var(--spacing-4);
+  }
+
+  &__statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-4);
+  }
+
+  &__eventsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-4);
+  }
+
+  &__monthlyBreakdowns {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+  }
+
+  &__monthCard {
+    padding: var(--spacing-6);
+    background-color: var(--color-neutral-50);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--color-neutral-200);
+  }
+
+  &__monthHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-4);
+    padding-bottom: var(--spacing-4);
+    border-bottom: 2px solid var(--color-neutral-200);
+    flex-wrap: wrap;
+    gap: var(--spacing-3);
+  }
+
+  &__monthTitle {
+    color: var(--color-neutral-900);
+    margin: 0;
+  }
+
+  &__monthStats {
+    display: flex;
+    gap: var(--spacing-4);
+    align-items: center;
+  }
+
+  &__monthStat {
+    color: var(--color-neutral-600);
+    font-weight: 600;
+  }
+
+  &__loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-8);
+    color: var(--color-neutral-600);
+  }
+}
+
+@media (max-width: 1024px) {
+  .analyticsPageTemplate {
+    padding: var(--spacing-4);
+
+    &__statsGrid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    &__eventsGrid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .analyticsPageTemplate {
+    padding: var(--spacing-3);
+
+    &__header {
+      margin-bottom: var(--spacing-6);
+    }
+
+    &__section {
+      margin-bottom: var(--spacing-6);
+    }
+
+    &__statsGrid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-3);
+    }
+
+    &__monthHeader {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    &__monthStats {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+}

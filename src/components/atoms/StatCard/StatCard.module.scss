@@ -1,0 +1,90 @@
+.statCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  transition: var(--transition-base);
+  
+  &:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-sm);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+  }
+
+  &__icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  &__label {
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+
+  &__content {
+    display: flex;
+    align-items: baseline;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  &__value {
+    color: var(--color-text-primary);
+    font-weight: 700;
+  }
+
+  &__trend {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+
+    &--up {
+      background: var(--color-success-light);
+      color: var(--color-success);
+    }
+
+    &--down {
+      background: var(--color-error-light);
+      color: var(--color-error);
+    }
+  }
+
+  &__trendIcon {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  &__subtitle {
+    color: var(--color-text-secondary);
+  }
+
+  // Variants
+  &--primary {
+    border-left: 4px solid var(--color-primary);
+  }
+
+  &--secondary {
+    border-left: 4px solid var(--color-secondary);
+  }
+
+  &--success {
+    border-left: 4px solid var(--color-success);
+  }
+
+  &--warning {
+    border-left: 4px solid var(--color-warning);
+  }
+
+  &--error {
+    border-left: 4px solid var(--color-error);
+  }
+}

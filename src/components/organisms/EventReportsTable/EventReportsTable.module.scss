@@ -1,0 +1,181 @@
+.eventReportsTable {
+  width: 100%;
+
+  &__filters {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--color-neutrual-300);
+  }
+
+  &__search {
+    max-width: 400px;
+  }
+
+  &__container {
+    overflow-x: auto;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+  }
+
+  &__headerCell {
+    padding: var(--spacing-4);
+    text-align: left;
+    border-bottom: 2px solid var(--color-neutrual-300);
+    background-color: var(--color-background-subtle);
+
+    &--sortable {
+      cursor: pointer;
+      user-select: none;
+      transition: background-color var(--transition-standard);
+
+      &:hover {
+        background-color: var(--color-primary-50);
+      }
+
+      &:active {
+        background-color: var(--color-neutrual-300);
+      }
+    }
+  }
+
+  &__headerText {
+    color: var(--color-neutral-900);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__row {
+    transition: background-color var(--transition-standard);
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--color-neutrual-300);
+    }
+
+    &--clickable {
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--color-primary-50);
+      }
+
+      &:active {
+        background-color: var(--color-neutrual-300);
+      }
+    }
+  }
+
+  &__cell {
+    padding: var(--spacing-4);
+  }
+
+  &__eventName {
+    color: var(--color-neutral-900);
+    font-weight: 500;
+  }
+
+  &__date {
+    color: var(--color-neutral-600);
+  }
+
+  &__status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2) var(--spacing-3);
+    border-radius: var(--border-radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+
+    &--open {
+      background-color: var(--color-success-light);
+      color: var(--color-success);
+    }
+
+    &--closed {
+      background-color: var(--color-error-light);
+      color: var(--color-error);
+    }
+  }
+
+  &__orders {
+    color: var(--color-neutral-900);
+    font-weight: 600;
+  }
+
+  &__revenue {
+    color: var(--color-primary-800-800);
+    font-weight: 600;
+  }
+
+  &__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--color-neutrual-300);
+  }
+
+  &__paginationButton {
+    padding: var(--spacing-3) var(--spacing-4);
+    background-color: var(--color-neutral-100);
+    border: 1px solid var(--color-neutrual-300);
+    border-radius: var(--border-radius-md);
+    color: var(--color-neutral-900);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--easing-ease-in-out);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-primary-50);
+      border-color: var(--color-primary-800);
+      color: var(--color-primary-800);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__paginationInfo {
+    color: var(--color-neutral-900);
+  }
+
+  &__loading,
+  &__empty {
+    padding: var(--spacing-8);
+    text-align: center;
+  }
+
+  &__emptyText {
+    color: var(--color-neutral-900);
+    margin-top: var(--spacing-3);
+  }
+}
+
+@media (max-width: 768px) {
+  .eventReportsTable {
+    &__table {
+      min-width: 600px;
+      font-size: 0.875rem;
+    }
+
+    &__headerCell,
+    &__cell {
+      padding: var(--spacing-3);
+    }
+
+    &__pagination {
+      flex-direction: column;
+      gap: var(--spacing-3);
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

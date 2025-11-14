@@ -62,6 +62,13 @@ const dashboardItems = [
     href: '/admin/merchants/[merchantId]/settings',
     color: 'secondary'
   },
+  {
+    title: 'Analytics & Reports',
+    description: 'View sales and performance metrics',
+    icon: '📊',
+    href: '/admin/merchants/[merchantId]/analytics',
+    color: 'primary'
+  },
 ];
 
 export default function AdminMerchantDashboard() {
