@@ -1,0 +1,197 @@
+.businessDetailsStep {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+
+  &__header {
+    text-align: center;
+    margin-bottom: var(--spacing-8);
+  }
+
+  &__title {
+    color: var(--color-neutral-900);
+    margin-bottom: var(--spacing-2);
+  }
+
+  &__description {
+    color: var(--color-neutral-600);
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+  }
+
+  &__sectionTitle {
+    color: var(--color-neutral-900);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    padding-bottom: var(--spacing-2);
+    border-bottom: 2px solid var(--color-neutral-200);
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  &__label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-900);
+    font-size: var(--font-size-sm);
+  }
+
+  &__required {
+    color: var(--color-error-main);
+    margin-left: var(--spacing-1);
+  }
+
+  &__input,
+  &__textarea {
+    padding: var(--spacing-3) var(--spacing-4);
+    border: 1px solid var(--color-neutral-300);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-base);
+    transition: all var(--duration-normal);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    }
+
+    &--error {
+      border-color: var(--color-error-main);
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+    }
+  }
+
+  &__textarea {
+    min-height: 120px;
+    resize: vertical;
+    font-family: inherit;
+  }
+
+  &__helpText {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-600);
+  }
+
+  &__error {
+    font-size: var(--font-size-sm);
+    color: var(--color-error-main);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-4);
+  }
+
+  &__categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+  }
+
+  &__categoryChip {
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--border-radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--duration-normal);
+    border: 2px solid var(--color-neutral-300);
+    background-color: var(--color-neutral-white);
+    color: var(--color-neutral-700);
+
+    &:hover {
+      border-color: var(--color-primary-400);
+      background-color: var(--color-primary-50);
+    }
+
+    &--selected {
+      background-color: var(--color-primary-500);
+      border-color: var(--color-primary-500);
+      color: var(--color-neutral-white);
+
+      &:hover {
+        background-color: var(--color-primary-600);
+        border-color: var(--color-primary-600);
+      }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+    margin-top: var(--spacing-6);
+  }
+
+  &__button {
+    padding: var(--spacing-3) var(--spacing-6);
+    border-radius: var(--border-radius-md);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    transition: all var(--duration-normal);
+    cursor: pointer;
+
+    &--primary {
+      background-color: var(--color-primary-500);
+      color: var(--color-neutral-white);
+      border: none;
+
+      &:hover:not(:disabled) {
+        background-color: var(--color-primary-600);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+      }
+
+      &:disabled {
+        background-color: var(--color-neutral-300);
+        cursor: not-allowed;
+      }
+    }
+
+    &--secondary {
+      background-color: var(--color-neutral-white);
+      color: var(--color-neutral-700);
+      border: 1px solid var(--color-neutral-300);
+
+      &:hover:not(:disabled) {
+        background-color: var(--color-neutral-50);
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .businessDetailsStep {
+    &__grid {
+      grid-template-columns: 1fr;
+    }
+
+    &__actions {
+      flex-direction: column-reverse;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

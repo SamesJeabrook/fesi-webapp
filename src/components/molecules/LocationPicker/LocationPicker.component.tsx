@@ -42,7 +42,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           style: mapStyle,
           center: [lng, lat],
           zoom: zoom,
-        });
+        }); 
         map.current.on('moveend', () => {
           if (map.current) {
             const center = map.current.getCenter();

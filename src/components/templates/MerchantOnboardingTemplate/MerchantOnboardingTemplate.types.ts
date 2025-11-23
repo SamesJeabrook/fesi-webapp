@@ -1,0 +1,27 @@
+import { AccountSetupData } from '@/components/organisms/AccountSetupStep/AccountSetupStep.types';
+import { BusinessDetailsData } from '@/components/organisms/BusinessDetailsStep/BusinessDetailsStep.types';
+import { ComplianceData } from '@/components/organisms/ComplianceStep/ComplianceStep.types';
+import { PaymentSetupData } from '@/components/organisms/PaymentSetupStep/PaymentSetupStep.types';
+
+export interface MerchantOnboardingData {
+  accountSetup?: AccountSetupData;
+  businessDetails?: BusinessDetailsData;
+  compliance?: ComplianceData;
+  paymentSetup?: PaymentSetupData;
+}
+
+export type OnboardingStep = 'account' | 'business' | 'compliance' | 'payment';
+
+export interface MerchantOnboardingTemplateProps {
+  initialData?: MerchantOnboardingData;
+  initialStep?: OnboardingStep;
+  onComplete: (data: MerchantOnboardingData) => void;
+  loading?: boolean;
+  className?: string;
+}
+
+export interface StepConfig {
+  id: OnboardingStep;
+  title: string;
+  description: string;
+}
