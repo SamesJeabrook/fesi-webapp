@@ -177,17 +177,24 @@ export function EventManagementTemplate({
   };
 
   const handleQuickEvent = async() => {
-    if (!quickEventLocation || !merchantId) {
-      alert('Merchant ID and location are required.');
+    if (!quickEventLocation) {
+      alert('Location is required.');
       return;
     }
+    
+    if (!api) {
+      alert('API not initialized.');
+      return;
+    }
+    
     const now = new Date();
     const end = new Date(now.getTime() + 8 * 60 * 60 * 1000);
     const dateStr = now.toISOString().split('T')[0];
     const startTime = now.toTimeString().slice(0,5);
     const endTime = end.toTimeString().slice(0,5);
     const eventName = `event - ${dateStr}`;
-    setEventForm({
+    
+    const quickEventData: EventFormData = {
       name: eventName,
       latitude: quickEventLocation.latitude,
       longitude: quickEventLocation.longitude,
@@ -200,9 +207,19 @@ export function EventManagementTemplate({
         endTime,
         isActive: true
       }]
-    });
-    setIsQuickEventModalOpen(false);
-    await handleCreateEvent();
+    };
+    
+    try {
+      setSubmitting(true);
+      setIsQuickEventModalOpen(false);
+      await api.createEvent(quickEventData, merchantId);
+      await loadEvents();
+    } catch (error) {
+      console.error('Failed to create quick event:', error);
+      alert('Failed to create quick event. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const handleEditEvent = (event: Event) => {

@@ -1,0 +1,27 @@
+.vendorsPage {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem 1rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
+
+  &__header {
+    margin-bottom: 2rem;
+
+    h1 {
+      margin-bottom: 0.5rem;
+      color: var(--color-neutral-900);
+    }
+
+    @media (max-width: 480px) {
+      margin-bottom: 1.5rem;
+    }
+  }
+}

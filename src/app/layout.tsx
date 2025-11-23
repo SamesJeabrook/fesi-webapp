@@ -3,6 +3,7 @@ import { fontVariables } from '@/styles/fonts';
 import AuthProvider from '@/components/providers/AuthProvider';
 import { AdminProvider } from '@/components/providers/AdminProvider';
 import '@/styles/globals.scss';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 export const metadata: Metadata = {
   title: 'Fesi - Food Ordering Platform',
