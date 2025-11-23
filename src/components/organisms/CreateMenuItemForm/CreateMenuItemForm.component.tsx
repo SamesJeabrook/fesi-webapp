@@ -15,10 +15,12 @@ export interface CreateMenuItemFormProps {
     description: string;
     price: string;
     category_id: string;
+    image_url?: string;
   }) => Promise<void>;
   onCancel: () => void;
   isSubmitting?: boolean;
   className?: string;
+  merchantId: string;
 }
 
 export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
@@ -27,12 +29,14 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
   onCancel,
   isSubmitting = false,
   className = '',
+  merchantId,
 }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     category_id: '',
+    image_url: '',
   });
 
   const [errors, setErrors] = useState({
@@ -40,6 +44,10 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
     price: '',
     category_id: '',
   });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors = {
@@ -66,25 +74,103 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
     return !Object.values(newErrors).some(error => error !== '');
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image size must be less than 10MB');
+      return;
+    }
+
+    setImageFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    setFormData(prev => ({ ...prev, image_url: '' }));
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile) return null;
+
+    setIsUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('imageType', 'menu-item');
+      formData.append('merchantId', merchantId);
+
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const data = await response.json();
+      return data.url;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Please try again.');
+      return null;
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!validateForm()) {
       return;
     }
 
     try {
-      await onSubmit(formData);
+      // Upload image first if present
+      let imageUrl = formData.image_url;
+      if (imageFile) {
+        const uploadedUrl = await uploadImage();
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        } else {
+          // Image upload failed, abort submission
+          return;
+        }
+      }
+
+      await onSubmit({ ...formData, image_url: imageUrl });
+      
       // Reset form on success
       setFormData({
         name: '',
         description: '',
         price: '',
         category_id: '',
+        image_url: '',
       });
       setErrors({
         name: '',
         price: '',
         category_id: '',
       });
+      setImageFile(null);
+      setImagePreview('');
     } catch (error) {
       // Error handling is done in parent component
       console.error('Error creating item:', error);
@@ -160,21 +246,64 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
         </Grid.Item>
 
         <Grid.Item sm={16}>
+          <div>
+            <Typography variant="body-medium" style={{ marginBottom: '8px' }}>
+              Item Image (Optional)
+            </Typography>
+            {imagePreview ? (
+              <div style={{ marginBottom: '12px' }}>
+                <img 
+                  src={imagePreview} 
+                  alt="Menu item preview" 
+                  style={{ 
+                    maxWidth: '200px', 
+                    maxHeight: '200px', 
+                    borderRadius: '8px',
+                    objectFit: 'cover' 
+                  }} 
+                />
+                <div style={{ marginTop: '8px' }}>
+                  <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={handleRemoveImage}
+                    isDisabled={isSubmitting || isUploadingImage}
+                  >
+                    Remove Image
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                disabled={isSubmitting || isUploadingImage}
+                style={{ marginBottom: '8px' }}
+              />
+            )}
+            <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
+              Max size: 10MB. Supported formats: JPG, PNG, WebP
+            </Typography>
+          </div>
+        </Grid.Item>
+
+        <Grid.Item sm={16}>
           <div className={styles.createForm__actions}>
             <Button 
               variant="secondary" 
               onClick={onCancel}
-              isDisabled={isSubmitting}
+              isDisabled={isSubmitting || isUploadingImage}
             >
               Cancel
             </Button>
             <Button 
               variant="primary" 
               onClick={handleSubmit}
-              isDisabled={isSubmitting}
-              isLoading={isSubmitting}
+              isDisabled={isSubmitting || isUploadingImage}
+              isLoading={isSubmitting || isUploadingImage}
             >
-              Create Item
+              {isUploadingImage ? 'Uploading Image...' : 'Create Item'}
             </Button>
           </div>
         </Grid.Item>

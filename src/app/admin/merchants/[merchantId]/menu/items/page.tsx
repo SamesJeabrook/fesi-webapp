@@ -20,6 +20,7 @@ interface MenuItem {
   category_name?: string;
   is_active: boolean; // API returns 'is_active', not 'is_available'
   display_order: number;
+  image_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -111,6 +112,7 @@ export default function AdminMenuItemsPage() {
                   category_name: category.name,  // Keep category name for display
                   is_active: item.is_active,
                   display_order: item.display_order || 0,
+                  image_url: item.image_url,
                   created_at: item.created_at || new Date().toISOString(),
                   updated_at: item.updated_at || new Date().toISOString()
                 });
@@ -132,6 +134,7 @@ export default function AdminMenuItemsPage() {
     description: string;
     price: string;
     category_id: string;
+    image_url?: string;
   }) => {
     setIsSubmitting(true);
     try {
@@ -148,6 +151,7 @@ export default function AdminMenuItemsPage() {
         category_id: itemData.category_id || null,
         merchant_id: merchantId,
         display_order: items.length + 1,
+        image_url: itemData.image_url || undefined,
       };
 
       console.log('Creating menu item with data:', requestData);
@@ -331,6 +335,7 @@ export default function AdminMenuItemsPage() {
                     onSubmit={createItem}
                     onCancel={() => setIsCreating(false)}
                     isSubmitting={isSubmitting}
+                    merchantId={merchantId}
                   />
                 </Grid.Item>
               </Grid.Container>
@@ -369,6 +374,7 @@ export default function AdminMenuItemsPage() {
                       categoryName={categories.find(cat => cat.id === item.category_id)?.name || 'Unknown Category'}
                       isActive={item.is_active}
                       displayOrder={item.display_order}
+                      imageUrl={item.image_url}
                       onToggleAvailability={toggleItemAvailability}
                       onEdit={() => handleEditItem(item)}
                     />
@@ -387,6 +393,7 @@ export default function AdminMenuItemsPage() {
             isOpen={!!editingItem}
             onClose={() => setEditingItem(null)}
             onSave={handleUpdateItem}
+            merchantId={merchantId}
           />
         )}
       </div>

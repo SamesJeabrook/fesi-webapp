@@ -12,6 +12,7 @@ export interface MenuItemManagementCardProps {
   categoryName?: string;
   isActive: boolean;
   displayOrder: number;
+  imageUrl?: string;
   onToggleAvailability?: (id: string, currentStatus: boolean) => void;
   onEdit?: (id: string) => void;
   showOrder?: boolean;
@@ -25,6 +26,7 @@ export const MenuItemManagementCard: React.FC<MenuItemManagementCardProps> = ({
   categoryName,
   isActive,
   displayOrder,
+  imageUrl,
   onToggleAvailability,
   onEdit,
   showOrder = true,
@@ -35,6 +37,20 @@ export const MenuItemManagementCard: React.FC<MenuItemManagementCardProps> = ({
 
   return (
     <div className={`${styles.card} ${!isActive ? styles['card--inactive'] : ''}`}>
+      {imageUrl && (
+        <div className={styles.card__image}>
+          <img 
+            src={imageUrl} 
+            alt={title}
+            style={{
+              width: '100%',
+              height: '150px',
+              objectFit: 'cover',
+              borderRadius: '8px 8px 0 0'
+            }}
+          />
+        </div>
+      )}
       <div className={styles.card__content}>
         <div className={styles.card__header}>
           <div className={styles.card__title}>

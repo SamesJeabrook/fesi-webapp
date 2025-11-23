@@ -55,6 +55,27 @@ export default function HomePage() {
         </div>
 
         <div className="text-center mt-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <a 
+              href="/customer/signup"
+              className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg hover:bg-primary-700 transition-colors font-medium"
+            >
+              Sign Up as Customer
+            </a>
+            <a 
+              href="/vendors"
+              className="inline-block bg-white border-2 border-primary-600 text-primary-600 px-8 py-3 rounded-lg hover:bg-primary-50 transition-colors font-medium"
+            >
+              Browse Vendors
+            </a>
+            <a 
+              href="/customer/login"
+              className="inline-block text-primary-600 px-8 py-3 rounded-lg hover:bg-primary-50 transition-colors font-medium"
+            >
+              Log In
+            </a>
+          </div>
+          
           <Typography variant="body-medium" className="text-neutral-500 mb-4">
             Components available in Storybook for development
           </Typography>
@@ -62,7 +83,7 @@ export default function HomePage() {
             href="http://localhost:6006" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+            className="inline-block bg-neutral-200 text-neutral-700 px-6 py-2 rounded-lg hover:bg-neutral-300 transition-colors text-sm"
           >
             View Storybook Components
           </a>
