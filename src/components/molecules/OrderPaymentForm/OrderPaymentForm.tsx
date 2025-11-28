@@ -139,10 +139,19 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
     try {
         console.log(basketItems)
 
-      // 1. Create order
+      // 1. Create order - strip price fields for security (server calculates prices)
+      const sanitizedItems = basketItems.map(item => ({
+        menu_item_id: item.menu_item_id,
+        quantity: item.quantity,
+        customizations: item.customizations?.map((c: any) => ({
+          sub_item_id: c.sub_item_id,
+          quantity: c.quantity || 1
+        })) || []
+      }));
+
       const orderPayload: any = {
         event_id: eventData.id,
-        items: basketItems,
+        items: sanitizedItems,
         notes
       };
       if (isLoggedIn && customer_id) {

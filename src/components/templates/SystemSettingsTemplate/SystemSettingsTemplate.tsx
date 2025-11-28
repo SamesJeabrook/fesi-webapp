@@ -8,6 +8,7 @@ import { CategoryManager } from "@/components/organisms/CategoryManager/Category
 import { BankDetailsManager } from "@/components/organisms/BankDetailsManager";
 import { Typography, Input, GridContainer, GridItem, Button } from "@/components/atoms";
 import { FormTextArea } from "@/components/atoms/FormTextArea";
+import { getAuthToken } from '@/utils/devAuth';
 import styles from "./SystemSettingsTemplate.module.scss";
 
 interface Category {
@@ -15,6 +16,30 @@ interface Category {
   name: string;
   description: string;
   icon_name: string;
+}
+
+interface ComplianceDocument {
+  id: string;
+  document_type: string;
+  document_name: string;
+  document_url: string;
+  issue_date?: string;
+  expiry_date?: string;
+  is_verified: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
+interface ComplianceStatus {
+  merchant_id: string;
+  overall_status: 'compliant' | 'pending_review' | 'non_compliant' | 'expired_documents';
+  can_accept_orders: boolean;
+  food_hygiene_rating?: number;
+  has_valid_food_safety_cert: boolean;
+  has_valid_business_license: boolean;
+  has_valid_insurance: boolean;
+  compliance_notes?: string;
+  last_reviewed_at?: string;
 }
 
 interface Company {
@@ -57,6 +82,14 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
 
     // Manage categories as tags
     const [selectedTags, setSelectedTags] = useState<{ id: string; label: string }[]>([]);
+  
+  // Compliance state
+  const [complianceStatus, setComplianceStatus] = useState<ComplianceStatus | null>(null);
+  const [documents, setDocuments] = useState<ComplianceDocument[]>([]);
+  const [complianceLoading, setComplianceLoading] = useState(true);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [hygieneRating, setHygieneRating] = useState<number | null>(null);
+  const [showHygieneModal, setShowHygieneModal] = useState(false);
 
     useEffect(() => {
       if (company?.categories) {
@@ -70,6 +103,132 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
         });
       }
     }, [company]);
+
+  // Load compliance data
+  useEffect(() => {
+    if (company?.id) {
+      loadComplianceData();
+    }
+  }, [company?.id]);
+
+  const loadComplianceData = async () => {
+    if (!company?.id) return;
+    
+    try {
+      setComplianceLoading(true);
+      const token = await getAuthToken(getAccessTokenSilently);
+      
+      // Load compliance status
+      const complianceRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${company.id}/compliance`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      if (complianceRes.ok) {
+        const data = await complianceRes.json();
+        setComplianceStatus(data);
+      }
+      
+      // Load documents
+      const docsRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${company.id}/documents`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      if (docsRes.ok) {
+        const docsData = await docsRes.json();
+        setDocuments(docsData);
+      }
+    } catch (error) {
+      console.error('Failed to load compliance data:', error);
+    } finally {
+      setComplianceLoading(false);
+    }
+  };
+
+  const handleDocumentUpload = async (file: File, documentType: string, inputElement: HTMLInputElement) => {
+    if (!company?.id) return;
+    
+    try {
+      setUploadingDoc(true);
+      const token = await getAuthToken(getAccessTokenSilently);
+      
+      // Upload to Cloudinary
+      const formData = new FormData();
+      formData.append('document', file);
+      formData.append('merchantId', company.id);
+      formData.append('documentType', 'compliance');
+      
+      const uploadRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/upload/compliance`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData,
+        }
+      );
+      
+      if (!uploadRes.ok) throw new Error('Upload failed');
+      const uploadData = await uploadRes.json();
+      
+      // Save document record
+      const docRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${company.id}/documents`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            document_type: documentType,
+            document_name: file.name,
+            document_url: uploadData.document?.cloudinaryUrl || uploadData.url,
+          }),
+        }
+      );
+      
+      if (!docRes.ok) throw new Error('Failed to save document');
+      
+      // Reload compliance data
+      await loadComplianceData();
+    } catch (error) {
+      console.error('Document upload failed:', error);
+      alert('Failed to upload document. Please try again.');
+    } finally {
+      setUploadingDoc(false);
+      // Reset the input value so the same file can be selected again
+      inputElement.value = '';
+    }
+  };
+
+  const handleUpdateHygieneRating = async () => {
+    if (!company?.id || hygieneRating === null) return;
+    
+    try {
+      const token = await getAuthToken(getAccessTokenSilently);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${company.id}/hygiene-rating`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            rating: hygieneRating,
+            rating_date: new Date().toISOString().split('T')[0],
+          }),
+        }
+      );
+      
+      if (!response.ok) throw new Error('Failed to update rating');
+      
+      setShowHygieneModal(false);
+      await loadComplianceData();
+    } catch (error) {
+      console.error('Failed to update hygiene rating:', error);
+      alert('Failed to update rating. Please try again.');
+    }
+  };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm({ ...form, [e.target.name]: e.target.value });
@@ -195,6 +354,159 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
             </div>
           </GridItem>
 
+          {/* Compliance Section */}
+          <GridItem sm={16}>
+            <div className={styles.section}>
+              <div className={styles.complianceHeader}>
+                <Typography variant="heading-4" as="h3">📋 Compliance & Documents</Typography>
+                {!complianceLoading && complianceStatus && (
+                  <div className={`${styles.complianceBadge} ${styles[`complianceBadge--${complianceStatus.overall_status}`]}`}>
+                    {complianceStatus.overall_status === 'compliant' && '✅ Compliant'}
+                    {complianceStatus.overall_status === 'pending_review' && '⏳ Pending Review'}
+                    {complianceStatus.overall_status === 'non_compliant' && '❌ Non-Compliant'}
+                    {complianceStatus.overall_status === 'expired_documents' && '⚠️ Expired Documents'}
+                  </div>
+                )}
+              </div>
+
+              {!complianceLoading && complianceStatus && !complianceStatus.can_accept_orders && (
+                <div className={styles.complianceWarning}>
+                  <Typography variant="heading-6">⚠️ URGENT: Cannot Accept Orders</Typography>
+                  <Typography variant="body-medium">
+                    Your merchant account is currently <strong>non-compliant</strong> and cannot accept orders.
+                    Please upload the required documents and update your hygiene rating to restore order acceptance.
+                  </Typography>
+                </div>
+              )}
+
+              <GridContainer>
+                <GridItem sm={16} md={8}>
+                  <Typography variant="heading-6" style={{ marginBottom: '1rem' }}>Required Documents</Typography>
+                  
+                  {/* Food Safety Certificate */}
+                  <div className={styles.documentItem}>
+                    <div className={styles.documentHeader}>
+                      <Typography variant="body-medium"><strong>Food Safety Certificate</strong></Typography>
+                      {complianceStatus?.has_valid_food_safety_cert ? (
+                        <span className={styles.documentStatus}>✅ Valid</span>
+                      ) : (
+                        <span className={`${styles.documentStatus} ${styles.documentStatusMissing}`}>❌ Required</span>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleDocumentUpload(file, 'food_safety_certificate', e.target);
+                      }}
+                      disabled={uploadingDoc}
+                      className={styles.fileInput}
+                    />
+                  </div>
+
+                  {/* Business License */}
+                  <div className={styles.documentItem}>
+                    <div className={styles.documentHeader}>
+                      <Typography variant="body-medium"><strong>Business License</strong></Typography>
+                      {complianceStatus?.has_valid_business_license ? (
+                        <span className={styles.documentStatus}>✅ Valid</span>
+                      ) : (
+                        <span className={`${styles.documentStatus} ${styles.documentStatusMissing}`}>❌ Required</span>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleDocumentUpload(file, 'business_license', e.target);
+                      }}
+                      disabled={uploadingDoc}
+                      className={styles.fileInput}
+                    />
+                  </div>
+
+                  {/* Insurance Certificate */}
+                  <div className={styles.documentItem}>
+                    <div className={styles.documentHeader}>
+                      <Typography variant="body-medium"><strong>Liability Insurance</strong></Typography>
+                      {complianceStatus?.has_valid_insurance ? (
+                        <span className={styles.documentStatus}>✅ Valid</span>
+                      ) : (
+                        <span className={`${styles.documentStatus} ${styles.documentStatusMissing}`}>❌ Required</span>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleDocumentUpload(file, 'insurance_certificate', e.target);
+                      }}
+                      disabled={uploadingDoc}
+                      className={styles.fileInput}
+                    />
+                  </div>
+                </GridItem>
+
+                <GridItem sm={16} md={8}>
+                  <Typography variant="heading-6" style={{ marginBottom: '1rem' }}>Food Hygiene Rating</Typography>
+                  
+                  <div className={styles.hygieneRating}>
+                    {complianceStatus?.food_hygiene_rating ? (
+                      <div className={styles.currentRating}>
+                        <Typography variant="heading-2">{complianceStatus.food_hygiene_rating}/5</Typography>
+                        <Typography variant="body-small">Current Rating</Typography>
+                        {complianceStatus.food_hygiene_rating < 3 && (
+                          <Typography variant="body-small" style={{ color: 'var(--color-error-main)', marginTop: '0.5rem' }}>
+                            ⚠️ Minimum rating of 3 required
+                          </Typography>
+                        )}
+                      </div>
+                    ) : (
+                      <Typography variant="body-medium">No rating on file</Typography>
+                    )}
+                    
+                    <div style={{ marginTop: '1rem' }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setHygieneRating(complianceStatus?.food_hygiene_rating || 0);
+                          setShowHygieneModal(true);
+                        }}
+                      >
+                        Update Rating
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Typography variant="heading-6" style={{ marginTop: '2rem', marginBottom: '1rem' }}>Uploaded Documents</Typography>
+                  <div className={styles.documentsList}>
+                    {documents.length === 0 ? (
+                      <Typography variant="body-small">No documents uploaded</Typography>
+                    ) : (
+                      documents.map((doc) => (
+                        <div key={doc.id} className={styles.uploadedDocument}>
+                          <Typography variant="body-small">
+                            <strong>{doc.document_type.replace(/_/g, ' ')}</strong>
+                          </Typography>
+                          <Typography variant="body-small">
+                            {doc.document_name}
+                          </Typography>
+                          <Typography variant="body-small">
+                            {doc.is_verified ? '✅ Verified' : '⏳ Pending'}
+                            {doc.expiry_date && ` • Expires: ${new Date(doc.expiry_date).toLocaleDateString()}`}
+                          </Typography>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </GridItem>
+              </GridContainer>
+            </div>
+          </GridItem>
+
           {/* Other Details Section */}
           <GridItem sm={16} md={8}>
             <div className={styles.section}>
@@ -225,6 +537,37 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
       >
         <Typography variant="body-medium">Are you sure you want to save these changes? This will update the company settings immediately.</Typography>
         {saveError && <div style={{ color: 'red', marginTop: 8 }}>{saveError}</div>}
+      </Modal>
+
+      <Modal
+        isOpen={showHygieneModal}
+        onClose={() => setShowHygieneModal(false)}
+        title="Update Food Hygiene Rating"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowHygieneModal(false)}>Cancel</Button>
+            <Button variant="primary" onClick={handleUpdateHygieneRating}>Save Rating</Button>
+          </>
+        }
+      >
+        <Typography variant="body-medium" style={{ marginBottom: '1rem' }}>
+          Enter your current Food Standards Agency hygiene rating (0-5):
+        </Typography>
+        <div className={styles.ratingButtons}>
+          {[0, 1, 2, 3, 4, 5].map((rating) => (
+            <button
+              key={rating}
+              type="button"
+              className={`${styles.ratingButton} ${hygieneRating === rating ? styles.ratingButtonActive : ''}`}
+              onClick={() => setHygieneRating(rating)}
+            >
+              {rating}
+            </button>
+          ))}
+        </div>
+        <Typography variant="body-small" style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>
+          Minimum rating of 3 required to accept orders
+        </Typography>
       </Modal>
       </>
     );

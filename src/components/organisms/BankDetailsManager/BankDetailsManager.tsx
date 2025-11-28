@@ -53,15 +53,20 @@ export const BankDetailsManager: React.FC<BankDetailsManagerProps> = ({
       const { getAuthToken } = await import('@/utils/devAuth');
       const token = await getAuthToken(getAccessTokenSilently);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/payments/merchants/account-status`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
+      // Build URL with merchantId query parameter if provided
+      const url = new URL(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/payments/merchants/account-status`
       );
+      if (merchantId) {
+        url.searchParams.append('merchantId', merchantId);
+      }
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (!response.ok) {
         throw new Error('Failed to load bank account status');

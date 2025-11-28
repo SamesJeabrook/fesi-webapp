@@ -17,4 +17,144 @@
   color: #888;
 }
 
+/* Compliance Section Styles */
+.complianceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+}
+
+.complianceBadge {
+  padding: var(--spacing-2) var(--spacing-3);
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  font-size: 0.875rem;
+  
+  &--compliant {
+    background: var(--color-success-light);
+    color: var(--color-success-dark);
+  }
+  
+  &--pending_review {
+    background: var(--color-warning-light);
+    color: var(--color-warning-dark);
+  }
+  
+  &--non_compliant,
+  &--expired_documents {
+    background: var(--color-error-light);
+    color: var(--color-error-dark);
+  }
+}
+
+.complianceWarning {
+  background: var(--color-error-light);
+  border: 2px solid var(--color-error-main);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+}
+
+.documentItem {
+  padding: var(--spacing-3);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-3);
+  
+  &:hover {
+    border-color: var(--color-primary-main);
+  }
+}
+
+.documentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-2);
+}
+
+.documentStatus {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-success-main);
+  
+  &Missing {
+    color: var(--color-error-main);
+  }
+}
+
+.fileInput {
+  width: 100%;
+  padding: var(--spacing-2);
+  border: 1px dashed var(--color-neutral-300);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  
+  &:hover {
+    border-color: var(--color-primary-main);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.hygieneRating {
+  padding: var(--spacing-3);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--border-radius-sm);
+}
+
+.currentRating {
+  text-align: center;
+}
+
+.documentsList {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.uploadedDocument {
+  padding: var(--spacing-2);
+  border-bottom: 1px solid var(--color-neutral-100);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.ratingButtons {
+  display: flex;
+  gap: var(--spacing-2);
+  justify-content: center;
+  margin: var(--spacing-3) 0;
+}
+
+.ratingButton {
+  width: 50px;
+  height: 50px;
+  border: 2px solid var(--color-neutral-300);
+  border-radius: var(--border-radius-md);
+  background: var(--color-neutral-white);
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover {
+    border-color: var(--color-primary-main);
+    background: var(--color-primary-light);
+  }
+  
+  &Active {
+    border-color: var(--color-primary-main);
+    background: var(--color-primary-main);
+    color: var(--color-neutral-white);
+  }
+}
+
 /* TagGroup and Tag styling for template context */
