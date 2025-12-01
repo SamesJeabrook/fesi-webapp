@@ -153,9 +153,18 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
       
       // Upload to Cloudinary
       const formData = new FormData();
-      formData.append('document', file);
       formData.append('merchantId', company.id);
       formData.append('documentType', 'compliance');
+      formData.append('document', file);
+      
+      // Debug logging
+      console.log('=== FRONTEND UPLOAD ===');
+      console.log('merchantId:', company.id);
+      console.log('documentType:', 'compliance');
+      console.log('file:', { name: file.name, type: file.type, size: file.size });
+      console.log('FormData has merchantId:', formData.has('merchantId'));
+      console.log('FormData has documentType:', formData.has('documentType'));
+      console.log('FormData has document:', formData.has('document'));
       
       const uploadRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/upload/compliance`,
@@ -355,7 +364,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
           </GridItem>
 
           {/* Compliance Section */}
-          <GridItem sm={16}>
+          <GridItem sm={16} md={8}>
             <div className={styles.section}>
               <div className={styles.complianceHeader}>
                 <Typography variant="heading-4" as="h3">📋 Compliance & Documents</Typography>
@@ -382,6 +391,24 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
               <GridContainer>
                 <GridItem sm={16} md={8}>
                   <Typography variant="heading-6" style={{ marginBottom: '1rem' }}>Required Documents</Typography>
+                  
+                  <div style={{ 
+                    padding: '1rem', 
+                    backgroundColor: 'var(--color-background-secondary, #f5f5f5)', 
+                    borderRadius: '4px',
+                    marginBottom: '1.5rem',
+                    border: '1px solid var(--color-border-light, #e0e0e0)'
+                  }}>
+                    <Typography variant="body-small" style={{ marginBottom: '0.5rem' }}>
+                      <strong>⚖️ Legal Declaration</strong>
+                    </Typography>
+                    <Typography variant="body-small" style={{ lineHeight: '1.5' }}>
+                      By uploading compliance documents, you certify that all information is accurate, current, and genuine. 
+                      Providing false or fraudulent documentation is a breach of our Terms of Service and may result in immediate 
+                      suspension or termination from the platform. You are legally responsible for maintaining valid certifications 
+                      and updating documents before expiry.
+                    </Typography>
+                  </div>
                   
                   {/* Food Safety Certificate */}
                   <div className={styles.documentItem}>
