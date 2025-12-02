@@ -1,13 +1,16 @@
 'use client';
 
 import { Typography, Grid } from '@/components/atoms';
+import { CustomerNavigationWrapper } from '@/components/molecules/CustomerNavigation';
 import { VendorsMap } from '@/components/organisms/VendorsMap';
 import styles from './vendors.module.scss';
 
 // This page shows all available vendors on an interactive map
 export default function VendorsPage() {
   return (
-    <div className={styles.vendorsPage}>
+    <>
+      <CustomerNavigationWrapper />
+      <div className={styles.vendorsPage}>
       <div className={styles.vendorsPage__header}>
         <Typography as="h1" variant="heading-2">
           Find Food Vendors Near You
@@ -19,6 +22,7 @@ export default function VendorsPage() {
       </div>
 
       <VendorsMap />
-    </div>
+      </div>
+    </>
   );
 }

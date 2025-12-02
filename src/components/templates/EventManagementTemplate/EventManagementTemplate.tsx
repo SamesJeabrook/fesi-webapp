@@ -188,7 +188,7 @@ export function EventManagementTemplate({
     }
     
     const now = new Date();
-    const end = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    const end = new Date(now.getTime() + 12 * 60 * 60 * 1000); // 12 hours from now
     const dateStr = now.toISOString().split('T')[0];
     const startTime = now.toTimeString().slice(0,5);
     const endTime = end.toTimeString().slice(0,5);
@@ -200,13 +200,9 @@ export function EventManagementTemplate({
       longitude: quickEventLocation.longitude,
       eventType: 'single_day',
       isOpen: true,
-      schedules: [{
-        dayNumber: 1,
-        date: dateStr,
-        startTime,
-        endTime,
-        isActive: true
-      }]
+      date: dateStr,
+      startTime,
+      endTime
     };
     
     try {

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { loadStripe, PaymentRequest } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, CardElement, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
+import { useAuth0 } from '@auth0/auth0-react';
 import { Event } from '@/types';
 import { Typography, Input } from '@/components/atoms';
 import PaymentHoldingNotice from '@/components/molecules/PaymentHoldingNotice/PaymentHoldingNotice';
+import { getAuthToken } from '@/utils/devAuth';
 import styles from './OrderPaymentForm.module.scss';
 
 export interface OrderPaymentFormProps {
@@ -29,6 +31,7 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY 
 const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBreakdown, onPaymentSuccess, onPaymentError, eventData, onOrderAccepted }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [paymentRequest, setPaymentRequest] = useState<PaymentRequest | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -38,6 +41,8 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   const [pollingStatus, setPollingStatus] = useState<string>('');
   const [restoredBasketItems, setRestoredBasketItems] = useState<any[] | null>(null);
   const [restoredCostBreakdown, setRestoredCostBreakdown] = useState<any | null>(null);
+  const [customerProfile, setCustomerProfile] = useState<any>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
   // Guest info state
   const [guestInfo, setGuestInfo] = useState({
     email: '',
@@ -45,9 +50,6 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
     last_name: '',
     phone: ''
   });
-  // Simulate auth state (replace with your actual auth logic)
-  const isLoggedIn = false; // TODO: Replace with real auth check
-  const customer_id = undefined; // TODO: Replace with real customer id if logged in
   const event_id = costBreakdown.event_id || '';
   const notes = '';
 
@@ -65,6 +67,57 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
       setRestoredCostBreakdown(JSON.parse(savedCostBreakdown));
     }
   }, []);
+
+  // Load customer profile if authenticated
+  useEffect(() => {
+    const loadCustomerProfile = async () => {
+      if (!isAuthenticated || !user) return;
+      
+      try {
+        setLoadingProfile(true);
+        const token = await getAuthToken(getAccessTokenSilently);
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setCustomerProfile(data.data);
+          // Pre-populate guest info with customer data
+          setGuestInfo({
+            email: data.data.email || user.email || '',
+            first_name: data.data.first_name || '',
+            last_name: data.data.last_name || '',
+            phone: data.data.phone || ''
+          });
+        } else {
+          // Customer profile doesn't exist yet, use Auth0 user data
+          setGuestInfo({
+            email: user.email || '',
+            first_name: user.name?.split(' ')[0] || '',
+            last_name: user.name?.split(' ').slice(1).join(' ') || '',
+            phone: ''
+          });
+        }
+      } catch (error) {
+        console.error('Error loading customer profile:', error);
+        // Fallback to Auth0 user data
+        setGuestInfo({
+          email: user.email || '',
+          first_name: user.name?.split(' ')[0] || '',
+          last_name: user.name?.split(' ').slice(1).join(' ') || '',
+          phone: ''
+        });
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+    
+    loadCustomerProfile();
+  }, [isAuthenticated, user, getAccessTokenSilently]);
 
   useEffect(() => {
     if (stripe && clientSecret) {
@@ -137,7 +190,38 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
     setLoading(true);
     setError(null);
     try {
-        console.log(basketItems)
+      console.log(basketItems);
+
+      // If authenticated, update customer profile with any new info
+      if (isAuthenticated && user) {
+        try {
+          const token = await getAuthToken(getAccessTokenSilently);
+          
+          // Check if profile info has changed
+          const profileChanged = !customerProfile || 
+            customerProfile.first_name !== guestInfo.first_name ||
+            customerProfile.last_name !== guestInfo.last_name ||
+            customerProfile.phone !== guestInfo.phone;
+          
+          if (profileChanged && (guestInfo.first_name || guestInfo.last_name)) {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers/me`, {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                first_name: guestInfo.first_name.trim(),
+                last_name: guestInfo.last_name.trim(),
+                phone: guestInfo.phone.trim() || null,
+              }),
+            });
+          }
+        } catch (profileError) {
+          console.error('Error updating customer profile:', profileError);
+          // Continue with order even if profile update fails
+        }
+      }
 
       // 1. Create order - strip price fields for security (server calculates prices)
       const sanitizedItems = basketItems.map(item => ({
@@ -154,8 +238,9 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
         items: sanitizedItems,
         notes
       };
-      if (isLoggedIn && customer_id) {
-        orderPayload.customer_id = customer_id;
+      
+      if (isAuthenticated && customerProfile?.id) {
+        orderPayload.customer_id = customerProfile.id;
       } else {
         orderPayload.guest_info = guestInfo;
       }
@@ -208,33 +293,34 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
     <div className={styles.formWrapper}>
       <Typography variant="heading-5">Payment Details</Typography>
       <form onSubmit={handleSubmit} className={styles.form}>
-        {/* Guest info fields for anonymous checkout */}
-        {!isLoggedIn && (
+        {/* Customer info fields - shown for all users, pre-populated if logged in */}
+        {!loadingProfile && (
           <div className={styles.guestFields}>
             <Input
-              id="guest-email"
+              id="customer-email"
               type="email"
               label="Email Address"
               placeholder="Enter your email"
               value={guestInfo.email}
               onChange={e => setGuestInfo({ ...guestInfo, email: e.target.value })}
-              isRequired
+              isRequired={!isAuthenticated}
               autoComplete="email"
               fullWidth
+              isDisabled={isAuthenticated && !!user?.email}
             />
             <Input
-              id="guest-first-name"
+              id="customer-first-name"
               type="text"
               label="First Name"
               placeholder="Enter your first name"
               value={guestInfo.first_name}
               onChange={e => setGuestInfo({ ...guestInfo, first_name: e.target.value })}
-              isRequired
+              isRequired={!isAuthenticated}
               autoComplete="given-name"
               fullWidth
             />
             <Input
-              id="guest-last-name"
+              id="customer-last-name"
               type="text"
               label="Last Name"
               placeholder="Enter your last name"
@@ -244,7 +330,7 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
               fullWidth
             />
             <Input
-              id="guest-phone"
+              id="customer-phone"
               type="tel"
               label="Phone Number (Optional)"
               placeholder="Enter your phone number"

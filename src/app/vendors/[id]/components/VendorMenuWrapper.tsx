@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
+import { CustomerNavigationWrapper } from '@/components/molecules/CustomerNavigation';
 import Notification from '@/components/atoms/Notification/Notification';
 import OrderList, { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
@@ -511,6 +512,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
 
   return (
     <>
+      <CustomerNavigationWrapper />
       {!activeEvent && (<Notification message={`${merchant.name} is not taking orders right now,`} subMessage=' but you can still view their menu.' type="warning" />)}
       <MenuDisplay
         merchant={merchant}
