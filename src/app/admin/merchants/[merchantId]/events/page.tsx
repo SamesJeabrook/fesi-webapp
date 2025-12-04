@@ -27,7 +27,7 @@ export default function AdminMerchantEventsPage() {
           },
         });
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/merchants/${merchantId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',

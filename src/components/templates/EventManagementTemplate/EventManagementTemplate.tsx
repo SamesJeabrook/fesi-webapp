@@ -4,6 +4,7 @@
 // Template for both admin and merchant event management interfaces
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Typography, Button } from '@/components/atoms';
 import { Modal, AdminPageHeader, LocationPicker } from '@/components/molecules';
 import { createEventAPI, EventAPIInterface } from '@/services/eventAPI';
@@ -37,6 +38,7 @@ export function EventManagementTemplate({
   backLink,
   adminContext
 }: EventManagementTemplateProps) {
+  const router = useRouter();
   const { getAccessTokenSilently } = useAuth0();
   
   // State management
@@ -108,7 +110,7 @@ export function EventManagementTemplate({
       setMerchantLoading(true);
       const token = await getAuthToken(getAccessTokenSilently);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/merchants/${merchantId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -422,6 +424,18 @@ export function EventManagementTemplate({
                   </div>
 
                   <div className={styles.eventCard__actions}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const analyticsUrl = context === 'admin' && merchantId
+                          ? `/admin/merchants/${merchantId}/events/${event.id}/analytics`
+                          : `/merchant/admin/events/${event.id}/analytics`;
+                        router.push(analyticsUrl);
+                      }}
+                    >
+                      📊 Analytics
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
