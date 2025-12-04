@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import { Card } from '@/components/atoms';
 import type { MenuItemCardProps } from './MenuItemCard.types';
 import styles from './MenuItemCard.module.scss';
-import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { useBreakpointSSR } from '@/hooks/useBreakpoint';
 
 export const MenuItemCard: React.FC<MenuItemCardProps> = ({
   menuItem,
@@ -13,7 +13,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
   className,
   'data-testid': dataTestId,
 }) => {
-  const { isAbove } = useBreakpoint();
+  const { isAbove } = useBreakpointSSR('lg');
 
   const handleViewDetails = () => {
     if (onViewDetails) {

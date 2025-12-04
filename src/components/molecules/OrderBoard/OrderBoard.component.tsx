@@ -81,8 +81,13 @@ export const OrderBoard: React.FC<OrderBoardProps> = ({
   const handleDrop = (orderId: string, newStatus: string) => {
     if (isReadOnly) return;
     
+    console.log('OrderBoard handleDrop - orderId:', orderId, 'type:', typeof orderId, 'newStatus:', newStatus);
+    
     const order = orders.find(o => o.id === orderId);
+    console.log('Found order:', order);
+    
     if (order && order.status !== newStatus) {
+      console.log('Calling onOrderStatusChange with:', orderId, newStatus);
       onOrderStatusChange?.(orderId, newStatus);
     }
     

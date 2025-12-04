@@ -22,7 +22,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({
     },
     className
   );
-  console.log(order)
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -70,7 +69,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
 
       <div className={styles.customer}>
         <Typography variant="body-medium" className={styles.customerName}>
-          {order.customer_name}
+          {order.first_name} {order.last_name}
         </Typography>
       </div>
 
@@ -82,7 +81,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
           {order.items.slice(0, 3).map((item, index) => (
             <div key={index} className={styles.item}>
               <Typography variant="body-small">
-                {item.quantity}x {item.menu_item_name}
+                {item.quantity}x {item.menu_item_title}
               </Typography>
               {item.customizations && item.customizations.length > 0 && (
                 <div className={styles.customizations}>

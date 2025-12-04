@@ -43,21 +43,52 @@ export function CustomerOrdersTemplate({
   const [selectedFilter, setSelectedFilter] = useState<OrderStatus | 'all'>('all');
 
   useEffect(() => {
-    loadOrders();
-  }, [customerId]);
+    ensureCustomerProfileExists();
+  }, [user]);
+
+  const ensureCustomerProfileExists = async () => {
+    try {
+      const token = await getAuthToken(getAccessTokenSilently);
+      
+      console.log('👤 Ensuring customer profile exists for:', user?.sub);
+      
+      // Call GET /me which auto-creates profile if it doesn't exist
+      const profileResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/customers/me`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+        console.log('✅ Customer profile ready:', profileData.data?.id);
+        
+        // Now load orders
+        await loadOrders();
+      } else {
+        const errorText = await profileResponse.text();
+        console.error('❌ Failed to get/create customer profile:', errorText);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('❌ Error ensuring customer profile:', error);
+      setLoading(false);
+    }
+  };
 
   const loadOrders = async () => {
-    if (!customerId) {
-      setLoading(false);
-      return;
-    }
-
     try {
-      setLoading(true);
       const token = await getAuthToken(getAccessTokenSilently);
 
+      console.log('📦 Loading orders for user:', user?.sub);
+
+      // Use /me/orders endpoint which gets orders for the logged-in user
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/customers/${customerId}/orders`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/customers/me/orders`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -66,11 +97,19 @@ export function CustomerOrdersTemplate({
         }
       );
 
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
-        setOrders(data);
+        console.log('Orders response:', data);
+        
+        // API returns { success: true, data: [...] }
+        const orderData = data.success ? data.data : data;
+        setOrders(Array.isArray(orderData) ? orderData : []);
+        console.log('Loaded orders:', orderData?.length || 0);
       } else {
-        console.error('Failed to load orders');
+        const errorText = await response.text();
+        console.error('Failed to load orders:', response.status, errorText);
       }
     } catch (error) {
       console.error('Error loading orders:', error);

@@ -59,7 +59,20 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
     const savedHolding = localStorage.getItem('holding');
     const savedBasketItems = localStorage.getItem('basketItems');
     const savedCostBreakdown = localStorage.getItem('costBreakdown');
-    if (savedOrderId && savedClientSecret && savedHolding === 'true' && savedBasketItems && savedCostBreakdown) {
+    
+    // Only restore if we have holding state AND no current basketItems (meaning we're resuming after refresh)
+    // If basketItems are passed in, this is a NEW order and we should clear old data
+    if (basketItems && basketItems.length > 0) {
+      // This is a new order, clear any stale localStorage data
+      console.log('🆕 New order detected, clearing stale localStorage');
+      localStorage.removeItem('orderId');
+      localStorage.removeItem('clientSecret');
+      localStorage.removeItem('holding');
+      localStorage.removeItem('basketItems');
+      localStorage.removeItem('costBreakdown');
+    } else if (savedOrderId && savedClientSecret && savedHolding === 'true' && savedBasketItems && savedCostBreakdown) {
+      // Restoring a payment in progress after page refresh
+      console.log('🔄 Restoring payment in progress from localStorage');
       setOrderId(savedOrderId);
       setClientSecret(savedClientSecret);
       setHolding(true);
@@ -71,11 +84,16 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   // Load customer profile if authenticated
   useEffect(() => {
     const loadCustomerProfile = async () => {
-      if (!isAuthenticated || !user) return;
+      console.log('👤 loadCustomerProfile - isAuthenticated:', isAuthenticated, 'user:', user);
+      if (!isAuthenticated || !user) {
+        console.log('❌ Not authenticated or no user, skipping profile load');
+        return;
+      }
       
       try {
         setLoadingProfile(true);
         const token = await getAuthToken(getAccessTokenSilently);
+        console.log('🔑 Got auth token:', token?.substring(0, 20) + '...');
         
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers/me`, {
           headers: {
@@ -83,8 +101,11 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
           },
         });
         
+        console.log('📡 /me response status:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('✅ Customer profile loaded:', data.data);
           setCustomerProfile(data.data);
           // Pre-populate guest info with customer data
           setGuestInfo({
@@ -93,14 +114,40 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
             last_name: data.data.last_name || '',
             phone: data.data.phone || ''
           });
-        } else {
-          // Customer profile doesn't exist yet, use Auth0 user data
-          setGuestInfo({
-            email: user.email || '',
-            first_name: user.name?.split(' ')[0] || '',
-            last_name: user.name?.split(' ').slice(1).join(' ') || '',
-            phone: ''
+        } else if (response.status === 404) {
+          // Customer profile doesn't exist yet, create one
+          const createResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              auth0_id: user.sub,
+              email: user.email || '',
+              first_name: user.name?.split(' ')[0] || user.given_name || '',
+              last_name: user.name?.split(' ').slice(1).join(' ') || user.family_name || '',
+            }),
           });
+          
+          if (createResponse.ok) {
+            const newProfile = await createResponse.json();
+            setCustomerProfile(newProfile.data);
+            setGuestInfo({
+              email: newProfile.data.email || user.email || '',
+              first_name: newProfile.data.first_name || '',
+              last_name: newProfile.data.last_name || '',
+              phone: newProfile.data.phone || ''
+            });
+          } else {
+            // Failed to create profile, use Auth0 user data
+            setGuestInfo({
+              email: user.email || '',
+              first_name: user.name?.split(' ')[0] || '',
+              last_name: user.name?.split(' ').slice(1).join(' ') || '',
+              phone: ''
+            });
+          }
         }
       } catch (error) {
         console.error('Error loading customer profile:', error);
@@ -239,11 +286,19 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
         notes
       };
       
+      console.log('🔍 Order submission - isAuthenticated:', isAuthenticated);
+      console.log('🔍 Order submission - customerProfile:', customerProfile);
+      console.log('🔍 Order submission - user:', user);
+      
       if (isAuthenticated && customerProfile?.id) {
+        console.log('✅ Using customer_id:', customerProfile.id);
         orderPayload.customer_id = customerProfile.id;
       } else {
+        console.log('⚠️ Creating guest order with guest_info:', guestInfo);
         orderPayload.guest_info = guestInfo;
       }
+      
+      console.log('📦 Final order payload:', orderPayload);
       const orderRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -303,10 +358,10 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
               placeholder="Enter your email"
               value={guestInfo.email}
               onChange={e => setGuestInfo({ ...guestInfo, email: e.target.value })}
-              isRequired={!isAuthenticated}
+              isRequired={true}
               autoComplete="email"
               fullWidth
-              isDisabled={isAuthenticated && !!user?.email}
+              isDisabled={isAuthenticated && !!customerProfile?.email}
             />
             <Input
               id="customer-first-name"
