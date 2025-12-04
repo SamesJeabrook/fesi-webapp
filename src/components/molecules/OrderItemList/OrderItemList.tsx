@@ -5,7 +5,7 @@ import styles from './OrderItemList.module.scss';
 
 export interface OrderItem {
   menu_item_id: string;
-  menu_item_name: string;
+  menu_item_title: string;
   quantity: number;
   item_total: number;
   customizations?: {
@@ -28,7 +28,7 @@ const OrderItemList: React.FC<OrderItemListProps> = ({ items, onRemoveItem }) =>
       {items.map((item, idx) => (
         <li key={item.menu_item_id + idx} className={styles.item}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="heading-6">{item.quantity} x {item.menu_item_name}</Typography>
+            <Typography variant="heading-6">{item.quantity} x {item.menu_item_title}</Typography>
             {onRemoveItem && (
               <button className={styles.removeBtn} onClick={() => onRemoveItem(item.menu_item_id)} aria-label="Remove item">✕</button>
             )}

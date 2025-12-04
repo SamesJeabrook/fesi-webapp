@@ -198,6 +198,8 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
   const stats = getOrderStats();
 
+  console.log(orders);
+
   return (
     <div className={dashboardClasses} data-testid={dataTestId}>
       <header className={styles.header}>

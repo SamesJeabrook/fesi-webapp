@@ -91,7 +91,7 @@ function useMerchantOrders(merchantId: string | null) {
             name: item.menu_item_title || item.menu_item_name || item.name,
             quantity: item.quantity,
             price: (item.unit_price || item.price) / 100, // Convert from cents
-            menu_item_name: item.menu_item_title || item.menu_item_name || item.name, // For OrderCard component
+            menu_item_title: item.menu_item_title || item.menu_item_name || item.name, // For OrderCard component
             customizations: item.customizations?.map((custom: any) => ({
               sub_item_name: custom.sub_item_name || custom.name,
               quantity: custom.quantity || 1

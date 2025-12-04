@@ -4,9 +4,11 @@ export interface OrderCardProps {
     id: string;
     order_number: string;
     customer_name: string;
+    first_name: string;
+    last_name: string;
     customer_email?: string;
     items: Array<{
-      menu_item_name: string;
+      menu_item_title: string;
       quantity: number;
       customizations?: Array<{
         sub_item_name: string;
