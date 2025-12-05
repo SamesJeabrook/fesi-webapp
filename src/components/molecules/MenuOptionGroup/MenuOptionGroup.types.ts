@@ -1,5 +1,6 @@
 export type SelectionType = 'single' | 'multiple';
 
+// Legacy structure (from API)
 export interface MenuSubItem {
   id: string;
   name: string;
@@ -7,13 +8,28 @@ export interface MenuSubItem {
   display_order: number;
 }
 
+// New structure (from types)
+export interface MenuItemChoice {
+  id: string;
+  name: string;
+  priceModifier: number;
+  isDefault?: boolean;
+}
+
+// Unified type that supports both structures
 export interface MenuOptionGroup {
   id: string;
   name: string;
-  selection_type: SelectionType;
-  is_required: boolean;
+  // Support both old and new property names
+  selection_type?: SelectionType;
+  type?: SelectionType;
+  is_required?: boolean;
+  required?: boolean;
   max_selections?: number | null;
-  sub_items: MenuSubItem[];
+  maxSelections?: number;
+  // Support both old and new choice arrays
+  sub_items?: MenuSubItem[];
+  choices?: MenuItemChoice[];
 }
 
 export interface SelectedOptionDetail {

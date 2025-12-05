@@ -4,18 +4,30 @@ import type { MenuOptionGroupProps, SelectedOptionDetail } from './MenuOptionGro
 import { formatPrice } from '@/utils/menu';
 
 const MenuOptionGroup: React.FC<MenuOptionGroupProps> = ({ group, selected, onChange, disabled }) => {
-  const isSelected = (id: string) => selected.some(opt => opt.id === id);
-  const getDetail = (sub: any) => ({ id: sub.id, name: sub.name, price: sub.additional_price });
+  // Support both old and new property names
+  const selectionType = group.selection_type || group.type || 'single';
+  const isRequired = group.is_required ?? group.required ?? false;
+  const maxSelections = group.max_selections ?? group.maxSelections;
+  const items = group.sub_items || group.choices || [];
 
-  const handleSelect = (sub: any) => {
-    const detail = getDetail(sub);
-    if (group.selection_type === 'single') {
+  const isSelected = (id: string) => selected.some(opt => opt.id === id);
+  
+  // Support both old (additional_price) and new (priceModifier) structures
+  const getDetail = (item: any) => ({
+    id: item.id,
+    name: item.name,
+    price: item.additional_price ?? item.priceModifier ?? 0
+  });
+
+  const handleSelect = (item: any) => {
+    const detail = getDetail(item);
+    if (selectionType === 'single') {
       onChange([detail]);
     } else {
-      if (isSelected(sub.id)) {
-        onChange(selected.filter(opt => opt.id !== sub.id));
+      if (isSelected(item.id)) {
+        onChange(selected.filter(opt => opt.id !== item.id));
       } else {
-        if (group.max_selections && selected.length >= group.max_selections) return;
+        if (maxSelections && selected.length >= maxSelections) return;
         onChange([...selected, detail]);
       }
     }
@@ -25,32 +37,35 @@ const MenuOptionGroup: React.FC<MenuOptionGroupProps> = ({ group, selected, onCh
     <div className={styles.group}>
       <label className={styles.label}>
         {group.name}
-        {group.is_required && ' *'}
+        {isRequired && ' *'}
       </label>
       <div className={styles.options}>
-        {group.sub_items.map(sub => (
-          <div
-            key={sub.id}
-            className={[styles.option, isSelected(sub.id) ? styles.selected : ''].join(' ')}
-            onClick={() => !disabled && handleSelect(sub)}
-            aria-checked={isSelected(sub.id)}
-            role={group.selection_type === 'single' ? 'radio' : 'checkbox'}
-            tabIndex={0}
-          >
-            <input
-              type={group.selection_type === 'single' ? 'radio' : 'checkbox'}
-              checked={isSelected(sub.id)}
-              disabled={disabled}
-              readOnly
-            />
-            <span>{sub.name}</span>
-            {sub.additional_price !== 0 && (
-              <span className={styles.price}>
-                {sub.additional_price > 0 ? `+${formatPrice(sub.additional_price)}` : formatPrice(sub.additional_price)}
-              </span>
-            )}
-          </div>
-        ))}
+        {items.map((item: any) => {
+          const price = item.additional_price ?? item.priceModifier ?? 0;
+          return (
+            <div
+              key={item.id}
+              className={[styles.option, isSelected(item.id) ? styles.selected : ''].join(' ')}
+              onClick={() => !disabled && handleSelect(item)}
+              aria-checked={isSelected(item.id)}
+              role={selectionType === 'single' ? 'radio' : 'checkbox'}
+              tabIndex={0}
+            >
+              <input
+                type={selectionType === 'single' ? 'radio' : 'checkbox'}
+                checked={isSelected(item.id)}
+                disabled={disabled}
+                readOnly
+              />
+              <span>{item.name}</span>
+              {price !== 0 && (
+                <span className={styles.price}>
+                  {price > 0 ? `+${formatPrice(price)}` : formatPrice(price)}
+                </span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
