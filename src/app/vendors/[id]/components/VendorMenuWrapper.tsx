@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import { CustomerNavigationWrapper } from '@/components/molecules/CustomerNavigation';
 import Notification from '@/components/atoms/Notification/Notification';
 import OrderList, { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
@@ -17,6 +16,7 @@ import { Button } from '@/components';
 import OrderSummary from '@/components/organisms/OrderSummary/OrderSummary';
 import { paymentConfig } from '@/config/paymentConfig';
 import Tabs, { Tab } from '@/components/molecules/Tabs/Tabs';
+import { useWebSocket } from '@/hooks/useWebSocket';
 
 interface VendorMenuWrapperProps {
   activeEvent: Boolean;
@@ -52,7 +52,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     } catch {}
     return [];
   });
-  const [selectedMenuItem, setSelectedMenuItem] = useState<VendorServiceItem | null>(null);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
   // Track all selections for each menu item as an array
   const [orderSelections, setOrderSelections] = useState<OrderSelection[]>([]);
   // Track option group selections for the currently selected menu item
@@ -65,7 +65,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   const [checkoutDisplay, setCheckoutDisplay] = useState(false);
   const [activeCheckoutTab, setActiveCheckoutTab] = useState('summary');
 
-  const socket = useRef<WebSocket | null>(null);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // Restore basket and cost breakdown from localStorage on mount
   useEffect(() => {
@@ -94,150 +94,114 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     console.log(orderSelections)
   }, [orderSelections])
 
-  // Initialize WebSocket connection with fallback polling
-  useEffect(() => {
-    if (!orders.length) return;
-
-    let wsConnected = false;
-    let pollInterval: NodeJS.Timeout | null = null;
-
-    // Try to establish WebSocket connection
-    const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}/orders`;
-    
-    try {
-      socket.current = new WebSocket(wsUrl);
-
-      socket.current.onopen = () => {
-        console.log('WebSocket connection established');
-        wsConnected = true;
+  // Use centralized WebSocket connection for order updates
+  const { sendMessage, status: wsStatus } = useWebSocket({
+    enabled: orders.length > 0,
+    onMessage: (message) => {
+      if (message.type === 'ORDER_STATUS_UPDATE') {
+        const updatedOrder = message.payload;
         
-        // Subscribe to all order updates
-        const orderIds = orders.map(order => order.id);
-        if (orderIds.length > 0) {
-          socket.current?.send(JSON.stringify({
-            type: 'SUBSCRIBE_ORDERS',
-            orderIds
-          }));
-        }
-      };
-
-      socket.current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          
-          if (data.type === 'ORDER_STATUS_UPDATE') {
-            const updatedOrder = data.payload;
-            
-            setOrders((prevOrders) => {
-              const index = prevOrders.findIndex((order) => order.id === updatedOrder.id);
-              if (index !== -1) {
-                const updatedOrders = [...prevOrders];
-                updatedOrders[index] = { ...updatedOrders[index], status: updatedOrder.status };
-                localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
-                return updatedOrders;
-              }
-              return prevOrders;
-            });
-
-            // Show notification for ready orders
-            if (updatedOrder.status === 'ready') {
-              // Use a better notification system than alert in production
-              if ('Notification' in window && (window as any).Notification.permission === 'granted') {
-                new (window as any).Notification(`Order ${updatedOrder.order_number || updatedOrder.id} is ready for collection!`);
-              } else {
-                alert(`Order ${updatedOrder.order_number || updatedOrder.id} is ready for collection!`);
-              }
-            }
-          } else if (data.type === 'SUBSCRIBED_MULTIPLE') {
-            console.log(`Subscribed to ${data.orderIds.length} order updates`);
+        setOrders((prevOrders) => {
+          const index = prevOrders.findIndex((order) => order.id === updatedOrder.id);
+          if (index !== -1) {
+            const updatedOrders = [...prevOrders];
+            updatedOrders[index] = { ...updatedOrders[index], status: updatedOrder.status };
+            localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
+            return updatedOrders;
           }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          return prevOrders;
+        });
+
+        // Show notification for ready orders
+        if (updatedOrder.status === 'ready') {
+          if ('Notification' in window && (window as any).Notification.permission === 'granted') {
+            new (window as any).Notification(`Order ${updatedOrder.order_number || updatedOrder.id} is ready for collection!`);
+          } else {
+            alert(`Order ${updatedOrder.order_number || updatedOrder.id} is ready for collection!`);
+          }
         }
-      };
+      } else if (message.type === 'SUBSCRIBED_MULTIPLE') {
+        console.log(`Subscribed to ${message.orderIds.length} order updates`);
+      }
+    },
+    onOpen: () => {
+      console.log('Customer order WebSocket connected');
+      const orderIds = orders.map(order => order.id);
+      if (orderIds.length > 0) {
+        sendMessage({
+          type: 'SUBSCRIBE_ORDERS',
+          orderIds
+        });
+      }
+    },
+    onClose: () => {
+      console.log('Customer order WebSocket disconnected, starting polling');
+      startPolling();
+    },
+    onError: () => {
+      console.error('Customer order WebSocket error, starting polling');
+      startPolling();
+    },
+    autoReconnect: true,
+    reconnectDelay: 3000,
+  });
 
-      socket.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        wsConnected = false;
-      };
+  // Fallback polling mechanism
+  const startPolling = () => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
+    
+    // Don't poll if WebSocket is connected
+    if (wsStatus === 'connected') return;
+    
+    pollingRef.current = setInterval(async () => {
+      try {
+        const orderIds = orders.map(order => order.id);
+        if (orderIds.length === 0) return;
 
-      socket.current.onclose = () => {
-        console.log('WebSocket connection closed');
-        wsConnected = false;
-      };
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/orders/batch`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ orderIds }),
+        });
 
-    } catch (error) {
-      console.error('Failed to create WebSocket connection:', error);
-      wsConnected = false;
-    }
-
-    // Fallback polling mechanism
-    const startPolling = () => {
-      if (pollInterval) clearInterval(pollInterval);
-      
-      pollInterval = setInterval(async () => {
-        if (wsConnected) {
-          // If WebSocket is connected, don't poll
-          return;
-        }
-        
-        try {
-          // Use batch API for efficiency
-          const orderIds = orders.map(order => order.id);
-          if (orderIds.length === 0) return;
-
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/orders/batch`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ orderIds }),
+        if (response.ok) {
+          const data = await response.json();
+          const updatedOrders = orders.map(order => {
+            const serverOrder = data.orders.find((o: any) => o.id === order.id);
+            return serverOrder ? { ...order, status: serverOrder.status } : order;
           });
 
-          if (response.ok) {
-            const data = await response.json();
-            const updatedOrders = orders.map(order => {
-              const serverOrder = data.orders.find((o: any) => o.id === order.id);
-              return serverOrder ? { ...order, status: serverOrder.status } : order;
-            });
-
-            setOrders(updatedOrders);
-            localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
-          }
-        } catch (error) {
-          console.error('Polling failed:', error);
+          setOrders(updatedOrders);
+          localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
         }
-      }, wsConnected ? 30000 : 10000); // Poll every 30s if WS connected, 10s if not
-    };
+      } catch (error) {
+        console.error('Polling failed:', error);
+      }
+    }, 10000); // Poll every 10 seconds
+  };
 
-    // Start polling after a short delay to allow WebSocket to connect
-    const pollTimeout = setTimeout(startPolling, 2000);
-
-    // Cleanup function
+  // Cleanup polling on unmount
+  useEffect(() => {
     return () => {
-      if (socket.current) {
-        socket.current.close();
-        socket.current = null;
-      }
-      if (pollInterval) {
-        clearInterval(pollInterval);
-      }
-      if (pollTimeout) {
-        clearTimeout(pollTimeout);
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
       }
     };
-  }, [orders]);
+  }, []);
 
   // Handle option group selection changes for the modal
   const handleOptionsChange = (groupId: string, selected: string[], menuItem?: MenuItem) => {
     // If menuItem is provided, map selected IDs to details
     let details: SelectedOptionDetail[] = [];
-    if (menuItem && menuItem.option_groups) {
+    if (menuItem && menuItem.option) {
       for (const sub_item_id of selected) {
-        for (const group of menuItem.option_groups) {
-          const sub = group.sub_items.find((s: any) => s.id === sub_item_id);
+        for (const group of menuItem.option) {
+          const sub = group.choices.find((s: any) => s.id === sub_item_id);
           if (sub) {
-            details.push({ id: sub.id, name: sub.name, price: sub.additional_price });
+            details.push({ id: sub.id, name: sub.name, price: sub.priceModifier });
           }
         }
       }
@@ -318,8 +282,8 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
 
   // Helper to get sub-item price
   const getSubItemPrice = (menuItem: MenuItem, sub_item_id: string): number => {
-    if (!menuItem || !menuItem.option_groups) return 0;
-    for (const group of menuItem.option_groups) {
+    if (!menuItem || !menuItem.option) return 0;
+    for (const group of menuItem.option) {
       const sub = group.choices.find((s: any) => s.id === sub_item_id);
       if (sub && typeof sub.priceModifier === 'number') return sub.priceModifier;
     }
@@ -328,18 +292,18 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
 
   // Helper to get sub-item details
   const getSubItemDetails = (menuItem: MenuItem, sub_item_id: string) => {
-    if (!menuItem || !menuItem.option_groups) {
+    if (!menuItem || !menuItem.option) {
       console.warn('getSubItemDetails: menuItem or option missing', menuItem);
       return { name: sub_item_id, price: 0 };
     }
-    for (const group of menuItem.option_groups) {
+    for (const group of menuItem.option) {
       const sub = group.choices.find((s: any) => s.id === sub_item_id);
       if (sub) {
         console.log('getSubItemDetails: found sub-item', sub_item_id, sub.name, sub.priceModifier);
         return { name: sub.name, price: sub.priceModifier };
       }
     }
-    console.warn('getSubItemDetails: sub-item not found', sub_item_id, menuItem.option_groups);
+    console.warn('getSubItemDetails: sub-item not found', sub_item_id, menuItem.option);
     return { name: sub_item_id, price: 0 };
   };
 
@@ -380,7 +344,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
           quantity,
           customizations,
           item_total,
-          item_base_price: menuItem.basePrice,
+          item_base_price: menuItem.basePrice ?? 0,
         }];
       }
     });
@@ -414,6 +378,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     return {
       menu_item_id: item.menu_item_id,
       menu_item_name: item.menu_item_name || 'Item',
+      menu_item_title: item.menu_item_name || 'Item',
       title: item.menu_item_name || 'Item',
       quantity: item.quantity,
       item_total: item.item_total,
@@ -473,14 +438,21 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   ]
 
   // Callback for when an order is accepted
-  const handleOrderAccepted = (order: {
-    id: string;
-    status: string;
-    items: any[];
-    total: number;
-  }) => {
+  const handleOrderAccepted = (order: { id: string; status: string; items: any[]; total: number; }) => {
+    // Convert partial order to OrderListItem with required fields
+    const fullOrder: OrderListItem = {
+      id: order.id,
+      status: order.status,
+      items: order.items,
+      total: order.total,
+      order_number: '', // Will be populated by backend/polling
+      longitude: 0,
+      latitude: 0,
+      merchant_name: merchant.name,
+    };
+    
     setOrders(prev => {
-      const updated = [order, ...prev];
+      const updated = [fullOrder, ...prev];
       localStorage.setItem('acceptedOrders', JSON.stringify(updated));
       return updated;
     });
@@ -502,21 +474,20 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   const handleItemClick = async (menuItem: MenuItem) => {
     try {
       const itemData = await VendorService.getMenuSubGroups(menuItem.id);
-      // Merge menuItem with itemData to ensure all MenuItem properties are present
-      setSelectedMenuItem(itemData);
+      // Transform the service data to MenuItem type
+      const transformedItem = transformMenuItem(itemData);
+      setSelectedMenuItem(transformedItem as any);
     } catch (error) {
       console.error('Failed to fetch sub-groups:', error);
     }
-    // TODO: Navigate to item detail page or open modal
   };
 
   return (
     <>
-      <CustomerNavigationWrapper />
       {!activeEvent && (<Notification message={`${merchant.name} is not taking orders right now,`} subMessage=' but you can still view their menu.' type="warning" />)}
       <MenuDisplay
         merchant={merchant}
-        categories={categories}
+        categories={categories.map(cat => ({ ...cat, items: cat.items || [] }))}
         onItemClick={handleItemClick}
       />
       {activeEvent && (

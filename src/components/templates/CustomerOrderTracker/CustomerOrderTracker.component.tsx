@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { OrderBoard } from '@/components/molecules/OrderBoard';
 import { OrderCard } from '@/components/atoms/OrderCard';
 import { Typography, Button } from '@/components/atoms';
+import { useWebSocket } from '@/hooks/useWebSocket';
 import type { CustomerOrderTrackerProps } from './CustomerOrderTracker.types';
 import styles from './CustomerOrderTracker.module.scss';
 
@@ -16,67 +17,37 @@ export const CustomerOrderTracker: React.FC<CustomerOrderTrackerProps> = ({
   'data-testid': dataTestId,
 }) => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
-  const socket = useRef<WebSocket | null>(null);
 
   const trackerClasses = classNames(styles.customerOrderTracker, className);
 
-  // WebSocket connection for real-time order updates
-  useEffect(() => {
-    const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001'}/orders`;
-    
-    try {
-      socket.current = new WebSocket(wsUrl);
-
-      socket.current.onopen = () => {
-        console.log('Customer WebSocket connection established');
+  // Use centralized WebSocket connection
+  const { sendMessage } = useWebSocket({
+    enabled: true,
+    onMessage: (message) => {
+      if (message.type === 'ORDER_STATUS_UPDATE' && message.payload.id === order.id) {
+        // Refresh order when status changes
+        onRefresh?.();
+        setLastUpdated(new Date());
         
-        // Subscribe to order updates
-        socket.current?.send(JSON.stringify({
-          type: 'SUBSCRIBE_ORDERS',
-          orderIds: [order.id]
-        }));
-      };
-
-      socket.current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          
-          if (data.type === 'ORDER_STATUS_UPDATE' && data.payload.id === order.id) {
-            // Refresh order when status changes
-            onRefresh?.();
-            setLastUpdated(new Date());
-            
-            // Show notification for status changes
-            if (data.payload.status === 'ready') {
-              if ('Notification' in window && (window as any).Notification.permission === 'granted') {
-                new (window as any).Notification(`Your order #${order.order_number} is ready for collection!`);
-              }
-            }
+        // Show notification for status changes
+        if (message.payload.status === 'ready') {
+          if ('Notification' in window && (window as any).Notification.permission === 'granted') {
+            new (window as any).Notification(`Your order #${order.order_number} is ready for collection!`);
           }
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
         }
-      };
-
-      socket.current.onerror = (error) => {
-        console.error('Customer WebSocket error:', error);
-      };
-
-      socket.current.onclose = () => {
-        console.log('Customer WebSocket connection closed');
-      };
-
-    } catch (error) {
-      console.error('Failed to create customer WebSocket connection:', error);
-    }
-
-    return () => {
-      if (socket.current) {
-        socket.current.close();
-        socket.current = null;
       }
-    };
-  }, [order.id, onRefresh]);
+    },
+    onOpen: () => {
+      console.log('Customer WebSocket connected');
+      // Subscribe to order updates
+      sendMessage({
+        type: 'SUBSCRIBE_ORDERS',
+        orderIds: [order.id]
+      });
+    },
+    autoReconnect: true,
+    reconnectDelay: 3000,
+  });
 
   const getQueuePosition = () => {
     if (!queueOrders.length) return null;

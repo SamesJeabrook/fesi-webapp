@@ -6,6 +6,7 @@ import { MerchantOrderDashboard } from '@/components/templates';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useAdmin } from '@/components/providers/AdminProvider';
 import { getMerchantIdFromDevToken, getAuthToken } from '@/utils/devAuth';
+import { useNewOrderNotification } from '@/hooks/useNewOrderNotification';
 
 // Environment configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
@@ -179,6 +180,24 @@ export default function MerchantAdminPage() {
   }, [user, isImpersonating, selectedMerchant, getAccessTokenSilently]);
   
   const { orders, isLoading: ordersLoading, refetch } = useMerchantOrders(merchantId);
+
+  // Setup new order notifications
+  const { requestNotificationPermission } = useNewOrderNotification({ 
+    orders, 
+    enabled: true 
+  });
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        // Auto-request permission after a short delay
+        setTimeout(() => {
+          requestNotificationPermission();
+        }, 3000);
+      }
+    }
+  }, []);
 
   // Create merchant object - use selectedMerchant if impersonating, otherwise use Auth0 user data
   const merchant: Merchant | null = merchantId

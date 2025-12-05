@@ -5,6 +5,7 @@ import OrderPaymentForm from '@/components/molecules/OrderPaymentForm/OrderPayme
 import styles from './OrderSummary.module.scss';
 import EmptyBasketNotice from '@/components/molecules/EmptyBasketNotice/EmptyBasketNotice';
 import { Event } from '@/types';
+import { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 
 export interface OrderSummaryProps {
   items: OrderItem[];
@@ -14,12 +15,7 @@ export interface OrderSummaryProps {
   onPaymentSuccess?: (paymentIntentId: string) => void;
   onPaymentError?: (error: any) => void;
   event: Event;
-  onOrderAccepted?: (order: {
-    id: string;
-    status: string;
-    items: any[];
-    total: number;
-  }) => void;
+  onOrderAccepted?: (order: OrderListItem) => void;
 }
 
 

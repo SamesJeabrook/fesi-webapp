@@ -11,8 +11,8 @@ const MenuItemDetails: React.FC<MenuItemDetailsProps> = ({ item, selectedOptions
   if (!item) return (<Typography variant='heading-2' as='h2'>No item selected</Typography>)
 
   // Check if all required option groups have a selection
-  const allRequiredSelected = (item.option_groups || [])
-    .filter((group: any) => group.is_required)
+  const allRequiredSelected = (item.option || [])
+    .filter((group: any) => group.required)
     .every((group: any) => (selectedOptions[group.id] && selectedOptions[group.id].length > 0));
 
   const handleDecrease = () => {
@@ -25,20 +25,19 @@ const MenuItemDetails: React.FC<MenuItemDetailsProps> = ({ item, selectedOptions
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        {item.image_url ? (
-          <img src={item.image_url} alt={item.title} className={styles.image} />
+        {item.imageUrl ? (
+          <img src={item.imageUrl} alt={item.name} className={styles.image} />
         ) : (
           <div className={styles.image} />
         )}
         <div className={styles.details}>
-          <Typography variant="heading-4" as="h2">{item.title}</Typography>
-          <Typography variant="heading-6">{item.category_name}</Typography>
+          <Typography variant="heading-4" as="h2">{item.name}</Typography>
           <Typography variant="body-medium">{item.description}</Typography>
-          <Typography variant="body-medium">{formatPrice(item.base_price)}</Typography>
+          <Typography variant="body-medium">{formatPrice(item.basePrice || 0)}</Typography>
         </div>
       </div>
       <div className={styles.options}>
-        {(item.option_groups || []).map((group: any) => (
+        {(item.option || []).map((group: any) => (
           <MenuOptionGroup
             key={group.id}
             group={group}

@@ -6,6 +6,7 @@ import { Event } from '@/types';
 import { Typography, Input } from '@/components/atoms';
 import PaymentHoldingNotice from '@/components/molecules/PaymentHoldingNotice/PaymentHoldingNotice';
 import { getAuthToken } from '@/utils/devAuth';
+import { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 import styles from './OrderPaymentForm.module.scss';
 
 export interface OrderPaymentFormProps {
@@ -14,16 +15,7 @@ export interface OrderPaymentFormProps {
   onPaymentSuccess: (paymentIntentId: string) => void;
   onPaymentError?: (error: any) => void;
   eventData: Event;
-  onOrderAccepted?: (order: {
-    id: string;
-    status: string;
-    items: any[];
-    total: number;
-    order_number: number;
-    longitude: number;
-    latitude: number;
-    merchant_name: string;
-  }) => void;
+  onOrderAccepted?: (order: OrderListItem) => void;
 }
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
@@ -210,6 +202,8 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
             }
             resetLocalStorage();
             clearInterval(interval);
+            // Redirect to confirmation page
+            window.location.href = `/orders/confirmation/${data.id}`;
           } else if (data.status === 'cancelled' || data.status === 'rejected') {
             setHolding(false);
             setError('Order was not accepted. You have not been charged.');

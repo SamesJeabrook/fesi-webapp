@@ -46,8 +46,6 @@ export const OrderCard: React.FC<OrderCardProps> = ({
     return order.items.reduce((total, item) => total + item.quantity, 0);
   };
 
-  console.log(order);
-
   return (
     <div
       className={cardClasses}
