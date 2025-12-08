@@ -55,9 +55,14 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
 
   // Initialize selected option groups from item
   useEffect(() => {
+    console.log('EditMenuItemModal - Item option_groups:', item.option_groups);
     if (item.option_groups) {
       const groupIds = item.option_groups.map(g => g.id);
+      console.log('EditMenuItemModal - Setting selected IDs:', groupIds);
       setSelectedOptionGroupIds(groupIds);
+    } else {
+      console.log('EditMenuItemModal - No option_groups on item');
+      setSelectedOptionGroupIds([]);
     }
   }, [item]);
 
@@ -109,10 +114,13 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
     const addedIds = newSelectedIds.filter(id => !selectedOptionGroupIds.includes(id));
     const removedIds = selectedOptionGroupIds.filter(id => !newSelectedIds.includes(id));
 
+    console.log('Option group change:', { newSelectedIds, addedIds, removedIds });
+
     try {
       // Add new groups
       for (const groupId of addedIds) {
-        await fetch(
+        console.log(`Adding option group ${groupId} to item ${item.id}`);
+        const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}/sub-groups`,
           {
             method: 'POST',
@@ -123,11 +131,14 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
             body: JSON.stringify({ sub_group_id: groupId }),
           }
         );
+        const result = await response.json();
+        console.log('Add response:', response.status, result);
       }
 
       // Remove groups
       for (const groupId of removedIds) {
-        await fetch(
+        console.log(`Removing option group ${groupId} from item ${item.id}`);
+        const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}/sub-groups/${groupId}`,
           {
             method: 'DELETE',
@@ -137,6 +148,8 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
             },
           }
         );
+        const result = await response.json();
+        console.log('Remove response:', response.status, result);
       }
 
       // Update local state

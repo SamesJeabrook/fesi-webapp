@@ -5,6 +5,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
 import { MenuItemManagementCard, EditMenuItemModal } from '@/components/molecules';
 import { CreateMenuItemForm } from '@/components/organisms';
+import { SubItemGroup } from '@/components/molecules/OptionGroupSelector';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getAuthToken } from '@/utils/devAuth';
 import Link from 'next/link';
@@ -21,6 +22,7 @@ interface MenuItem {
   category_name?: string;
   created_at: string;
   updated_at: string;
+  option_groups?: SubItemGroup[];
 }
 
 interface MenuCategory {
@@ -205,8 +207,41 @@ export default function MenuItemsPage() {
     }
   };
 
-  const handleEditItem = (item: MenuItem) => {
-    setEditingItem(item);
+  const handleEditItem = async (item: MenuItem) => {
+    console.log('handleEditItem called with item:', item);
+    // Fetch the full item with option groups
+    try {
+      const token = await getAuthToken(getAccessTokenSilently);
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('API Response:', data);
+        console.log('data.option_groups:', data.option_groups);
+        
+        const updatedItem = {
+          ...item,
+          option_groups: data.option_groups || []
+        };
+        console.log('Setting editingItem to:', updatedItem);
+        
+        setEditingItem(updatedItem);
+      } else {
+        setEditingItem(item);
+      }
+    } catch (error) {
+      console.error('Error fetching item details:', error);
+      setEditingItem(item);
+    }
   };
 
   const handleUpdateItem = async (updatedData: any) => {

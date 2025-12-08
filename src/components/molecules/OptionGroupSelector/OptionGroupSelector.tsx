@@ -106,6 +106,17 @@ const OptionGroupSelector: React.FC<OptionGroupSelectorProps> = ({
         {availableGroups.map((group) => {
           const isSelected = selectedGroupIds.includes(group.id);
           
+          // Debug logging
+          if (selectedGroupIds.length > 0) {
+            console.log(`OptionGroupSelector - Group ${group.id} (${group.name}):`, {
+              selectedGroupIds,
+              groupId: group.id,
+              groupIdType: typeof group.id,
+              selectedIdsTypes: selectedGroupIds.map(id => typeof id),
+              isSelected
+            });
+          }
+          
           const cardClasses = [
             styles.optionGroupSelector__groupCard,
             isSelected && styles['optionGroupSelector__groupCard--selected'],
@@ -183,7 +194,12 @@ const OptionGroupSelector: React.FC<OptionGroupSelectorProps> = ({
                             <span>{item.name}</span>
                             {item.additional_price > 0 && (
                               <span className={styles.optionGroupSelector__subItemPrice}>
-                                +${(item.additional_price / 100).toFixed(2)}
+                                +£{(item.additional_price / 100).toFixed(2)}
+                              </span>
+                            )}
+                            {item.additional_price < 0 && (
+                              <span className={styles.optionGroupSelector__subItemPrice__negative}>
+                                -£{(item.additional_price / 100).toFixed(2)}
                               </span>
                             )}
                           </div>

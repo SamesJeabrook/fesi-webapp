@@ -204,6 +204,10 @@
   &__subItemPrice {
     color: var(--color-success, #16a34a);
     font-weight: 500;
+
+    &__negative {
+      color: var(--color-error, #dc2626);
+    }
   }
 
   &__subItemsMore {

@@ -4,12 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import { AdminPageHeader, MenuItemManagementCard } from '@/components/molecules';
+import { AdminPageHeader, MenuItemManagementCard, EditMenuItemModal } from '@/components/molecules';
 import { CreateMenuItemForm } from '@/components/organisms';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
-import EditItemModal from './components/EditItemModal';
 import styles from './adminItems.module.scss';
+import { SubItemGroup } from '@/components/molecules/OptionGroupSelector';
 
 interface MenuItem {
   id: string;
@@ -23,6 +23,7 @@ interface MenuItem {
   image_url?: string;
   created_at: string;
   updated_at: string;
+  option_groups?: SubItemGroup[];
 }
 
 interface MenuCategory {
@@ -47,6 +48,7 @@ export default function AdminMenuItemsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [authToken, setAuthToken] = useState<string>('');
 
   const merchantId = params?.merchantId as string;
 
@@ -58,6 +60,7 @@ export default function AdminMenuItemsPage() {
           audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
         },
       });
+      setAuthToken(token);
 
       // Fetch merchant, categories, and items in parallel
       const [merchantResponse, menuResponse, categoriesResponse] = await Promise.all([
@@ -207,8 +210,50 @@ export default function AdminMenuItemsPage() {
     }
   };
 
-  const handleEditItem = (item: MenuItem) => {
-    setEditingItem(item);
+  const handleEditItem = async (item: MenuItem) => {
+    console.log('handleEditItem called with item:', item);
+    // Fetch the full item with option groups
+    try {
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+        },
+      });
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('API Response:', data);
+        console.log('data.data:', data.data);
+        console.log('data.option_groups:', data.option_groups);
+        
+        // The API might return data directly or wrapped in a data property
+        const itemData = data.data || data;
+        console.log('itemData.option_groups:', itemData.option_groups);
+        
+        const updatedItem = {
+          ...item,
+          option_groups: itemData.option_groups || []
+        };
+        console.log('Setting editingItem to:', updatedItem);
+        
+        setEditingItem(updatedItem);
+      } else {
+        setEditingItem(item);
+      }
+    } catch (error) {
+      console.error('Error fetching item details:', error);
+      setEditingItem(item);
+    }
   };
 
   const handleUpdateItem = async (updatedData: Partial<MenuItem>) => {
@@ -327,7 +372,7 @@ export default function AdminMenuItemsPage() {
             </Grid.Container>
 
             {/* Create Form Section */}
-            {isCreating && (
+            {isCreating && authToken && (
               <Grid.Container gap="lg" className={styles.items__createSection}>
                 <Grid.Item lg={12} xl={10}>
                   <CreateMenuItemForm
@@ -336,6 +381,7 @@ export default function AdminMenuItemsPage() {
                     onCancel={() => setIsCreating(false)}
                     isSubmitting={isSubmitting}
                     merchantId={merchantId}
+                    authToken={authToken}
                   />
                 </Grid.Item>
               </Grid.Container>
@@ -386,14 +432,28 @@ export default function AdminMenuItemsPage() {
         )}
 
         {/* Edit Item Modal */}
-        {editingItem && (
-          <EditItemModal
-            item={editingItem}
+        {editingItem && authToken && (
+          <EditMenuItemModal
+            item={{
+              id: editingItem.id,
+              name: editingItem.title,
+              description: editingItem.description,
+              price: editingItem.base_price,
+              category_id: editingItem.category_id,
+              category_name: editingItem.category_name,
+              is_available: editingItem.is_active,
+              display_order: editingItem.display_order,
+              image_url: editingItem.image_url,
+              created_at: editingItem.created_at,
+              updated_at: editingItem.updated_at,
+              option_groups: editingItem.option_groups
+            }}
             categories={categories}
             isOpen={!!editingItem}
             onClose={() => setEditingItem(null)}
             onSave={handleUpdateItem}
             merchantId={merchantId}
+            authToken={authToken}
           />
         )}
       </div>
