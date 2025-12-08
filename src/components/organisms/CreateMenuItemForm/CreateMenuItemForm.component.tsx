@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Typography, Button, FormInput, FormSelect, Grid } from '@/components/atoms';
 import { FormTextArea } from '@/components/atoms/FormTextArea/FormTextArea.component';
+import OptionGroupSelector, { SubItemGroup } from '@/components/molecules/OptionGroupSelector';
 import styles from './CreateMenuItemForm.module.scss';
 
 export interface MenuCategory {
@@ -16,11 +17,13 @@ export interface CreateMenuItemFormProps {
     price: string;
     category_id: string;
     image_url?: string;
+    optionGroupIds?: number[];
   }) => Promise<void>;
   onCancel: () => void;
   isSubmitting?: boolean;
   className?: string;
   merchantId: string;
+  authToken: string;
 }
 
 export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
@@ -30,6 +33,7 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
   isSubmitting = false,
   className = '',
   merchantId,
+  authToken,
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -48,6 +52,52 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // Option groups state
+  const [availableOptionGroups, setAvailableOptionGroups] = useState<SubItemGroup[]>([]);
+  const [selectedOptionGroupIds, setSelectedOptionGroupIds] = useState<number[]>([]);
+  const [isLoadingOptionGroups, setIsLoadingOptionGroups] = useState(false);
+  const [optionGroupsError, setOptionGroupsError] = useState<string>('');
+
+  // Fetch available option groups when component mounts
+  useEffect(() => {
+    if (merchantId) {
+      fetchOptionGroups();
+    }
+  }, [merchantId]);
+
+  const fetchOptionGroups = async () => {
+    setIsLoadingOptionGroups(true);
+    setOptionGroupsError('');
+    
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/sub-groups?merchant_id=${merchantId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch option groups');
+      }
+
+      const data = await response.json();
+      setAvailableOptionGroups(data.data || []);
+    } catch (error) {
+      console.error('Error fetching option groups:', error);
+      setOptionGroupsError('Failed to load option groups. Please try again.');
+    } finally {
+      setIsLoadingOptionGroups(false);
+    }
+  };
+
+  const handleOptionGroupChange = (newSelectedIds: number[]) => {
+    setSelectedOptionGroupIds(newSelectedIds);
+  };
 
   const validateForm = (): boolean => {
     const newErrors = {
@@ -154,7 +204,11 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
         }
       }
 
-      await onSubmit({ ...formData, image_url: imageUrl });
+      await onSubmit({ 
+        ...formData, 
+        image_url: imageUrl,
+        optionGroupIds: selectedOptionGroupIds.length > 0 ? selectedOptionGroupIds : undefined
+      });
       
       // Reset form on success
       setFormData({
@@ -171,6 +225,7 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
       });
       setImageFile(null);
       setImagePreview('');
+      setSelectedOptionGroupIds([]);
     } catch (error) {
       // Error handling is done in parent component
       console.error('Error creating item:', error);
@@ -285,6 +340,26 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
             <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
               Max size: 10MB. Supported formats: JPG, PNG, WebP
             </Typography>
+          </div>
+        </Grid.Item>
+
+        <Grid.Item sm={16}>
+          <div style={{ 
+            borderTop: '1px solid var(--color-border-primary, #e5e7eb)', 
+            paddingTop: '16px',
+            marginTop: '8px'
+          }}>
+            <Typography variant="body-medium" style={{ marginBottom: '12px' }}>
+              Customization Options
+            </Typography>
+            <OptionGroupSelector
+              availableGroups={availableOptionGroups}
+              selectedGroupIds={selectedOptionGroupIds}
+              onChange={handleOptionGroupChange}
+              disabled={isSubmitting || isUploadingImage}
+              loading={isLoadingOptionGroups}
+              error={optionGroupsError}
+            />
           </div>
         </Grid.Item>
 

@@ -3,12 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import { MenuItemManagementCard } from '@/components/molecules';
+import { MenuItemManagementCard, EditMenuItemModal } from '@/components/molecules';
 import { CreateMenuItemForm } from '@/components/organisms';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getAuthToken } from '@/utils/devAuth';
 import Link from 'next/link';
-import EditItemModal from './components/EditItemModal';
 import styles from './items.module.scss';
 
 interface MenuItem {
@@ -39,6 +38,8 @@ export default function MenuItemsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isMounted, setIsMounted] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [merchantId, setMerchantId] = useState<string>('');
+  const [authToken, setAuthToken] = useState<string>('');
 
   // Prevent hydration issues
   useEffect(() => {
@@ -49,11 +50,12 @@ export default function MenuItemsPage() {
     try {
       setIsLoading(true);
       const token = await getAuthToken(getAccessTokenSilently);
+      setAuthToken(token);
 
       // Extract merchant ID from dev token if present
-      let merchantId: string;
+      let currentMerchantId: string;
       if (token.startsWith('dev-merchant-')) {
-        merchantId = token.replace('dev-merchant-', '');
+        currentMerchantId = token.replace('dev-merchant-', '');
       } else {
         // For real Auth0 tokens, get merchant data from /me endpoint
         const merchantResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
@@ -69,19 +71,21 @@ export default function MenuItemsPage() {
         }
 
         const merchantData = await merchantResponse.json();
-        merchantId = merchantData.id;
+        currentMerchantId = merchantData.id;
       }
+
+      setMerchantId(currentMerchantId);
 
       // Fetch categories and menu items in parallel
       const [categoriesResponse, menuResponse] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories?merchant_id=${merchantId}`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories?merchant_id=${currentMerchantId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         }),
         // Use admin endpoint to get ALL items including inactive ones
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}/admin`, {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${currentMerchantId}/admin`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -120,6 +124,8 @@ export default function MenuItemsPage() {
     description: string;
     price: string;
     category_id: string;
+    image_url?: string;
+    optionGroupIds?: number[];
   }) => {
     setIsSubmitting(true);
     try {
@@ -137,10 +143,33 @@ export default function MenuItemsPage() {
           base_price: Math.round(parseFloat(itemData.price) * 100), // Convert pounds to pence
           category_id: itemData.category_id || null,
           display_order: items.length + 1,
+          image_url: itemData.image_url || null,
         }),
       });
 
       if (response.ok) {
+        const responseData = await response.json();
+        const newItemId = responseData.data?.id;
+        
+        // If option groups were selected, assign them to the new item
+        if (newItemId && itemData.optionGroupIds && itemData.optionGroupIds.length > 0) {
+          for (const groupId of itemData.optionGroupIds) {
+            try {
+              await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${newItemId}/sub-groups`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ sub_group_id: groupId }),
+              });
+            } catch (error) {
+              console.error(`Failed to assign option group ${groupId}:`, error);
+              // Continue with other groups even if one fails
+            }
+          }
+        }
+        
         setIsCreating(false);
         await fetchData();
       } else {
@@ -269,12 +298,14 @@ export default function MenuItemsPage() {
           </select>
         </div>
 
-        {isCreating && (
+        {isCreating && merchantId && authToken && (
           <CreateMenuItemForm
             categories={categories}
             onSubmit={createItem}
             onCancel={() => setIsCreating(false)}
             isSubmitting={isSubmitting}
+            merchantId={merchantId}
+            authToken={authToken}
           />
         )}
 
@@ -317,13 +348,15 @@ export default function MenuItemsPage() {
         </Grid.Container>
 
         {/* Edit Item Modal */}
-        {editingItem && (
-          <EditItemModal
+        {editingItem && merchantId && authToken && (
+          <EditMenuItemModal
             item={editingItem}
             categories={categories}
             isOpen={!!editingItem}
             onClose={() => setEditingItem(null)}
             onSave={handleUpdateItem}
+            merchantId={merchantId}
+            authToken={authToken}
           />
         )}
       </div>

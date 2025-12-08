@@ -28,3 +28,5 @@ export * from './POSCategoryFilter';
 export * from './CategoryCard';
 export * from './EditCategoryModal';
 export * from './CustomerNavigation';
+export * from './EditMenuItemModal';
+export * from './OptionGroupSelector';
