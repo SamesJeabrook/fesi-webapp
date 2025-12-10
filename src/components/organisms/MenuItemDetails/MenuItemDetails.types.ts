@@ -1,5 +1,7 @@
 import type { MenuItem } from '@/types';
 
+export type { MenuItem };
+
 export interface SelectedOptionDetail {
   id: string;
   name: string;

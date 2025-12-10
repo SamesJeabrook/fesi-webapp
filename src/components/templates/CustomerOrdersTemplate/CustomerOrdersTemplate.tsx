@@ -237,7 +237,7 @@ export function CustomerOrdersTemplate({
                     <div key={item.id} className={styles.orderCard__item}>
                       <div className={styles.orderCard__itemDetails}>
                         <div className={styles.orderCard__itemName}>
-                          {item.menu_item_title}
+                          {item.menu_item_name}
                         </div>
                         <div className={styles.orderCard__itemQuantity}>
                           Quantity: {item.quantity}

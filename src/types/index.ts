@@ -148,6 +148,7 @@ export interface OrderItem extends BaseEntity {
   orderId: string;
   menuItemId: string;
   menuItemName: string;
+  menu_item_title?: string; // Alias for menuItemName for API compatibility
   quantity: number;
   unitPrice: number;
   totalPrice: number;

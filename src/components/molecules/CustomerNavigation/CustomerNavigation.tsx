@@ -10,7 +10,7 @@ import styles from './CustomerNavigation.module.scss';
 const navItems: NavItem[] = [
   { label: 'Browse Events', path: '/vendors', icon: '🎪' },
   { label: 'My Orders', path: '/vendors/orders', icon: '📦', requiresAuth: true },
-  { label: 'Favorites', path: '/vendors/favorites', icon: '❤️', requiresAuth: true },
+  // { label: 'Favorites', path: '/vendors/favorites', icon: '❤️', requiresAuth: true },
 ];
 
 export function CustomerNavigation({

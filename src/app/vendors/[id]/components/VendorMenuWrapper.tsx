@@ -4,8 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import Notification from '@/components/atoms/Notification/Notification';
 import OrderList, { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
-import type { Merchant, } from '@/components/templates/MenuDisplay/MenuDisplay.types';
-import type { MenuItem, MenuCategory, Event } from '@/types';
+import type { Merchant, MenuCategory } from '@/components/templates/MenuDisplay/MenuDisplay.types';
+import type { MenuItem, Event } from '@/types';
 import { MenuItem as VendorServiceItem } from '@/services/vendorService';
 import { MenuSubGroup, VendorService } from '@/services/vendorService';
 import MenuItemDetails from '@/components/organisms/MenuItemDetails/MenuItemDetails';
@@ -438,14 +438,14 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   ]
 
   // Callback for when an order is accepted
-  const handleOrderAccepted = (order: { id: string; status: string; items: any[]; total: number; }) => {
+  const handleOrderAccepted = (order: { id: string; status: string; order_number?: number; items: any[]; total: number; }) => {
     // Convert partial order to OrderListItem with required fields
     const fullOrder: OrderListItem = {
       id: order.id,
-      status: order.status,
+      status: order.status as 'pending' | 'accepted' | 'preparing' | 'ready' | 'complete' | 'cancelled',
       items: order.items,
       total: order.total,
-      order_number: '', // Will be populated by backend/polling
+      order_number: order.order_number || 0, // Will be populated by backend/polling
       longitude: 0,
       latitude: 0,
       merchant_name: merchant.name,
