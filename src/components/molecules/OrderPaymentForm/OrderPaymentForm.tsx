@@ -7,6 +7,7 @@ import { Typography, Input } from '@/components/atoms';
 import PaymentHoldingNotice from '@/components/molecules/PaymentHoldingNotice/PaymentHoldingNotice';
 import { getAuthToken } from '@/utils/devAuth';
 import { OrderListItem } from '@/components/molecules/OrderList/OrderList';
+import api from '@/utils/api';
 import styles from './OrderPaymentForm.module.scss';
 
 export interface OrderPaymentFormProps {
@@ -84,19 +85,9 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
       
       try {
         setLoadingProfile(true);
-        const token = await getAuthToken(getAccessTokenSilently);
-        console.log('🔑 Got auth token:', token?.substring(0, 20) + '...');
         
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        
-        console.log('📡 /me response status:', response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
+        try {
+          const data = await api.get('/api/customers/me');
           console.log('✅ Customer profile loaded:', data.data);
           setCustomerProfile(data.data);
           // Pre-populate guest info with customer data
@@ -106,24 +97,16 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
             last_name: data.data.last_name || '',
             phone: data.data.phone || ''
           });
-        } else if (response.status === 404) {
-          // Customer profile doesn't exist yet, create one
-          const createResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+        } catch (error: any) {
+          // If 404, customer profile doesn't exist yet, create one
+          if (error.message?.includes('404') || error.message?.includes('not found')) {
+            const newProfile = await api.post('/api/customers', {
               auth0_id: user.sub,
               email: user.email || '',
               first_name: user.name?.split(' ')[0] || user.given_name || '',
               last_name: user.name?.split(' ').slice(1).join(' ') || user.family_name || '',
-            }),
-          });
-          
-          if (createResponse.ok) {
-            const newProfile = await createResponse.json();
+            });
+            
             setCustomerProfile(newProfile.data);
             setGuestInfo({
               email: newProfile.data.email || user.email || '',
@@ -182,8 +165,7 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
     if (holding && orderId) {
       interval = setInterval(async () => {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${orderId}`);
-          const data = await res.json();
+          const data = await api.get(`/api/orders/${orderId}`);
           setPollingStatus(data.status);
           if (data.status === 'accepted') {
             setHolding(false);
@@ -245,17 +227,10 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
             customerProfile.phone !== guestInfo.phone;
           
           if (profileChanged && (guestInfo.first_name || guestInfo.last_name)) {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/customers/me`, {
-              method: 'PUT',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                first_name: guestInfo.first_name.trim(),
-                last_name: guestInfo.last_name.trim(),
-                phone: guestInfo.phone.trim() || null,
-              }),
+            await api.put('/api/customers/me', {
+              first_name: guestInfo.first_name.trim(),
+              last_name: guestInfo.last_name.trim(),
+              phone: guestInfo.phone.trim() || null,
             });
           }
         } catch (profileError) {
@@ -293,22 +268,13 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
       }
       
       console.log('📦 Final order payload:', orderPayload);
-      const orderRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload),
-      });
-      const orderData = await orderRes.json();
-      if (!orderRes.ok || !orderData.id) throw new Error(orderData.error || 'Order creation failed');
+      const orderData = await api.post('/api/orders', orderPayload, { skipAuth: !isAuthenticated });
+      if (!orderData.id) throw new Error(orderData.error || 'Order creation failed');
       setOrderId(orderData.id);
 
       // 2. Create payment intent
-      const paymentRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${orderData.id}/payment-intent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const paymentData = await paymentRes.json();
-      if (!paymentRes.ok || !paymentData.clientSecret) throw new Error(paymentData.error || 'Payment intent creation failed');
+      const paymentData = await api.post(`/api/orders/${orderData.id}/payment-intent`, {}, { skipAuth: !isAuthenticated });
+      if (!paymentData.clientSecret) throw new Error(paymentData.error || 'Payment intent creation failed');
       setClientSecret(paymentData.clientSecret);
 
       // 3. Collect payment details

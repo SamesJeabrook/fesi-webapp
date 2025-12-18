@@ -6,6 +6,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { MerchantOrderDashboard } from '@/components/templates/MerchantOrderDashboard/MerchantOrderDashboard.component';
 import { Typography } from '@/components/atoms';
+import api from '@/utils/api';
 import Link from 'next/link';
 import styles from './adminOrders.module.scss';
 
@@ -51,29 +52,14 @@ export default function AdminMerchantOrdersPage() {
 
   const fetchMerchant = async () => {
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
+      const data = await api.get(`/api/merchants/${merchantId}`);
+      const merchantData = data.data;
+      setMerchant({
+        id: merchantData.id,
+        business_name: merchantData.business_name,
+        name: merchantData.name || merchantData.business_name,
+        email: merchantData.email,
       });
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const merchantData = data.data;
-        setMerchant({
-          id: merchantData.id,
-          business_name: merchantData.business_name,
-          name: merchantData.name || merchantData.business_name,
-          email: merchantData.email,
-        });
-      }
     } catch (error) {
       console.error('Error fetching merchant:', error);
     } finally {
@@ -86,29 +72,7 @@ export default function AdminMerchantOrdersPage() {
       setOrdersLoading(true);
       console.log('🔄 Fetching orders for merchant:', merchantId);
       
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
-      
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}/orders`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error:', response.status, errorText);
-        throw new Error(`Failed to fetch orders: ${response.status} ${errorText}`);
-      }
-
-      const data = await response.json();
+      const data = await api.get(`/api/merchants/${merchantId}/orders`);
       setOrders(data.orders || []);
     } catch (error) {
       console.error('Error fetching merchant orders:', error);
@@ -124,31 +88,10 @@ export default function AdminMerchantOrdersPage() {
       const currentOrder = orders.find(order => order.id === orderId);
       const currentVersion = currentOrder?.version || 0;
       
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
+      await api.put(`/api/orders/${orderId}/status/merchant`, { 
+        status: newStatus,
+        version: currentVersion 
       });
-      
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/orders/${orderId}/status/merchant`,
-        {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            status: newStatus,
-            version: currentVersion 
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update order status');
-      }
 
       // Refresh orders after status change
       await fetchMerchantOrders();

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import api from '@/utils/api';
 import Link from 'next/link';
 import styles from './dashboard.module.scss';
 
@@ -62,47 +63,19 @@ export default function CustomerDashboard() {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
 
       // Fetch all dashboard data in parallel
-      const [profileRes, statsRes, ordersRes, loyaltyRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/me`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/me/stats`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/me/orders?limit=5`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/me/loyalty-cards`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        }),
+      const [profileData, statsData, ordersData, loyaltyData] = await Promise.all([
+        api.get('/api/customers/me'),
+        api.get('/api/customers/me/stats'),
+        api.get('/api/customers/me/orders?limit=5'),
+        api.get('/api/customers/me/loyalty-cards'),
       ]);
 
-      if (profileRes.ok) {
-        const data = await profileRes.json();
-        setProfile(data.data);
-      }
-
-      if (statsRes.ok) {
-        const data = await statsRes.json();
-        setStats(data.data);
-      }
-
-      if (ordersRes.ok) {
-        const data = await ordersRes.json();
-        setRecentOrders(data.data || []);
-      }
-
-      if (loyaltyRes.ok) {
-        const data = await loyaltyRes.json();
-        setLoyaltyCards(data.data || []);
-      }
+      setProfile(profileData.data);
+      setStats(statsData.data);
+      setRecentOrders(ordersData.data || []);
+      setLoyaltyCards(loyaltyData.data || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {

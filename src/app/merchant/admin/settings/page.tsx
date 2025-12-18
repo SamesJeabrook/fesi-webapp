@@ -5,6 +5,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { SystemSettingsTemplate } from '@/components/templates/SystemSettingsTemplate/SystemSettingsTemplate';
 import { getMerchantIdFromDevToken, getAuthToken } from '@/utils/devAuth';
+import api from '@/utils/api';
 
 interface Category {
   id: string;
@@ -44,18 +45,8 @@ export default function MerchantSettingsPage() {
 
       // Otherwise, get from /me endpoint
       try {
-        const token = await getAuthToken(getAccessTokenSilently);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setMerchantId(data.id);
-        }
+        const data = await api.get('/api/merchants/me');
+        setMerchantId(data.id);
       } catch (error) {
         console.error('Error fetching merchant ID:', error);
       }
@@ -69,22 +60,9 @@ export default function MerchantSettingsPage() {
       if (!merchantId) return;
 
       try {
-        const token = await getAuthToken(getAccessTokenSilently);
-
         // Fetch merchant data by ID
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const merchantData = await response.json();
-          setCompany(merchantData.data);
-        } else {
-          console.error('Failed to fetch merchant data:', response.status);
-        }
+        const merchantData = await api.get(`/api/merchants/${merchantId}`);
+        setCompany(merchantData.data);
       } catch (error) {
         console.error('Failed to fetch merchant:', error);
       } finally {
@@ -99,16 +77,13 @@ export default function MerchantSettingsPage() {
     const fetchCategories = async () => {
       try {
         setLoadingTags(true);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant-categories`);
-        if (response.ok) {
-          const data = await response.json();
-          setAvailableTags((data.data || []).map((cat: any) => ({ 
-            id: cat.id, 
-            name: cat.name, 
-            description: cat.description, 
-            icon_name: cat.icon_name 
-          })));
-        }
+        const data = await api.get('/api/menu/merchant-categories', { skipAuth: true });
+        setAvailableTags((data.data || []).map((cat: any) => ({ 
+          id: cat.id, 
+          name: cat.name, 
+          description: cat.description, 
+          icon_name: cat.icon_name 
+        })));
       } catch (error) {
         console.error('Failed to fetch categories:', error);
         setAvailableTags([]);

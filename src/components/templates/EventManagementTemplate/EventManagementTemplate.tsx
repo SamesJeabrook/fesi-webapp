@@ -12,6 +12,7 @@ import { Event, EventFormData, DailySchedule } from '@/types/events';
 import { DailyScheduleCard } from '@/components/molecules/DailyScheduleCard';
 import { useAuth0 } from '@auth0/auth0-react';
 import { getAuthToken } from '@/utils/devAuth';
+import api from '@/utils/api';
 import styles from './EventManagementTemplate.module.scss';
 
 interface Merchant {
@@ -108,21 +109,8 @@ export function EventManagementTemplate({
     
     try {
       setMerchantLoading(true);
-      const token = await getAuthToken(getAccessTokenSilently);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMerchant(data.data);
-      } else {
-        console.error('Failed to fetch merchant details');
-      }
+      const data = await api.get(`/api/merchants/${merchantId}`);
+      setMerchant(data.data);
     } catch (error) {
       console.error('Error fetching merchant:', error);
     } finally {

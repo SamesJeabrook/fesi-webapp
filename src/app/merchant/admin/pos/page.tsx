@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Input } from '@/components/atoms';
+import api from '@/utils/api';
 import {
   POSMenuItemCard,
   POSCategoryFilter,
@@ -72,54 +73,22 @@ export default function POSPage() {
             merchantId = token.replace('dev-merchant-', '');
         } else {
             // For real Auth0 tokens, get merchant data from /me endpoint
-            const merchantResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            });
-
-            if (!merchantResponse.ok) {
-            console.error('Failed to fetch merchant data');
-            return;
-            }
-
-            const merchantData = await merchantResponse.json();
+            const merchantData = await api.get('/api/merchants/me');
             merchantId = merchantData.id;
         }
 
         // Fetch only active events where this merchant is participating
-        const eventsResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/events?merchant_id=${merchantId}&is_open=true`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-        
-        if (eventsResponse.ok) {
-          const eventsData = await eventsResponse.json();
-          setEvents(eventsData);
-          // Auto-select first event
-          if (eventsData.length > 0) {
-            setSelectedEvent(eventsData[0].id);
-          }
+        const eventsData = await api.get(`/api/events?merchant_id=${merchantId}&is_open=true`);
+        setEvents(eventsData);
+        // Auto-select first event
+        if (eventsData.length > 0) {
+          setSelectedEvent(eventsData[0].id);
         }
 
-        const menuResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
+        const menuData = await api.get(`/api/menu/merchant/${merchantId}`);
         
-        if (menuResponse.ok) {
-          const menuData = await menuResponse.json();
-          
-          // Extract all items from all categories
-          if (menuData.data?.menu && Array.isArray(menuData.data.menu)) {
+        // Extract all items from all categories
+        if (menuData.data?.menu && Array.isArray(menuData.data.menu)) {
             const allItems: MenuItem[] = [];
             
             // Flatten items from all categories
@@ -128,16 +97,8 @@ export default function POSPage() {
                 for (const item of category.items) {
                   // Fetch full item details with options
                   try {
-                    const itemDetailResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}`, {
-                      headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                      },
-                    });
-                    
-                    if (itemDetailResponse.ok) {
-                      const itemDetail = await itemDetailResponse.json();
-                      allItems.push({
+                    const itemDetail = await api.get(`/api/menu/${item.id}`);
+                    allItems.push({
                         id: itemDetail.id,
                         title: itemDetail.title,
                         base_price: itemDetail.base_price,
@@ -145,20 +106,17 @@ export default function POSPage() {
                         description: itemDetail.description,
                         image_url: itemDetail.image_url,
                         option_groups: itemDetail.option_groups || [],
-                      });
-                    }
+                    });
                   } catch (err) {
                     console.error(`Failed to fetch details for item ${item.id}:`, err);
                   }
                 }
               }
             }
-            
-            setMenuItems(allItems);
-          } else {
-            console.error('Unexpected menu data structure:', menuData);
-            setMenuItems([]);
-          }
+          setMenuItems(allItems);
+        } else {
+          console.error('Unexpected menu data structure:', menuData);
+          setMenuItems([]);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -337,61 +295,34 @@ export default function POSPage() {
       if (token.startsWith('dev-merchant-')) {
         merchantId = token.replace('dev-merchant-', '');
       } else {
-        const merchantResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!merchantResponse.ok) {
-          alert('Failed to get merchant information');
-          setIsSubmitting(false);
-          return;
-        }
-
-        const merchantData = await merchantResponse.json();
+        const merchantData = await api.get('/api/merchants/me');
         merchantId = merchantData.id;
       }
       
       // Use POS-specific endpoint with lenient validation
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/orders/merchant/${merchantId}/pos`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+      const result = await api.post(`/api/orders/merchant/${merchantId}/pos`, {
+        guest_info: {
+          // Database constraint requires guest_email for anonymous orders
+          // Use placeholder for walk-in customers who don't provide email
+          email: customerEmail?.trim() || `walkin-${Date.now()}@pos.local`,
+          first_name: customerName?.trim() || 'Walk-in',
+          last_name: 'Customer',
+          phone: customerPhone?.trim() || null,
         },
-        body: JSON.stringify({
-          guest_info: {
-            // Database constraint requires guest_email for anonymous orders
-            // Use placeholder for walk-in customers who don't provide email
-            email: customerEmail?.trim() || `walkin-${Date.now()}@pos.local`,
-            first_name: customerName?.trim() || 'Walk-in',
-            last_name: 'Customer',
-            phone: customerPhone?.trim() || null,
-          },
-          items: cart.map(item => ({
-            menu_item_id: item.menu_item_id,
-            quantity: item.quantity,
-            customizations: item.customizations,
-          })),
-          notes: cart
-            .filter(item => item.notes)
-            .map(item => `${item.menu_item_name}: ${item.notes}`)
-            .join('; ') || undefined,
-        }),
+        items: cart.map(item => ({
+          menu_item_id: item.menu_item_id,
+          quantity: item.quantity,
+          customizations: item.customizations,
+        })),
+        notes: cart
+          .filter(item => item.notes)
+          .map(item => `${item.menu_item_name}: ${item.notes}`)
+          .join('; ') || undefined,
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        const data = result.data || result;
-        setOrderNumber(data.order_number || data.id);
-        // Don't clear cart immediately - show success message first
-      } else {
-        const errorData = await response.json();
-        console.error('Order creation error:', errorData);
-        alert(`Failed to create order: ${errorData.error || errorData.details?.[0]?.msg || 'Please try again'}`);
-      }
+      const data = result.data || result;
+      setOrderNumber(data.order_number || data.id);
+      // Don't clear cart immediately - show success message first
     } catch (error) {
       console.error('Error submitting order:', error);
       alert('Error submitting order. Please try again.');

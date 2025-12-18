@@ -3,6 +3,7 @@ import classNames from 'classnames';
 import { OrderBoard } from '@/components/molecules/OrderBoard';
 import { Typography, Button } from '@/components/atoms';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import api from '@/utils/api';
 import type { MerchantOrderDashboardProps } from './MerchantOrderDashboard.types';
 import styles from './MerchantOrderDashboard.module.scss';
 
@@ -106,38 +107,14 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
   const handleOrderStatusChange = async (orderId: string, newStatus: string) => {
     try {
-      // Get auth token
-      const token = getToken ? await getToken() : localStorage.getItem('auth-token');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
+      console.log('Updating order status:', { orderId, newStatus });
 
-      console.log('Updating order status:', { orderId, newStatus, token: token.substring(0, 20) + '...' });
-
-      // Update order status via API (let API handle version automatically)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          status: newStatus
-          // Removed version - let API fetch current version automatically
-        }),
+      // Update order status via API with CSRF protection
+      await api.put(`/api/orders/${orderId}/status`, {
+        status: newStatus
       });
 
-      console.log('Response status:', response.status, response.statusText);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response body:', errorText);
-        
-        if (response.status === 409) {
-          throw new Error('Order was modified by another process. Please refresh and try again.');
-        }
-        throw new Error(`Failed to update order status: ${response.status} ${response.statusText} - ${errorText}`);
-      }
+      console.log('Order status updated successfully');
 
       // Call the parent handler
       onOrderStatusChange?.(orderId, newStatus);
@@ -145,8 +122,15 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 
     } catch (error) {
       console.error('Error updating order status:', error);
-      // Show user-friendly error message
-      alert(error instanceof Error ? error.message : 'Failed to update order status. Please try again.');
+      
+      // Handle specific error cases
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update order status';
+      
+      if (errorMessage.includes('409') || errorMessage.includes('conflict')) {
+        alert('Order was modified by another process. Please refresh and try again.');
+      } else {
+        alert('Failed to update order status. Please try again.');
+      }
     }
   };
 

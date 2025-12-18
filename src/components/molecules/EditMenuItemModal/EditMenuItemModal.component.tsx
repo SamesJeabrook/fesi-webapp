@@ -13,9 +13,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Grid } from '@/components/atoms';
 import { FormInput, FormSelect, FormTextArea } from '@/components/atoms';
+import { ImageUpload } from '@/components/atoms/ImageUpload';
 import { Modal } from '@/components/molecules';
 import OptionGroupSelector, { SubItemGroup } from '../OptionGroupSelector';
 import { EditMenuItemModalProps } from './EditMenuItemModal.types';
+import api from '@/utils/api';
 import styles from './EditMenuItemModal.module.scss';
 
 export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
@@ -25,7 +27,6 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
   onClose,
   onSave,
   merchantId,
-  authToken,
 }) => {
   const [formData, setFormData] = useState({
     name: item.name,
@@ -48,10 +49,10 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
 
   // Fetch available option groups when modal opens
   useEffect(() => {
-    if (isOpen && merchantId && authToken) {
+    if (isOpen && merchantId) {
       fetchOptionGroups();
     }
-  }, [isOpen, merchantId, authToken]);
+  }, [isOpen, merchantId]);
 
   // Initialize selected option groups from item
   useEffect(() => {
@@ -85,21 +86,7 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
     setOptionGroupsError('');
     
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/sub-groups?merchant_id=${merchantId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch option groups');
-      }
-
-      const data = await response.json();
+      const data = await api.get(`/api/sub-groups?merchant_id=${merchantId}`);
       setAvailableOptionGroups(data.data || []);
     } catch (error) {
       console.error('Error fetching option groups:', error);
@@ -120,36 +107,15 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
       // Add new groups
       for (const groupId of addedIds) {
         console.log(`Adding option group ${groupId} to item ${item.id}`);
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}/sub-groups`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${authToken}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ sub_group_id: groupId }),
-          }
-        );
-        const result = await response.json();
-        console.log('Add response:', response.status, result);
+        const result = await api.post(`/api/menu/${item.id}/sub-groups`, { sub_group_id: groupId });
+        console.log('Add response:', result);
       }
 
       // Remove groups
       for (const groupId of removedIds) {
         console.log(`Removing option group ${groupId} from item ${item.id}`);
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}/sub-groups/${groupId}`,
-          {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${authToken}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-        const result = await response.json();
-        console.log('Remove response:', response.status, result);
+        const result = await api.delete(`/api/menu/${item.id}/sub-groups/${groupId}`);
+        console.log('Remove response:', result);
       }
 
       // Update local state
@@ -166,22 +132,7 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Image size must be less than 10MB');
-      return;
-    }
-
+  const handleImageChange = (file: File) => {
     setImageFile(file);
     
     // Create preview
@@ -379,30 +330,15 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
             <label className={styles.editMenuItemModal__imageLabel}>
               Item Image (Optional)
             </label>
-            {imagePreview ? (
-              <div className={styles.editMenuItemModal__imagePreviewContainer}>
-                <img 
-                  src={imagePreview} 
-                  alt="Menu item preview" 
-                  className={styles.editMenuItemModal__imagePreview}
-                />
-                <Button 
-                  variant="secondary" 
-                  onClick={handleRemoveImage}
-                  isDisabled={isSaving || isUploadingImage}
-                >
-                  Remove Image
-                </Button>
-              </div>
-            ) : (
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                disabled={isSaving || isUploadingImage}
-                className={styles.editMenuItemModal__imageInput}
-              />
-            )}
+            <ImageUpload
+              value={imagePreview}
+              onChange={handleImageChange}
+              onRemove={handleRemoveImage}
+              disabled={isSaving || isUploadingImage}
+              buttonText="Choose Image"
+              buttonVariant="secondary"
+              maxSize={10 * 1024 * 1024}
+            />
             <p className={styles.editMenuItemModal__imageHelpText}>
               Max size: 10MB. Supported formats: JPG, PNG, WebP
             </p>

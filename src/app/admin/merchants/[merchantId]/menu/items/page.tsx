@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
+import api from '@/utils/api';
 import { AdminPageHeader, MenuItemManagementCard, EditMenuItemModal } from '@/components/molecules';
 import { CreateMenuItemForm } from '@/components/organisms';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -48,62 +49,30 @@ export default function AdminMenuItemsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  const [authToken, setAuthToken] = useState<string>('');
 
   const merchantId = params?.merchantId as string;
 
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
-      setAuthToken(token);
 
       // Fetch merchant, categories, and items in parallel
-      const [merchantResponse, menuResponse, categoriesResponse] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${merchantId}/admin`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories?merchant_id=${merchantId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
+      const [merchantData, menuData, categoriesData] = await Promise.all([
+        api.get(`/api/merchants/${merchantId}`),
+        api.get(`/api/menu/merchant/${merchantId}/admin`),
+        api.get(`/api/menu/categories?merchant_id=${merchantId}`)
       ]);
 
-      if (merchantResponse.ok) {
-        const merchantData = await merchantResponse.json();
-        setMerchant(merchantData.data);
+      setMerchant(merchantData.data);
+
+      if (categoriesData.success && categoriesData.data) {
+        setCategories(categoriesData.data);
       }
 
-      if (categoriesResponse.ok) {
-        const categoriesData = await categoriesResponse.json();
-        if (categoriesData.success && categoriesData.data) {
-          setCategories(categoriesData.data);
-        }
-      }
-
-      if (menuResponse.ok) {
-        const menuData = await menuResponse.json();
-        // Extract items from menu data
-        if (menuData.success && menuData.data && menuData.data.menu) {
-
-          // Extract all items from all categories
-          const allItems: MenuItem[] = [];
-          menuData.data.menu.forEach((category: any) => {
+      if (menuData.success && menuData.data && menuData.data.menu) {
+        // Extract all items from all categories
+        const allItems: MenuItem[] = [];
+        menuData.data.menu.forEach((category: any) => {
             if (category.items && Array.isArray(category.items)) {
               category.items.forEach((item: any) => {
                 allItems.push({
@@ -122,8 +91,7 @@ export default function AdminMenuItemsPage() {
               });
             }
           });
-          setItems(allItems);
-        }
+        setItems(allItems);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -141,12 +109,6 @@ export default function AdminMenuItemsPage() {
   }) => {
     setIsSubmitting(true);
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
-
       const requestData = {
         title: itemData.name.trim(),
         description: itemData.description?.trim() || '',
@@ -159,25 +121,10 @@ export default function AdminMenuItemsPage() {
 
       console.log('Creating menu item with data:', requestData);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Menu item created successfully:', result);
-        setIsCreating(false);
-        await fetchData();
-      } else {
-        const errorData = await response.json();
-        console.error('API Error Response:', errorData);
-        throw new Error(errorData.error || 'Failed to create item');
-      }
+      const result = await api.post('/api/menu', requestData);
+      console.log('Menu item created successfully:', result);
+      setIsCreating(false);
+      await fetchData();
     } catch (error) {
       console.error('Error creating item:', error);
       throw error; // Re-throw so form can handle it
@@ -188,23 +135,8 @@ export default function AdminMenuItemsPage() {
 
   const toggleItemAvailability = async (itemId: string, isActive: boolean) => {
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${itemId}/toggle-active`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        fetchData();
-      }
+      await api.post(`/api/menu/${itemId}/toggle-active`);
+      fetchData();
     } catch (error) {
       console.error('Error updating item:', error);
     }
@@ -214,42 +146,22 @@ export default function AdminMenuItemsPage() {
     console.log('handleEditItem called with item:', item);
     // Fetch the full item with option groups
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      const data = await api.get(`/api/menu/${item.id}`);
+      console.log('API Response:', data);
+      console.log('data.data:', data.data);
+      console.log('data.option_groups:', data.option_groups);
       
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      // The API might return data directly or wrapped in a data property
+      const itemData = data.data || data;
+      console.log('itemData.option_groups:', itemData.option_groups);
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log('API Response:', data);
-        console.log('data.data:', data.data);
-        console.log('data.option_groups:', data.option_groups);
-        
-        // The API might return data directly or wrapped in a data property
-        const itemData = data.data || data;
-        console.log('itemData.option_groups:', itemData.option_groups);
-        
-        const updatedItem = {
-          ...item,
-          option_groups: itemData.option_groups || []
-        };
-        console.log('Setting editingItem to:', updatedItem);
-        
-        setEditingItem(updatedItem);
-      } else {
-        setEditingItem(item);
-      }
+      const updatedItem = {
+        ...item,
+        option_groups: itemData.option_groups || []
+      };
+      console.log('Setting editingItem to:', updatedItem);
+      
+      setEditingItem(updatedItem);
     } catch (error) {
       console.error('Error fetching item details:', error);
       setEditingItem(item);
@@ -260,33 +172,12 @@ export default function AdminMenuItemsPage() {
     if (!editingItem) return;
 
     try {
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
-
       console.log('Updating item with data:', updatedData);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${editingItem.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Menu item updated successfully:', result);
-        fetchData(); // Refresh the list
-        setEditingItem(null);
-      } else {
-        const errorData = await response.json();
-        console.error('API Error Response:', errorData);
-        throw new Error(errorData.error || 'Failed to update item');
-      }
+      const result = await api.put(`/api/menu/${editingItem.id}`, updatedData);
+      console.log('Menu item updated successfully:', result);
+      fetchData(); // Refresh the list
+      setEditingItem(null);
     } catch (error) {
       console.error('Error updating item:', error);
       throw error; // Re-throw so modal can handle it
@@ -381,7 +272,6 @@ export default function AdminMenuItemsPage() {
                     onCancel={() => setIsCreating(false)}
                     isSubmitting={isSubmitting}
                     merchantId={merchantId}
-                    authToken={authToken}
                   />
                 </Grid.Item>
               </Grid.Container>
@@ -432,7 +322,7 @@ export default function AdminMenuItemsPage() {
         )}
 
         {/* Edit Item Modal */}
-        {editingItem && authToken && (
+        {editingItem && (
           <EditMenuItemModal
             item={{
               id: editingItem.id,
@@ -453,7 +343,6 @@ export default function AdminMenuItemsPage() {
             onClose={() => setEditingItem(null)}
             onSave={handleUpdateItem}
             merchantId={merchantId}
-            authToken={authToken}
           />
         )}
       </div>

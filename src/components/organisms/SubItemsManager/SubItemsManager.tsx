@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, GridContainer, GridItem } from '@/components/atoms';
 import { AdminPageHeader, ConfirmationModal, AddSubGroupModal } from '@/components/molecules';
 import { SubItemsAPIInterface, SubItemGroup, CreateSubGroupData } from '@/services/subItemsAPI';
@@ -27,35 +26,17 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
   adminContext,
   onError
 }) => {
-  const { getAccessTokenSilently } = useAuth0();
   const [subGroups, setSubGroups] = useState<SubItemGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddGroupModal, setShowAddGroupModal] = useState(false);
   const [deletingGroup, setDeletingGroup] = useState<string | null>(null);
 
-  // Update auth headers function
-  const updateAuthHeaders = async () => {
-    try {
-      const { getAuthToken } = await import('@/utils/devAuth');
-      const token = await getAuthToken(getAccessTokenSilently);
-      localStorage.setItem('auth_token', token);
-    } catch (error) {
-      console.error('Failed to get access token:', error);
-      // Don't show error for dev tokens
-      if (error instanceof Error && !error.message.includes('Login required')) {
-        if (onError) {
-          onError('Authentication failed');
-        }
-      }
-    }
-  };
-
   // Load sub-groups
   const loadSubGroups = async () => {
     try {
       setLoading(true);
-      await updateAuthHeaders();
       const groups = await api.getGroups();
+      console.log('Loaded sub-groups:', groups);
       setSubGroups(groups);
     } catch (error) {
       console.error('Failed to load sub-groups:', error);
@@ -71,7 +52,6 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
   // Create group
   const handleCreateGroup = async (data: CreateSubGroupData) => {
     try {
-      await updateAuthHeaders();
       await api.createGroup(data);
       await loadSubGroups(); // Reload data
       setShowAddGroupModal(false);
@@ -87,7 +67,6 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
   // Update group
   const handleUpdateGroup = async (groupId: string, data: any) => {
     try {
-      await updateAuthHeaders();
       await api.updateGroup(groupId, data);
       await loadSubGroups(); // Reload data
     } catch (error) {
@@ -102,7 +81,6 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
   // Delete group
   const handleDeleteGroup = async (groupId: string) => {
     try {
-      await updateAuthHeaders();
       await api.deleteGroup(groupId);
       await loadSubGroups(); // Reload data
       setDeletingGroup(null);
@@ -118,7 +96,6 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
   // Create item
   const handleCreateItem = async (groupId: string, data: any) => {
     try {
-      await updateAuthHeaders();
       await api.createItem(groupId, data);
       await loadSubGroups(); // Reload data
     } catch (error) {
@@ -133,7 +110,6 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
   // Update item
   const handleUpdateItem = async (itemId: string, data: any) => {
     try {
-      await updateAuthHeaders();
       await api.updateItem(itemId, data);
       await loadSubGroups(); // Reload data
     } catch (error) {
@@ -148,7 +124,6 @@ export const SubItemsManager: React.FC<SubItemsManagerProps> = ({
   // Delete item
   const handleDeleteItem = async (itemId: string) => {
     try {
-      await updateAuthHeaders();
       await api.deleteItem(itemId);
       await loadSubGroups(); // Reload data
     } catch (error) {

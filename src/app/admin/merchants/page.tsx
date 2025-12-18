@@ -5,6 +5,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { Typography, Button, Grid } from '@/components/atoms';
 import { AdminPageHeader } from '@/components/molecules';
+import api from '@/utils/api';
 import Link from 'next/link';
 import styles from './adminMerchants.module.scss';
 
@@ -29,33 +30,13 @@ export default function AdminMerchantsPage() {
   const fetchMerchants = async () => {
     try {
       setIsLoading(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
+      console.log('🔑 Fetching merchants...');
+      console.log('🌐 API URL: /api/merchants');
 
-      console.log('🔑 Fetching merchants with token:', token ? 'Token received' : 'No token');
-      console.log('🌐 API URL:', `${process.env.NEXT_PUBLIC_API_URL}/api/merchants`);
+      const data = await api.get('/api/merchants');
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response ok:', response.ok);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('📊 Merchants data:', data);
-        setMerchants(data.data || []);
-      } else {
-        const errorText = await response.text();
-        console.error('❌ API Error:', response.status, errorText);
-      }
+      console.log('📊 Merchants data:', data);
+      setMerchants(data.data || []);
     } catch (error) {
       console.error('Error fetching merchants:', error);
     } finally {

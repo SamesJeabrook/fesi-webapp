@@ -1,8 +1,9 @@
 'use client';
 
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
-import { ReactNode, createContext, useContext } from 'react';
+import { ReactNode, createContext, useContext, useEffect } from 'react';
 import { getDevToken } from '@/utils/devAuth';
+import { setGlobalAuth0TokenGetter } from '@/utils/api';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -36,6 +37,11 @@ function DevAuthWrapper({ children }: { children: ReactNode }) {
       },
     });
   };
+
+  // Set the global token getter for the api utility
+  useEffect(() => {
+    setGlobalAuth0TokenGetter(getToken);
+  }, [getAccessTokenSilently]);
 
   return (
     <DevAuthContext.Provider value={{ getToken }}>

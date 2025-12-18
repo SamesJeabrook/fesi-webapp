@@ -7,6 +7,7 @@ import { Typography, Button } from '@/components/atoms';
 import { MerchantQrModal } from '@/components/molecules/MerchantQrModal/MerchantQrModal';
 import { Card } from '@/components/atoms/Card';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import api from '@/utils/api';
 import Link from 'next/link';
 import styles from './merchantDashboard.module.scss';
 
@@ -84,25 +85,9 @@ export default function AdminMerchantDashboard() {
   const fetchMerchant = async () => {
     try {
       setIsLoading(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMerchant(data.data);
-      } else {
-        console.error('Failed to fetch merchant details');
-      }
+      const data = await api.get(`/api/merchants/${merchantId}`);
+      setMerchant(data.data);
     } catch (error) {
       console.error('Error fetching merchant:', error);
     } finally {

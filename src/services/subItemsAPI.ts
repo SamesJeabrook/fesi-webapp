@@ -1,6 +1,8 @@
 // Sub-Items API Service
 // Abstract API calls for sub-items management
 
+import api from '@/utils/api';
+
 export interface SubItem {
   id: string;
   name: string;
@@ -65,36 +67,12 @@ export interface SubItemsAPIInterface {
   deleteItem(itemId: string): Promise<void>;
 }
 
-// Import dev auth utility
-import { getDevToken } from '@/utils/devAuth';
-
-// Utility function to get auth headers
-const getAuthHeaders = async () => {
-  // Check for dev token first
-  const devToken = getDevToken();
-  if (devToken) {
-    return {
-      'Authorization': `Bearer ${devToken}`,
-      'Content-Type': 'application/json'
-    };
-  }
-  
-  // Otherwise use localStorage token
-  const token = localStorage.getItem('auth_token') || '';
-  return {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  };
-};
-
 // Admin API implementation - requires merchant ID
 export class AdminSubItemsAPI implements SubItemsAPIInterface {
   private merchantId: string;
-  private baseUrl: string;
 
-  constructor(merchantId: string, baseUrl: string = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sub-groups`) {
+  constructor(merchantId: string) {
     this.merchantId = merchantId;
-    this.baseUrl = baseUrl;
   }
 
   async getGroups(filters?: { selection_type?: string; is_required?: boolean }): Promise<SubItemGroup[]> {
@@ -104,125 +82,49 @@ export class AdminSubItemsAPI implements SubItemsAPIInterface {
       ...(filters?.is_required !== undefined && { is_required: filters.is_required.toString() })
     });
     
-    const response = await fetch(`${this.baseUrl}?${params}`, {
-      headers: await getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch groups: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
+    const result = await api.get(`/api/sub-groups?${params}`);
     return result.data || [];
   }
 
   async getGroup(groupId: string): Promise<SubItemGroup> {
-    const response = await fetch(`${this.baseUrl}/${groupId}`, {
-      headers: await getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch group: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
+    const result = await api.get(`/api/sub-groups/${groupId}`);
     return result.data;
   }
 
   async createGroup(data: CreateSubGroupData): Promise<SubItemGroup> {
-    const response = await fetch(this.baseUrl, {
-      method: 'POST',
-      headers: await getAuthHeaders(),
-      body: JSON.stringify({
-        ...data,
-        merchant_id: this.merchantId
-      })
+    const result = await api.post(`/api/sub-groups`, {
+      ...data,
+      merchant_id: this.merchantId
     });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to create group: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
     return result.data;
   }
 
   async updateGroup(groupId: string, data: UpdateSubGroupData): Promise<SubItemGroup> {
-    const response = await fetch(`${this.baseUrl}/${groupId}`, {
-      method: 'PUT',
-      headers: await getAuthHeaders(),
-      body: JSON.stringify(data)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to update group: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
+    const result = await api.put(`/api/sub-groups/${groupId}`, data);
     return result.data;
   }
 
   async deleteGroup(groupId: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/${groupId}`, {
-      method: 'DELETE',
-      headers: await getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to delete group: ${response.statusText}`);
-    }
+    await api.delete(`/api/sub-groups/${groupId}`);
   }
 
   async createItem(groupId: string, data: CreateSubItemData): Promise<SubItem> {
-    const response = await fetch(`${this.baseUrl}/${groupId}/items`, {
-      method: 'POST',
-      headers: await getAuthHeaders(),
-      body: JSON.stringify(data)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to create item: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
+    const result = await api.post(`/api/sub-groups/${groupId}/items`, data);
     return result.data;
   }
 
   async updateItem(itemId: string, data: UpdateSubItemData): Promise<SubItem> {
-    const response = await fetch(`${this.baseUrl}/items/${itemId}`, {
-      method: 'PUT',
-      headers: await getAuthHeaders(),
-      body: JSON.stringify(data)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to update item: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
+    const result = await api.put(`/api/sub-groups/items/${itemId}`, data);
     return result.data;
   }
 
   async deleteItem(itemId: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/items/${itemId}`, {
-      method: 'DELETE',
-      headers: await getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to delete item: ${response.statusText}`);
-    }
+    await api.delete(`/api/sub-groups/items/${itemId}`);
   }
 }
 
 // Merchant API implementation - automatically scoped to merchant
 export class MerchantSubItemsAPI implements SubItemsAPIInterface {
-  private baseUrl: string;
-
-  constructor(baseUrl: string = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/sub-groups/merchant`) {
-    this.baseUrl = baseUrl;
-  }
-
   async getGroups(filters?: { selection_type?: string; is_required?: boolean }): Promise<SubItemGroup[]> {
     const queryParams: Record<string, string> = {};
     if (filters?.selection_type) queryParams.selection_type = filters.selection_type;
@@ -231,15 +133,7 @@ export class MerchantSubItemsAPI implements SubItemsAPIInterface {
     const params = new URLSearchParams(queryParams);
     const queryString = params.toString() ? `?${params}` : '';
     
-    const response = await fetch(`${this.baseUrl}/groups${queryString}`, {
-      headers: await getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch groups: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
+    const result = await api.get(`/api/sub-groups/merchant/groups${queryString}`);
     return result.data || [];
   }
 
@@ -256,85 +150,31 @@ export class MerchantSubItemsAPI implements SubItemsAPIInterface {
   }
 
   async createGroup(data: CreateSubGroupData): Promise<SubItemGroup> {
-    const response = await fetch(`${this.baseUrl}/groups`, {
-      method: 'POST',
-      headers: await getAuthHeaders(),
-      body: JSON.stringify(data)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to create group: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
+    const result = await api.post(`/api/sub-groups/merchant/groups`, data);
     return result.data;
   }
 
   async updateGroup(groupId: string, data: UpdateSubGroupData): Promise<SubItemGroup> {
-    const response = await fetch(`${this.baseUrl}/groups/${groupId}`, {
-      method: 'PUT',
-      headers: await getAuthHeaders(),
-      body: JSON.stringify(data)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to update group: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
+    const result = await api.put(`/api/sub-groups/merchant/groups/${groupId}`, data);
     return result.data;
   }
 
   async deleteGroup(groupId: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/groups/${groupId}`, {
-      method: 'DELETE',
-      headers: await getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to delete group: ${response.statusText}`);
-    }
+    await api.delete(`/api/sub-groups/merchant/groups/${groupId}`);
   }
 
   async createItem(groupId: string, data: CreateSubItemData): Promise<SubItem> {
-    const response = await fetch(`${this.baseUrl}/groups/${groupId}/items`, {
-      method: 'POST',
-      headers: await getAuthHeaders(),
-      body: JSON.stringify(data)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to create item: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
+    const result = await api.post(`/api/sub-groups/merchant/groups/${groupId}/items`, data);
     return result.data;
   }
 
   async updateItem(itemId: string, data: UpdateSubItemData): Promise<SubItem> {
-    const response = await fetch(`${this.baseUrl}/items/${itemId}`, {
-      method: 'PUT',
-      headers: await getAuthHeaders(),
-      body: JSON.stringify(data)
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to update item: ${response.statusText}`);
-    }
-    
-    const result = await response.json();
+    const result = await api.put(`/api/sub-groups/merchant/items/${itemId}`, data);
     return result.data;
   }
 
   async deleteItem(itemId: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/items/${itemId}`, {
-      method: 'DELETE',
-      headers: await getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to delete item: ${response.statusText}`);
-    }
+    await api.delete(`/api/sub-groups/merchant/items/${itemId}`);
   }
 }
 

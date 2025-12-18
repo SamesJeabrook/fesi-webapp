@@ -235,7 +235,7 @@ export const SubGroupCard: React.FC<SubGroupCardProps> = ({
             </Button>
           </div>
         }
-        defaultExpanded={false}
+        defaultExpanded={true}
       >
         {editingGroup ? (
           <GroupEditForm

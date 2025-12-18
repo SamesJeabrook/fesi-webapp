@@ -7,6 +7,7 @@ import { Typography, Button, Grid } from '@/components/atoms';
 import { AdminPageHeader, CategoryCard, EditCategoryModal } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getAuthToken } from '@/utils/devAuth';
+import api from '@/utils/api';
 import Link from 'next/link';
 import styles from './adminCategories.module.scss';
 
@@ -39,37 +40,19 @@ export default function AdminMenuCategoriesPage() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const token = await getAuthToken(getAccessTokenSilently);
 
       // Fetch merchant details and categories in parallel
-      const [merchantResponse, categoriesResponse] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories?merchant_id=${merchantId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
+      const [merchantData, categoriesData] = await Promise.all([
+        api.get(`/api/merchants/${merchantId}`),
+        api.get(`/api/menu/categories?merchant_id=${merchantId}`)
       ]);
 
-      if (merchantResponse.ok) {
-        const merchantData = await merchantResponse.json();
-        setMerchant(merchantData.data);
-      }
+      setMerchant(merchantData.data);
 
-      if (categoriesResponse.ok) {
-        const categoriesData = await categoriesResponse.json();
-        if (categoriesData.success && categoriesData.data) {
-          setCategories(categoriesData.data);
-        }
+      if (categoriesData.success && categoriesData.data) {
+        setCategories(categoriesData.data);
       } else {
-        const errorData = await categoriesResponse.json();
-        console.error('❌ Categories fetch error:', errorData);
+        console.error('❌ Categories fetch error:', categoriesData);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -87,29 +70,15 @@ export default function AdminMenuCategoriesPage() {
     if (!newCategory.name.trim()) return;
 
     try {
-      const token = await getAuthToken(getAccessTokenSilently);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          merchant_id: merchantId,
-          name: newCategory.name,
-          display_order: categories.length + 1,
-        }),
+      await api.post('/api/menu/categories', {
+        merchant_id: merchantId,
+        name: newCategory.name,
+        display_order: categories.length + 1,
       });
 
-      if (response.ok) {
-        setNewCategory({ name: '', description: '' });
-        setIsCreating(false);
-        fetchData();
-      } else {
-        const errorData = await response.json();
-        console.error('Error creating category:', errorData);
-      }
+      setNewCategory({ name: '', description: '' });
+      setIsCreating(false);
+      fetchData();
     } catch (error) {
       console.error('Error creating category:', error);
     }
@@ -124,24 +93,8 @@ export default function AdminMenuCategoriesPage() {
 
   const handleUpdateCategory = async (categoryId: string, updatedData: Partial<MenuCategory>) => {
     try {
-      const token = await getAuthToken(getAccessTokenSilently);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories/${categoryId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (response.ok) {
-        fetchData(); // Refresh the categories list
-      } else {
-        const errorData = await response.json();
-        console.error('Error updating category:', errorData);
-        throw new Error(errorData.message || 'Failed to update category');
-      }
+      await api.put(`/api/menu/categories/${categoryId}`, updatedData);
+      fetchData(); // Refresh the categories list
     } catch (error) {
       console.error('Error updating category:', error);
       throw error;

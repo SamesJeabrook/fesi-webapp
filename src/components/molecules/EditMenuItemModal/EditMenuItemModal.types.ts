@@ -43,6 +43,6 @@ export interface EditMenuItemModalProps {
   /** Merchant ID for the item */
   merchantId: string;
   
-  /** Authentication token for API requests */
-  authToken: string;
+  /** Authentication token for API requests (deprecated - api utility handles auth) */
+  authToken?: string;
 }

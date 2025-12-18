@@ -29,8 +29,8 @@
     "qr-code-styling": "^1.9.2",
     "qr-logo": "^1.0.0",
     "qrcode": "^1.5.4",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.1",

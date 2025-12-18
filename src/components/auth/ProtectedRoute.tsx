@@ -5,6 +5,7 @@ import { ReactNode, useEffect, useRef, useState } from 'react';
 import { Typography } from '@/components/atoms';
 import LoginButton from './LoginButton';
 import { getDevToken } from '@/utils/devAuth';
+import api from '@/utils/api';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -73,22 +74,11 @@ export default function ProtectedRoute({
           console.log('💾 Token stored in localStorage');
           
           // Sync user to database
-          console.log('🔗 Calling API:', `${process.env.NEXT_PUBLIC_API_URL}/api/users/me`);
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users/me`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-          
-          if (!response.ok) {
-            console.error('Failed to sync user to database');
-          } else {
-            const userData = await response.json();
-            console.log('User synced:', userData.user);
-            // Mark this user as synced
-            syncedRef.current = user.sub;
-          }
+          console.log('🔗 Calling API: /api/users/me');
+          const userData = await api.get('/api/users/me');
+          console.log('User synced:', userData.user);
+          // Mark this user as synced
+          syncedRef.current = user.sub;
         } catch (error) {
           console.error('❌ Error storing token or syncing user:', error);
           

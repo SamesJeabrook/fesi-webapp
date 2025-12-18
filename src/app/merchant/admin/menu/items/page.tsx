@@ -8,18 +8,20 @@ import { CreateMenuItemForm } from '@/components/organisms';
 import { SubItemGroup } from '@/components/molecules/OptionGroupSelector';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getAuthToken } from '@/utils/devAuth';
+import api from '@/utils/api';
 import Link from 'next/link';
 import styles from './items.module.scss';
 
 interface MenuItem {
   id: string;
-  category_id: string;
-  name: string;
+  title: string; // API returns 'title', not 'name'
   description?: string;
-  price: number;
-  is_available: boolean;
-  display_order: number;
+  base_price: number;
+  category_id: string;
   category_name?: string;
+  is_active: boolean; // API returns 'is_active', not 'is_available'
+  display_order: number;
+  image_url?: string;
   created_at: string;
   updated_at: string;
   option_groups?: SubItemGroup[];
@@ -41,7 +43,6 @@ export default function MenuItemsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [merchantId, setMerchantId] = useState<string>('');
-  const [authToken, setAuthToken] = useState<string>('');
 
   // Prevent hydration issues
   useEffect(() => {
@@ -51,69 +52,54 @@ export default function MenuItemsPage() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const token = await getAuthToken(getAccessTokenSilently);
-      setAuthToken(token);
 
-      // Extract merchant ID from dev token if present
+      // Extract merchant ID from dev token or get from /me endpoint
       let currentMerchantId: string;
-      if (token.startsWith('dev-merchant-')) {
-        currentMerchantId = token.replace('dev-merchant-', '');
+      const devToken = localStorage.getItem('dev_token');
+      
+      if (devToken && devToken.startsWith('dev-merchant-')) {
+        // Extract merchant ID from dev token
+        currentMerchantId = devToken.replace('dev-merchant-', '');
+        console.log('[DEV MODE] Using merchant ID from dev token:', currentMerchantId);
       } else {
         // For real Auth0 tokens, get merchant data from /me endpoint
-        const merchantResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!merchantResponse.ok) {
-          console.error('Failed to fetch merchant data');
-          return;
-        }
-
-        const merchantData = await merchantResponse.json();
+        const merchantData = await api.get('/api/merchants/me');
         currentMerchantId = merchantData.id;
       }
-
+      
       setMerchantId(currentMerchantId);
 
       // Fetch categories and menu items in parallel
-      const [categoriesResponse, menuResponse] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories?merchant_id=${currentMerchantId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }),
+      const [categoriesData, menuData] = await Promise.all([
+        api.get(`/api/menu/categories?merchant_id=${currentMerchantId}`),
         // Use admin endpoint to get ALL items including inactive ones
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant/${currentMerchantId}/admin`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
+        api.get(`/api/menu/merchant/${currentMerchantId}/admin`)
       ]);
 
-      if (categoriesResponse.ok) {
-        const categoriesData = await categoriesResponse.json();
-        setCategories(categoriesData.data || []);
-      }
-
-      if (menuResponse.ok) {
-        const menuData = await menuResponse.json();
-        // The menu endpoint returns an array of categories with items
-        const allItems = menuData.data.menu?.flatMap((cat: any) => 
-          cat.items?.map((item: any) => ({
-            ...item,
-            name: item.title, 
-            price: item.base_price,
-            is_available: item.is_active,
-            category_name: cat.name
-          })) || []
-        ) || [];
-        setItems(allItems);
-      }
+      setCategories(categoriesData.data || []);
+      
+      // Extract all items from all categories
+      const allItems: MenuItem[] = [];
+      menuData.data.menu?.forEach((category: any) => {
+        if (category.items && Array.isArray(category.items)) {
+          category.items.forEach((item: any) => {
+            allItems.push({
+              id: item.id,
+              title: item.title,
+              description: item.description,
+              base_price: item.base_price,
+              category_id: item.category_id,
+              category_name: category.name,
+              is_active: item.is_active,
+              display_order: item.display_order || 0,
+              image_url: item.image_url,
+              created_at: item.created_at || new Date().toISOString(),
+              updated_at: item.updated_at || new Date().toISOString()
+            });
+          });
+        }
+      });
+      setItems(allItems);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -131,53 +117,31 @@ export default function MenuItemsPage() {
   }) => {
     setIsSubmitting(true);
     try {
-      const token = await getAuthToken(getAccessTokenSilently);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: itemData.name.trim(),
-          description: itemData.description?.trim() || '',
-          base_price: Math.round(parseFloat(itemData.price) * 100), // Convert pounds to pence
-          category_id: itemData.category_id || null,
-          display_order: items.length + 1,
-          image_url: itemData.image_url || null,
-        }),
+      const responseData = await api.post('/api/menu', {
+        title: itemData.name.trim(),
+        description: itemData.description?.trim() || '',
+        base_price: Math.round(parseFloat(itemData.price) * 100), // Convert pounds to pence
+        category_id: itemData.category_id || null,
+        display_order: items.length + 1,
+        image_url: itemData.image_url || null,
       });
 
-      if (response.ok) {
-        const responseData = await response.json();
-        const newItemId = responseData.data?.id;
-        
-        // If option groups were selected, assign them to the new item
-        if (newItemId && itemData.optionGroupIds && itemData.optionGroupIds.length > 0) {
-          for (const groupId of itemData.optionGroupIds) {
-            try {
-              await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${newItemId}/sub-groups`, {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ sub_group_id: groupId }),
-              });
-            } catch (error) {
-              console.error(`Failed to assign option group ${groupId}:`, error);
-              // Continue with other groups even if one fails
-            }
+      const newItemId = responseData.data?.id;
+      
+      // If option groups were selected, assign them to the new item
+      if (newItemId && itemData.optionGroupIds && itemData.optionGroupIds.length > 0) {
+        for (const groupId of itemData.optionGroupIds) {
+          try {
+            await api.post(`/api/menu/${newItemId}/sub-groups`, { sub_group_id: groupId });
+          } catch (error) {
+            console.error(`Failed to assign option group ${groupId}:`, error);
+            // Continue with other groups even if one fails
           }
         }
-        
-        setIsCreating(false);
-        await fetchData();
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create item');
       }
+      
+      setIsCreating(false);
+      await fetchData();
     } catch (error) {
       console.error('Error creating item:', error);
       throw error; // Re-throw so form can handle it
@@ -186,22 +150,10 @@ export default function MenuItemsPage() {
     }
   };
 
-  const toggleItemAvailability = async (itemId: string, isAvailable: boolean) => {
+  const toggleItemAvailability = async (itemId: string, isActive: boolean) => {
     try {
-      const token = await getAuthToken(getAccessTokenSilently);
-
-      // Use the toggle endpoint that works for merchants
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${itemId}/toggle-active`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        fetchData();
-      }
+      await api.post(`/api/menu/${itemId}/toggle-active`);
+      fetchData();
     } catch (error) {
       console.error('Error updating item:', error);
     }
@@ -211,70 +163,46 @@ export default function MenuItemsPage() {
     console.log('handleEditItem called with item:', item);
     // Fetch the full item with option groups
     try {
-      const token = await getAuthToken(getAccessTokenSilently);
+      const data = await api.get(`/api/menu/${item.id}`);
+      console.log('API Response:', data);
+      console.log('data.data:', data.data);
+      console.log('data.option_groups:', data.option_groups);
       
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/menu/${item.id}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      // The API might return data directly or wrapped in a data property
+      const itemData = data.data || data;
+      console.log('itemData.option_groups:', itemData.option_groups);
       
-      if (response.ok) {
-        const data = await response.json();
-        console.log('API Response:', data);
-        console.log('data.option_groups:', data.option_groups);
-        
-        const updatedItem = {
-          ...item,
-          option_groups: data.option_groups || []
-        };
-        console.log('Setting editingItem to:', updatedItem);
-        
-        setEditingItem(updatedItem);
-      } else {
-        setEditingItem(item);
-      }
+      const updatedItem = {
+        ...item,
+        option_groups: itemData.option_groups || []
+      };
+      console.log('Setting editingItem to:', updatedItem);
+      
+      setEditingItem(updatedItem);
     } catch (error) {
       console.error('Error fetching item details:', error);
       setEditingItem(item);
     }
   };
 
-  const handleUpdateItem = async (updatedData: any) => {
+  const handleUpdateItem = async (updatedData: Partial<MenuItem>) => {
     if (!editingItem) return;
 
     try {
-      const token = await getAuthToken(getAccessTokenSilently);
-
       console.log('Updating item with data:', updatedData);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/${editingItem.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Menu item updated successfully:', result);
-        fetchData(); // Refresh the list
-        setEditingItem(null);
-      } else {
-        const errorData = await response.json();
-        console.error('API Error Response:', errorData);
-        throw new Error(errorData.error || 'Failed to update item');
-      }
+      const result = await api.put(`/api/menu/${editingItem.id}`, updatedData);
+      console.log('Menu item updated successfully:', result);
+      fetchData(); // Refresh the list
+      setEditingItem(null);
     } catch (error) {
       console.error('Error updating item:', error);
       throw error; // Re-throw so modal can handle it
     }
+  };
+
+  const formatPrice = (priceInCents: number) => {
+    return (priceInCents / 100).toFixed(2);
   };
 
   const filteredItems = selectedCategory === 'all' 
@@ -284,10 +212,6 @@ export default function MenuItemsPage() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  const formatPrice = (price: number) => {
-    return `$${(price / 100).toFixed(2)}`;
-  };
 
   // Prevent hydration mismatch by only rendering after client mount
   if (!isMounted) {
@@ -333,14 +257,13 @@ export default function MenuItemsPage() {
           </select>
         </div>
 
-        {isCreating && merchantId && authToken && (
+        {isCreating && (
           <CreateMenuItemForm
             categories={categories}
             onSubmit={createItem}
             onCancel={() => setIsCreating(false)}
             isSubmitting={isSubmitting}
             merchantId={merchantId}
-            authToken={authToken}
           />
         )}
 
@@ -368,12 +291,13 @@ export default function MenuItemsPage() {
               <Grid.Item sm={16} md={8} xl={4} key={item.id}>
                 <MenuItemManagementCard
                   id={item.id}
-                  title={item.name}
+                  title={item.title}
                   description={item.description}
-                  basePrice={item.price}
+                  basePrice={item.base_price}
                   categoryName={categories.find(cat => cat.id === item.category_id)?.name || 'Unknown Category'}
-                  isActive={item.is_available}
+                  isActive={item.is_active}
                   displayOrder={item.display_order}
+                  imageUrl={item.image_url}
                   onToggleAvailability={toggleItemAvailability}
                   onEdit={() => handleEditItem(item)}
                 />
@@ -383,15 +307,27 @@ export default function MenuItemsPage() {
         </Grid.Container>
 
         {/* Edit Item Modal */}
-        {editingItem && merchantId && authToken && (
+        {editingItem && (
           <EditMenuItemModal
-            item={editingItem}
+            item={{
+              id: editingItem.id,
+              name: editingItem.title,
+              description: editingItem.description,
+              price: editingItem.base_price,
+              category_id: editingItem.category_id,
+              category_name: editingItem.category_name,
+              is_available: editingItem.is_active,
+              display_order: editingItem.display_order,
+              image_url: editingItem.image_url,
+              created_at: editingItem.created_at,
+              updated_at: editingItem.updated_at,
+              option_groups: editingItem.option_groups
+            }}
             categories={categories}
             isOpen={!!editingItem}
             onClose={() => setEditingItem(null)}
             onSave={handleUpdateItem}
             merchantId={merchantId}
-            authToken={authToken}
           />
         )}
       </div>

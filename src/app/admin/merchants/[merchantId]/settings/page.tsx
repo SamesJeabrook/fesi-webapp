@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { SystemSettingsTemplate } from '@/components/templates/SystemSettingsTemplate/SystemSettingsTemplate';
+import api from '@/utils/api';
 
 interface Category {
   id: string;
@@ -38,21 +39,8 @@ export default function AdminSystemSettingsPage() {
   useEffect(() => {
     const fetchCompany = async () => {
       try {
-        const token = await getAccessTokenSilently({
-          authorizationParams: {
-            audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-          },
-        });
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        if (response.ok) {
-          const companyData = await response.json();
-          setCompany(companyData.data);
-        }
+        const companyData = await api.get(`/api/merchants/${merchantId}`);
+        setCompany(companyData.data);
       } catch (error) {
         console.error('Failed to fetch company:', error);
       } finally {
@@ -68,11 +56,8 @@ export default function AdminSystemSettingsPage() {
     const fetchCategories = async () => {
       try {
         setLoadingTags(true);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/merchant-categories`);
-        if (response.ok) {
-          const data = await response.json();
-          setAvailableTags((data.data || []).map((cat: any) => ({ id: cat.id, name: cat.name, description: cat.description, icon_name: cat.icon_name })));
-        }
+        const data = await api.get('/api/menu/merchant-categories', { skipAuth: true });
+        setAvailableTags((data.data || []).map((cat: any) => ({ id: cat.id, name: cat.name, description: cat.description, icon_name: cat.icon_name })));
       } catch (error) {
         setAvailableTags([]);
       } finally {

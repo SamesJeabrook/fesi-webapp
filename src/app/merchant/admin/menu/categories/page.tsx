@@ -6,6 +6,7 @@ import { Typography, Button, Grid } from '@/components/atoms';
 import { CategoryCard, EditCategoryModal } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getAuthToken, getMerchantIdFromDevToken } from '@/utils/devAuth';
+import api from '@/utils/api';
 import Link from 'next/link';
 import styles from './categories.module.scss';
 
@@ -40,18 +41,8 @@ export default function MenuCategoriesPage() {
 
       // Otherwise, get from /me endpoint
       try {
-        const token = await getAuthToken(getAccessTokenSilently);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setMerchantId(data.id);
-        }
+        const data = await api.get('/api/merchants/me');
+        setMerchantId(data.id);
       } catch (error) {
         console.error('Error fetching merchant ID:', error);
       }
@@ -63,19 +54,9 @@ export default function MenuCategoriesPage() {
   const fetchCategories = async () => {
     try {
       setIsLoading(true);
-      const token = await getAuthToken(getAccessTokenSilently);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories?merchant_id=${merchantId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data.data || []);
-      }
+      const data = await api.get(`/api/menu/categories?merchant_id=${merchantId}`);
+      setCategories(data.data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
     } finally {
@@ -87,27 +68,16 @@ export default function MenuCategoriesPage() {
     if (!newCategory.name.trim() || !merchantId) return;
 
     try {
-      const token = await getAuthToken(getAccessTokenSilently);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: newCategory.name,
-          description: newCategory.description,
-          display_order: categories.length + 1,
-          merchant_id: merchantId,
-        }),
+      await api.post('/api/menu/categories', {
+        name: newCategory.name,
+        description: newCategory.description,
+        display_order: categories.length + 1,
+        merchant_id: merchantId,
       });
 
-      if (response.ok) {
-        setNewCategory({ name: '', description: '' });
-        setIsCreating(false);
-        fetchCategories();
-      }
+      setNewCategory({ name: '', description: '' });
+      setIsCreating(false);
+      fetchCategories();
     } catch (error) {
       console.error('Error creating category:', error);
     }
@@ -122,24 +92,8 @@ export default function MenuCategoriesPage() {
 
   const handleUpdateCategory = async (categoryId: string, updatedData: Partial<MenuCategory>) => {
     try {
-      const token = await getAuthToken(getAccessTokenSilently);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/menu/categories/${categoryId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (response.ok) {
-        fetchCategories(); // Refresh the categories list
-      } else {
-        const errorData = await response.json();
-        console.error('Error updating category:', errorData);
-        throw new Error(errorData.message || 'Failed to update category');
-      }
+      await api.put(`/api/menu/categories/${categoryId}`, updatedData);
+      fetchCategories(); // Refresh the categories list
     } catch (error) {
       console.error('Error updating category:', error);
       throw error;

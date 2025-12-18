@@ -7,6 +7,7 @@ import { Typography, Button, Grid } from '@/components/atoms';
 import { FormInput } from '@/components/atoms';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import Link from 'next/link';
+import api from '@/utils/api';
 import styles from './settings.module.scss';
 
 interface CustomerProfile {
@@ -51,31 +52,20 @@ export default function CustomerSettingsPage() {
   const fetchProfile = async () => {
     try {
       setIsLoading(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
+      const data = await api.get('/api/customers/me');
+      
+      setProfile(data.data);
+      setFormData({
+        first_name: data.data.first_name || '',
+        last_name: data.data.last_name || '',
+        phone: data.data.phone || '',
       });
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/me`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+      setPreferences({
+        marketing_opt_out: data.data.marketing_opt_out || false,
+        email_notifications: data.data.email_notifications !== false,
+        sms_notifications: data.data.sms_notifications || false,
+        push_notifications: data.data.push_notifications || false,
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProfile(data.data);
-        setFormData({
-          first_name: data.data.first_name || '',
-          last_name: data.data.last_name || '',
-          phone: data.data.phone || '',
-        });
-        setPreferences({
-          marketing_opt_out: data.data.marketing_opt_out || false,
-          email_notifications: data.data.email_notifications !== false,
-          sms_notifications: data.data.sms_notifications || false,
-          push_notifications: data.data.push_notifications || false,
-        });
-      }
     } catch (error) {
       console.error('Error fetching profile:', error);
     } finally {
@@ -86,28 +76,10 @@ export default function CustomerSettingsPage() {
   const handleUpdateProfile = async () => {
     try {
       setIsSaving(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/me`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProfile(data.data);
-        alert('Profile updated successfully!');
-      } else {
-        throw new Error('Failed to update profile');
-      }
+      const data = await api.put('/api/customers/me', formData);
+      
+      setProfile(data.data);
+      alert('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
       alert('Failed to update profile. Please try again.');
@@ -119,29 +91,9 @@ export default function CustomerSettingsPage() {
   const handleUpdatePreferences = async () => {
     try {
       setIsSaving(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/customers/me/preferences`,
-        {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(preferences),
-        }
-      );
-
-      if (response.ok) {
-        alert('Preferences updated successfully!');
-      } else {
-        throw new Error('Failed to update preferences');
-      }
+      await api.put('/api/customers/me/preferences', preferences);
+      
+      alert('Preferences updated successfully!');
     } catch (error) {
       console.error('Error updating preferences:', error);
       alert('Failed to update preferences. Please try again.');
@@ -157,27 +109,12 @@ export default function CustomerSettingsPage() {
 
     try {
       setIsDeleting(true);
-      const token = await getAccessTokenSilently({
-        authorizationParams: {
-          audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        },
-      });
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/me`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+      await api.delete('/api/customers/me', {
         body: JSON.stringify({ deletion_reason: deletionReason }),
       });
-
-      if (response.ok) {
-        alert('Your account has been deleted. You will be logged out.');
-        logout({ logoutParams: { returnTo: window.location.origin } });
-      } else {
-        throw new Error('Failed to delete account');
-      }
+      
+      alert('Your account has been deleted. You will be logged out.');
+      logout({ logoutParams: { returnTo: window.location.origin } });
     } catch (error) {
       console.error('Error deleting account:', error);
       alert('Failed to delete account. Please try again.');

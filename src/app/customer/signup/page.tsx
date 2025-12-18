@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
 import { FormInput } from '@/components/atoms';
+import api from '@/utils/api';
 import Link from 'next/link';
 import styles from './signup.module.scss';
 
@@ -32,30 +33,22 @@ export default function CustomerSignupPage() {
     const checkExistingProfile = async () => {
       if (isAuthenticated && user) {
         try {
-          const token = localStorage.getItem('auth-token');
-          if (!token) return;
-
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/me`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            // If profile exists and has name, redirect to dashboard
-            if (data.data && data.data.first_name) {
-              const returnTo = searchParams?.get('returnTo') || '/customer/dashboard';
-              router.push(returnTo);
-            } else {
-              // Profile exists but incomplete, show details form
-              setStep('details');
-              if (data.data) {
-                setFormData(prev => ({
-                  ...prev,
-                  first_name: data.data.first_name || '',
-                  last_name: data.data.last_name || '',
-                  phone: data.data.phone || '',
-                }));
-              }
+          const data = await api.get('/api/customers/me');
+          
+          // If profile exists and has name, redirect to dashboard
+          if (data.data && data.data.first_name) {
+            const returnTo = searchParams?.get('returnTo') || '/customer/dashboard';
+            router.push(returnTo);
+          } else {
+            // Profile exists but incomplete, show details form
+            setStep('details');
+            if (data.data) {
+              setFormData(prev => ({
+                ...prev,
+                first_name: data.data.first_name || '',
+                last_name: data.data.last_name || '',
+                phone: data.data.phone || '',
+              }));
             }
           }
         } catch (error) {
@@ -106,31 +99,15 @@ export default function CustomerSignupPage() {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem('auth-token');
-      if (!token) {
-        throw new Error('Not authenticated');
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/customers/me`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          first_name: formData.first_name.trim(),
-          last_name: formData.last_name.trim(),
-          phone: formData.phone.trim() || null,
-          marketing_opt_out: formData.marketing_opt_out,
-        }),
+      await api.put('/api/customers/me', {
+        first_name: formData.first_name.trim(),
+        last_name: formData.last_name.trim(),
+        phone: formData.phone.trim() || null,
+        marketing_opt_out: formData.marketing_opt_out,
       });
 
-      if (response.ok) {
-        const returnTo = searchParams?.get('returnTo') || '/customer/dashboard';
-        router.push(returnTo);
-      } else {
-        throw new Error('Failed to update profile');
-      }
+      const returnTo = searchParams?.get('returnTo') || '/customer/dashboard';
+      router.push(returnTo);
     } catch (error) {
       console.error('Error completing signup:', error);
       alert('Failed to complete signup. Please try again.');

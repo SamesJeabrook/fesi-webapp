@@ -9,6 +9,7 @@ import { BankDetailsManager } from "@/components/organisms/BankDetailsManager";
 import { Typography, Input, GridContainer, GridItem, Button } from "@/components/atoms";
 import { FormTextArea } from "@/components/atoms/FormTextArea";
 import { getAuthToken } from '@/utils/devAuth';
+import api from '@/utils/api';
 import styles from "./SystemSettingsTemplate.module.scss";
 
 interface Category {
@@ -275,15 +276,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
           version: company?.version,
         };
         // API endpoint (assume company.id is available)
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${company?.id}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
-        if (!response.ok) throw new Error('Failed to save changes');
+        await api.put(`/api/merchants/${company?.id}`, payload);
         setIsModalOpen(false);
       } catch (err: any) {
         setSaveError(err.message || 'Unknown error');

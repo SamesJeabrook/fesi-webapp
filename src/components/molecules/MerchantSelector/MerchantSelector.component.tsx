@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import { Typography, Input } from '@/components/atoms';
 import { Button } from '@/components/atoms/Button/Button.component';
 import { MerchantGrid } from '@/components/molecules/MerchantGrid';
+import api from '@/utils/api';
 import type { MerchantSelectorProps } from './MerchantSelector.types';
 import styles from './MerchantSelector.module.scss';
 
@@ -68,28 +69,8 @@ export const MerchantSelector: React.FC<MerchantSelectorProps> = ({
       }
 
       console.log('📡 Calling merchants API...');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/merchants`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const data = await api.get('/merchants');
 
-      console.log('🌐 Merchants API response status:', response.status);
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Authentication failed - please log in again');
-        }
-        if (response.status === 204) {
-          console.log('📭 No content returned (204) - setting empty merchants array');
-          setMerchants([]);
-          return;
-        }
-        throw new Error(`Failed to fetch merchants: ${response.status}`);
-      }
-
-      const data = await response.json();
       console.log('📦 Merchants data received:', data);
       
       if (!data || !data.data) {

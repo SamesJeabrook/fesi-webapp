@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useAuth0 } from '@auth0/auth0-react';
 import { SubItemsPageTemplate } from '@/components/templates/SubItemsPageTemplate';
 import { createSubItemsAPI } from '@/services/subItemsAPI';
+import api from '@/utils/api';
 
 interface Merchant {
   id: string;
@@ -14,33 +14,17 @@ interface Merchant {
 
 export default function AdminMerchantSubItemsPage() {
   const params = useParams();
-  const { getAccessTokenSilently } = useAuth0();
   const merchantId = params.merchantId as string;
   const [merchant, setMerchant] = useState<Merchant | null>(null);
 
   // Create admin API instance with merchant ID
-  const api = createSubItemsAPI('admin', merchantId);
+  const subItemsAPI = createSubItemsAPI('admin', merchantId);
 
   useEffect(() => {
     const fetchMerchant = async () => {
       try {
-        const token = await getAccessTokenSilently({
-          authorizationParams: {
-            audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-          },
-        });
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/merchants/${merchantId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const merchantData = await response.json();
-          setMerchant(merchantData.data);
-        }
+        const merchantData = await api.get(`/api/merchants/${merchantId}`);
+        setMerchant(merchantData.data);
       } catch (error) {
         console.error('Failed to fetch merchant:', error);
       }
@@ -49,7 +33,7 @@ export default function AdminMerchantSubItemsPage() {
     if (merchantId) {
       fetchMerchant();
     }
-  }, [merchantId, getAccessTokenSilently]);
+  }, [merchantId]);
 
   const backLink = {
     label: `Back to ${merchant?.business_name || 'Merchant'} Dashboard`,
@@ -58,7 +42,7 @@ export default function AdminMerchantSubItemsPage() {
 
   return (
     <SubItemsPageTemplate
-      api={api}
+      api={subItemsAPI}
       title="Sub-Items & Options Management"
       description="Manage customization options and add-ons for menu items"
       showMerchantName={true}

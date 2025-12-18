@@ -8,6 +8,7 @@ import { Card } from '@/components/atoms/Card';
 import { MerchantQrModal } from '@/components/molecules/MerchantQrModal/MerchantQrModal';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getMerchantIdFromDevToken, getAuthToken } from '@/utils/devAuth';
+import api from '@/utils/api';
 import styles from './dashboard.module.scss';
 
 const dashboardItems = [
@@ -90,38 +91,15 @@ export default function MerchantAdminDashboard() {
           id = devMerchantId;
         } else {
           // Get from /me endpoint
-          const token = await getAuthToken(getAccessTokenSilently);
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            id = data.id;
-          } else {
-            console.error('Failed to fetch merchant ID');
-            return;
-          }
+          const data = await api.get('/api/merchants/me');
+          id = data.id;
         }
 
         setMerchantId(id);
 
         // Fetch full merchant details
-        const token = await getAuthToken(getAccessTokenSilently);
-        const merchantResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (merchantResponse.ok) {
-          const merchantData = await merchantResponse.json();
-          setMerchant(merchantData.data);
-        }
+        const merchantData = await api.get(`/api/merchants/${id}`);
+        setMerchant(merchantData.data);
       } catch (error) {
         console.error('Error fetching merchant data:', error);
       } finally {

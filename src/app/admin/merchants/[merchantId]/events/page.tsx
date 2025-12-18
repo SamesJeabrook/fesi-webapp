@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { EventManagementTemplate } from '@/components/templates/EventManagementTemplate';
+import api from '@/utils/api';
 
 interface Merchant {
   id: string;
@@ -21,23 +22,8 @@ export default function AdminMerchantEventsPage() {
   useEffect(() => {
     const fetchMerchant = async () => {
       try {
-        const token = await getAccessTokenSilently({
-          authorizationParams: {
-            audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-          },
-        });
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const merchantData = await response.json();
-          setMerchant(merchantData.data);
-        }
+        const merchantData = await api.get(`/api/merchants/${merchantId}`);
+        setMerchant(merchantData.data);
       } catch (error) {
         console.error('Failed to fetch merchant:', error);
       }

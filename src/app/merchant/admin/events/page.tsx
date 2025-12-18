@@ -5,6 +5,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { EventManagementTemplate } from '@/components/templates/EventManagementTemplate';
 import { getMerchantIdFromDevToken, getAuthToken } from '@/utils/devAuth';
+import api from '@/utils/api';
 
 export default function MerchantEventsPage() {
   const { getAccessTokenSilently } = useAuth0();
@@ -22,18 +23,8 @@ export default function MerchantEventsPage() {
 
       // Otherwise, get from /me endpoint
       try {
-        const token = await getAuthToken(getAccessTokenSilently);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setMerchantId(data.id);
-        }
+        const data = await api.get('/api/merchants/me');
+        setMerchantId(data.id);
       } catch (error) {
         console.error('Error fetching merchant ID:', error);
       }

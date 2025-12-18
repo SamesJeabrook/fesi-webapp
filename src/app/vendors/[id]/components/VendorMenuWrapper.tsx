@@ -17,6 +17,7 @@ import OrderSummary from '@/components/organisms/OrderSummary/OrderSummary';
 import { paymentConfig } from '@/config/paymentConfig';
 import Tabs, { Tab } from '@/components/molecules/Tabs/Tabs';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import api from '@/utils/api';
 
 interface VendorMenuWrapperProps {
   activeEvent: Boolean;
@@ -158,24 +159,15 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
         const orderIds = orders.map(order => order.id);
         if (orderIds.length === 0) return;
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/orders/batch`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ orderIds }),
+        const data = await api.post('/orders/batch', { orderIds }, { skipAuth: true });
+
+        const updatedOrders = orders.map(order => {
+          const serverOrder = data.orders.find((o: any) => o.id === order.id);
+          return serverOrder ? { ...order, status: serverOrder.status } : order;
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          const updatedOrders = orders.map(order => {
-            const serverOrder = data.orders.find((o: any) => o.id === order.id);
-            return serverOrder ? { ...order, status: serverOrder.status } : order;
-          });
-
-          setOrders(updatedOrders);
-          localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
-        }
+        setOrders(updatedOrders);
+        localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
       } catch (error) {
         console.error('Polling failed:', error);
       }

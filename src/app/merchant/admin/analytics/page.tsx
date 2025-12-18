@@ -7,6 +7,7 @@ import { AnalyticsPageTemplate } from '@/components/templates/AnalyticsPageTempl
 import type { OverviewStats, MonthlyBreakdown } from '@/components/templates/AnalyticsPageTemplate';
 import type { EventReport } from '@/components/organisms/EventReportsTable';
 import { getAuthToken, getMerchantIdFromDevToken } from '@/utils/devAuth';
+import api from '@/utils/api';
 
 export default function MerchantAnalyticsPage() {
   const { getAccessTokenSilently, isAuthenticated, isLoading: authLoading } = useAuth0();
@@ -47,18 +48,7 @@ export default function MerchantAnalyticsPage() {
         }
 
         // Get merchant ID from backend using Auth0 token
-        const token = await getAccessTokenSilently();
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/merchants/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch merchant profile');
-        }
-
-        const data = await response.json();
+        const data = await api.get('/api/merchants/me');
         setMerchantId(data.id);
       } catch (err) {
         console.error('Error initializing merchant:', err);
@@ -76,47 +66,22 @@ export default function MerchantAnalyticsPage() {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const token = await getAuthToken(getAccessTokenSilently);
 
         // Fetch merchant details
-        const merchantResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/merchants/${merchantId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (merchantResponse.ok) {
-          const merchantData = await merchantResponse.json();
-          setMerchantName(merchantData.business_name || 'Your Business');
-          setSubscriptionTier(merchantData.subscription_tier || 'free');
-          
-          // Set data retention based on subscription tier
-          const retention = merchantData.subscription_tier === 'premium' 
-            ? 6 
-            : merchantData.subscription_tier === 'basic' 
-            ? 3 
-            : 1;
-          setDataRetentionMonths(retention);
-        }
+        const merchantData = await api.get(`/api/merchants/${merchantId}`);
+        setMerchantName(merchantData.business_name || 'Your Business');
+        setSubscriptionTier(merchantData.subscription_tier || 'free');
+        
+        // Set data retention based on subscription tier
+        const retention = merchantData.subscription_tier === 'premium' 
+          ? 6 
+          : merchantData.subscription_tier === 'basic' 
+          ? 3 
+          : 1;
+        setDataRetentionMonths(retention);
 
         // Fetch analytics data from backend
-        const analyticsResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/analytics/merchant/${merchantId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!analyticsResponse.ok) {
-          throw new Error('Failed to fetch analytics data');
-        }
-
-        const analyticsData = await analyticsResponse.json();
+        const analyticsData = await api.get(`/api/analytics/merchant/${merchantId}`);
         setOverviewStats(analyticsData.overview || overviewStats);
         setEvents(analyticsData.events || []);
         setMonthlyBreakdowns(analyticsData.monthlyBreakdowns || []);
