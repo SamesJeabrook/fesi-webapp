@@ -1,0 +1,1 @@
+export { POSPaymentQR } from './POSPaymentQR';

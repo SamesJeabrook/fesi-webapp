@@ -1,0 +1,51 @@
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-4);
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  &__header {
+    margin-bottom: var(--spacing-3);
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-1);
+  }
+
+  &__badge {
+    display: inline-block;
+    padding: var(--spacing-1) var(--spacing-2);
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+
+    &--inactive {
+      background: var(--color-text-secondary);
+    }
+  }
+
+  &__meta {
+    margin-top: var(--spacing-1);
+  }
+
+  &__description {
+    margin-bottom: var(--spacing-3);
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--spacing-2);
+    flex-wrap: wrap;
+  }
+}

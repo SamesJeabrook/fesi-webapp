@@ -48,8 +48,10 @@ export interface POSOrderSummaryProps {
   onNotesChange: (itemId: string, notes: string) => void;
   /** Handler for clearing the cart */
   onClearCart: () => void;
-  /** Handler for submitting the order */
+  /** Handler for submitting the order (cash payment) */
   onSubmitOrder: () => void;
+  /** Handler for submitting the order with card payment */
+  onSubmitOrderWithCard?: () => void;
 }
 
 export const POSOrderSummary: React.FC<POSOrderSummaryProps> = ({
@@ -67,7 +69,8 @@ export const POSOrderSummary: React.FC<POSOrderSummaryProps> = ({
   onQuantityChange,
   onNotesChange,
   onClearCart,
-  onSubmitOrder
+  onSubmitOrder,
+  onSubmitOrderWithCard
 }) => {
   const calculateTotal = () => {
     return cart.reduce((sum, item) => sum + item.item_total, 0);
@@ -168,8 +171,18 @@ export const POSOrderSummary: React.FC<POSOrderSummaryProps> = ({
             fullWidth
             isDisabled={cart.length === 0 || isSubmitting}
           >
-            {isSubmitting ? 'Processing...' : 'Complete Order'}
+            {isSubmitting ? 'Processing...' : 'Cash Payment'}
           </Button>
+          {onSubmitOrderWithCard && (
+            <Button
+              onClick={onSubmitOrderWithCard}
+              variant="primary"
+              fullWidth
+              isDisabled={cart.length === 0 || isSubmitting}
+            >
+              {isSubmitting ? 'Processing...' : 'Pay with Card'}
+            </Button>
+          )}
         </div>
       </div>
     </div>

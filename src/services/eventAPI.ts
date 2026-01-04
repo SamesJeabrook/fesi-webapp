@@ -67,8 +67,16 @@ class AdminEventAPI implements EventAPIInterface {
         group_event_id: data.groupEventId,
         latitude: data.latitude,
         longitude: data.longitude,
-        start_time: data.date && data.startTime ? `${data.date}T${data.startTime}` : undefined,
-        end_time: data.date && data.endTime ? `${data.date}T${data.endTime}` : undefined,
+        // Create proper timestamps - if endTime is before startTime, it means next day
+        start_time: data.date && data.startTime ? `${data.date}T${data.startTime}:00` : undefined,
+        end_time: (() => {
+          if (!data.date || !data.endTime || !data.startTime) return undefined;
+          // If end time is less than start time, add a day
+          const endDate = data.endTime < data.startTime 
+            ? new Date(new Date(data.date).getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+            : data.date;
+          return `${endDate}T${data.endTime}:00`;
+        })(),
         is_open: data.isOpen,
         merchant_id: merchantId // Admin specifies merchant
       }),

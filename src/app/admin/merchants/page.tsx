@@ -33,12 +33,22 @@ export default function AdminMerchantsPage() {
       console.log('🔑 Fetching merchants...');
       console.log('🌐 API URL: /api/merchants');
 
-      const data = await api.get('/api/merchants');
+      const response = await api.get('/api/merchants');
 
-      console.log('📊 Merchants data:', data);
-      setMerchants(data.data || []);
+      console.log('📊 Full API Response:', response);
+      console.log('📊 Response type:', typeof response);
+      console.log('📊 Response.data:', response?.data);
+      console.log('📊 Is Array:', Array.isArray(response?.data));
+      
+      // Handle both response formats - direct array or wrapped in data property
+      const merchantsData = Array.isArray(response) ? response : (response?.data || []);
+      console.log('📊 Merchants array:', merchantsData);
+      console.log('📊 Merchants count:', merchantsData.length);
+      
+      setMerchants(merchantsData);
     } catch (error) {
-      console.error('Error fetching merchants:', error);
+      console.error('❌ Error fetching merchants:', error);
+      console.error('❌ Error details:', error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }

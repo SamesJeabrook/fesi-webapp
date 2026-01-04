@@ -55,15 +55,15 @@ export default function ProtectedRoute({
 
         try {
           console.log('🔄 Getting access token for user:', user.email);
-          // Get token with audience for proper JWT format
+          
+          // Simplified token fetching - use default caching behavior
           const token = await getAccessTokenSilently({
             authorizationParams: {
               audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-            },
-            cacheMode: 'off' // Force fresh token request
+            }
           });
+          
           console.log('🎫 Token received (first 50 chars):', token?.substring(0, 50) + '...');
-          console.log('🎫 Token type:', typeof token, 'Length:', token?.length);
           
           if (!token) {
             console.error('❌ No token received from Auth0');
@@ -73,17 +73,32 @@ export default function ProtectedRoute({
           localStorage.setItem('auth-token', token);
           console.log('💾 Token stored in localStorage');
           
-          // Sync user to database
-          console.log('🔗 Calling API: /api/users/me');
-          const userData = await api.get('/api/users/me');
-          console.log('User synced:', userData.user);
-          // Mark this user as synced
-          syncedRef.current = user.sub;
+          // Sync user to database (don't block if this fails)
+          try {
+            console.log('🔗 Calling API: /api/users/me');
+            const userData = await api.get('/api/users/me');
+            console.log('User synced:', userData.user);
+            // Mark this user as synced
+            syncedRef.current = user.sub;
+          } catch (apiError) {
+            console.warn('⚠️ User sync failed, but token is stored:', apiError);
+            // Still mark as synced to avoid retrying constantly
+            syncedRef.current = user.sub;
+          }
         } catch (error) {
-          console.error('❌ Error storing token or syncing user:', error);
+          console.error('❌ Error getting token:', error);
+          
+          // Check if there's already a token in localStorage we can use
+          const existingToken = localStorage.getItem('auth-token');
+          if (existingToken && existingToken !== 'undefined' && existingToken !== 'null') {
+            console.log('✅ Using existing token from localStorage');
+            syncedRef.current = user.sub;
+            return;
+          }
+          
+          const errorMessage = error instanceof Error ? error.message : String(error);
           
           // Handle consent required error
-          const errorMessage = error instanceof Error ? error.message : String(error);
           if (errorMessage.includes('consent_required') || errorMessage.includes('Consent required')) {
             console.log('🔄 Consent required - redirecting to login...');
             // Clear the cache and redirect to login

@@ -1,0 +1,117 @@
+.editor {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+
+  &__header {
+    margin-bottom: var(--spacing-6);
+  }
+}
+
+.form {
+  &__section {
+    margin-bottom: var(--spacing-6);
+    padding: var(--spacing-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-md);
+  }
+
+  &__field {
+    margin-bottom: var(--spacing-4);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: var(--spacing-2);
+    }
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: var(--spacing-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    resize: vertical;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--spacing-3);
+    justify-content: flex-end;
+    padding-top: var(--spacing-4);
+  }
+}
+
+.items {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-4);
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--spacing-2);
+  }
+
+  &__list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    margin-bottom: var(--spacing-3);
+  }
+
+  &__empty {
+    padding: var(--spacing-6);
+    text-align: center;
+  }
+
+  &__summary {
+    text-align: right;
+  }
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: var(--color-background-secondary);
+  }
+
+  &__checkbox {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+
+  &__details {
+    flex: 1;
+    min-width: 0;
+  }
+}

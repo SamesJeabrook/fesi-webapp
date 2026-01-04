@@ -8,6 +8,7 @@ import api from '@/utils/api';
 import {
   POSMenuItemCard,
   POSCategoryFilter,
+  POSPaymentQR,
   type CartItemCustomization
 } from '@/components/molecules';
 import {
@@ -44,6 +45,9 @@ export default function POSPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
+  const [showPaymentQR, setShowPaymentQR] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string>('');
+  const [pendingOrderId, setPendingOrderId] = useState<string>('');
 
   // Get token with dev token override support
   const getToken = async () => {
@@ -331,6 +335,66 @@ export default function POSPage() {
     }
   };
 
+  const submitOrderWithCard = async () => {
+    if (cart.length === 0) {
+      alert('Please add items to the cart');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const token = await getAuthToken(getAccessTokenSilently);
+      
+      // Get merchant ID
+      let merchantId: string;
+      if (token.startsWith('dev-merchant-')) {
+        merchantId = token.replace('dev-merchant-', '');
+      } else {
+        const merchantData = await api.get('/api/merchants/me');
+        merchantId = merchantData.id;
+      }
+      
+      // Create order with payment_status = 'pending'
+      const result = await api.post(`/api/orders/merchant/${merchantId}/pos`, {
+        guest_info: {
+          email: customerEmail?.trim() || `walkin-${Date.now()}@pos.local`,
+          first_name: customerName?.trim() || 'Walk-in',
+          last_name: 'Customer',
+          phone: customerPhone?.trim() || null,
+        },
+        items: cart.map(item => ({
+          menu_item_id: item.menu_item_id,
+          quantity: item.quantity,
+          customizations: item.customizations,
+        })),
+        notes: cart
+          .filter(item => item.notes)
+          .map(item => `${item.menu_item_name}: ${item.notes}`)
+          .join('; ') || undefined,
+        payment_method: 'card',
+        payment_status: 'pending', // Override the default 'completed'
+      });
+
+      const order = result.data || result;
+      setPendingOrderId(order.id);
+      
+      // Create Stripe Checkout Session
+      const checkoutResult = await api.post('/api/pos-payments/create-checkout', {
+        order_id: order.id,
+        merchant_id: merchantId
+      });
+      
+      setCheckoutUrl(checkoutResult.checkout_url);
+      setShowPaymentQR(true);
+      
+    } catch (error) {
+      console.error('Error creating card payment:', error);
+      alert('Error creating payment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Prevent hydration mismatch by only rendering after client mount
   if (!isMounted) {
     return null;
@@ -430,6 +494,7 @@ export default function POSPage() {
               onNotesChange={updateNotes}
               onClearCart={clearCart}
               onSubmitOrder={submitOrder}
+              onSubmitOrderWithCard={submitOrderWithCard}
             />
           </div>
         )}
@@ -443,6 +508,37 @@ export default function POSPage() {
           onOptionSelect={handleOptionSelect}
           onAddToCart={addToCartWithOptions}
         />
+
+        {/* Payment QR Modal */}
+        {showPaymentQR && checkoutUrl && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <POSPaymentQR
+              checkoutUrl={checkoutUrl}
+              orderTotal={calculateTotal()}
+              onPaymentComplete={() => {
+                setShowPaymentQR(false);
+                setOrderNumber(pendingOrderId);
+                clearCart();
+              }}
+              onCancel={() => {
+                setShowPaymentQR(false);
+                setCheckoutUrl('');
+                setPendingOrderId('');
+              }}
+            />
+          </div>
+        )}
       </div>
     </ProtectedRoute>
   );

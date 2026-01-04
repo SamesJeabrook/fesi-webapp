@@ -24,7 +24,7 @@ export const getDevToken = (): string | null => {
   // Check for dev token in localStorage
   const devToken = localStorage.getItem('dev_token');
   
-  if (devToken && devToken.startsWith('dev-merchant-')) {
+  if (devToken && (devToken.startsWith('dev-merchant-') || devToken.startsWith('dev-admin-'))) {
     return devToken;
   }
   

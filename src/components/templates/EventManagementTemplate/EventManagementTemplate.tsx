@@ -9,6 +9,7 @@ import { Typography, Button } from '@/components/atoms';
 import { Modal, AdminPageHeader, LocationPicker } from '@/components/molecules';
 import { createEventAPI, EventAPIInterface } from '@/services/eventAPI';
 import { Event, EventFormData, DailySchedule } from '@/types/events';
+import { Menu } from '@/types/menu.types';
 import { DailyScheduleCard } from '@/components/molecules/DailyScheduleCard';
 import { useAuth0 } from '@auth0/auth0-react';
 import { getAuthToken } from '@/utils/devAuth';
@@ -44,6 +45,7 @@ export function EventManagementTemplate({
   
   // State management
   const [events, setEvents] = useState<Event[]>([]);
+  const [menus, setMenus] = useState<Menu[]>([]);
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [loading, setLoading] = useState(true);
   const [merchantLoading, setMerchantLoading] = useState(context === 'admin' && !!merchantId);
@@ -98,11 +100,23 @@ export function EventManagementTemplate({
   useEffect(() => {
     if (api) {
       loadEvents();
+      loadMenus();
       if (context === 'admin' && merchantId) {
         fetchMerchant();
       }
     }
   }, [api, merchantId]);
+
+  const loadMenus = async () => {
+    if (!merchantId) return;
+    
+    try {
+      const menusData = await api.get<Menu[]>(`/api/menus/merchant/${merchantId}`);
+      setMenus(menusData);
+    } catch (error) {
+      console.error('Error loading menus:', error);
+    }
+  };
 
   const fetchMerchant = async () => {
     if (!merchantId) return;
@@ -178,10 +192,13 @@ export function EventManagementTemplate({
     }
     
     const now = new Date();
-    const end = new Date(now.getTime() + 12 * 60 * 60 * 1000); // 12 hours from now
+    const end = new Date(now.getTime() + 8 * 60 * 60 * 1000); // 8 hours from now
+    
+    // Format start and end as ISO strings for proper timezone handling
+    const startTimeISO = now.toISOString();
+    const endTimeISO = end.toISOString();
+    
     const dateStr = now.toISOString().split('T')[0];
-    const startTime = now.toTimeString().slice(0,5);
-    const endTime = end.toTimeString().slice(0,5);
     const eventName = `event - ${dateStr}`;
     
     const quickEventData: EventFormData = {
@@ -190,9 +207,10 @@ export function EventManagementTemplate({
       longitude: quickEventLocation.longitude,
       eventType: 'single_day',
       isOpen: true,
+      // Use full ISO timestamps instead of separate date/time
       date: dateStr,
-      startTime,
-      endTime
+      startTime: startTimeISO.split('T')[1].slice(0, 5),
+      endTime: endTimeISO.split('T')[1].slice(0, 5)
     };
     
     try {
@@ -503,6 +521,22 @@ export function EventManagementTemplate({
                 className={styles.eventForm__input}
                 placeholder="Enter event name"
               />
+            </div>
+
+            <div className={styles.eventForm__field}>
+              <label className={styles.eventForm__label}>Menu</label>
+              <select
+                value={eventForm.menu_id || ''}
+                onChange={(e) => setEventForm(prev => ({ ...prev, menu_id: e.target.value || undefined }))}
+                className={styles.eventForm__input}
+              >
+                <option value="">Use default menu</option>
+                {menus.map(menu => (
+                  <option key={menu.id} value={menu.id}>
+                    {menu.name} {menu.is_default ? '(Default)' : ''}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className={styles.eventForm__field}>
