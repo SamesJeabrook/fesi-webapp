@@ -14,6 +14,7 @@ export interface EventBasicInfo {
   longitude: number;
   groupEventId?: string;
   isOpen?: boolean;
+  menuId?: string;
 }
 
 export interface MultiDayEventData {
@@ -61,7 +62,6 @@ export interface EventFormData {
   groupEventId?: string;
   isOpen: boolean;
   eventType: 'single_day' | 'multi_day';
-  menu_id?: string;
   menu_id?: string;
   
   // For single day events

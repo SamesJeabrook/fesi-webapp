@@ -34,6 +34,13 @@ const dashboardItems = [
     color: 'warning'
   },
   {
+    title: 'Menus',
+    description: 'Create and manage menus for your events',
+    icon: '📋',
+    href: '/merchant/admin/menu/menus',
+    color: 'primary'
+  },
+  {
     title: 'Sub-Items & Options',
     description: 'Configure customizations and add-ons',
     icon: '🔧',

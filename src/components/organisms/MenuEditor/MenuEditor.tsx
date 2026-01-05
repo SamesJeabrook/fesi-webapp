@@ -10,23 +10,39 @@ import styles from './MenuEditor.module.scss';
 
 interface MenuItem {
   id: string;
+  merchant_id: string;
+  category_id: string;
   title: string;
-  category_name?: string;
+  description: string;
+  image_url: string;
   base_price: number;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  category_name: string;
+  category_order: number;
+  has_options: boolean;
+}
+
+interface Category {
+  name: string;
+  display_order: number;
+  items: MenuItem[];
 }
 
 export interface MenuEditorProps {
   /** Menu being edited (null for create mode) */
   menu?: Menu | null;
-  /** Available menu items to select from */
-  availableItems: MenuItem[];
+  /** Available categories with their menu items */
+  availableItems: Category[];
   /** Whether the form is submitting */
   isSubmitting?: boolean;
   /** Handler for form submission */
   onSubmit: (payload: CreateMenuPayload | UpdateMenuPayload) => void;
   /** Handler for cancel action */
   onCancel: () => void;
-  /** Merchant ID (required for create mode) */
+  /** Merchant ID (isRequired={true} for create mode) */
   merchantId: string;
 }
 
@@ -83,17 +99,24 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({
   };
 
   const selectAll = () => {
-    setSelectedItems(new Set(availableItems.map(item => item.id)));
+    const allItemIds = availableItems.flatMap(category => 
+      category.items.map(item => item.id)
+    );
+    setSelectedItems(new Set(allItemIds));
   };
 
   const deselectAll = () => {
     setSelectedItems(new Set());
   };
 
-  const filteredItems = availableItems.filter(item =>
-    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.category_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCategories = availableItems.map(category => ({
+    ...category,
+    items: category.items.filter(item =>
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  })).filter(category => category.items.length > 0);
 
   return (
     <div className={styles.editor}>
@@ -109,7 +132,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({
           
           <div className={styles.form__field}>
             <label htmlFor="menu-name">
-              <Typography variant="body-small" weight="semibold">
+              <Typography variant="body-small">
                 Name *
               </Typography>
             </label>
@@ -119,13 +142,13 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Lunch Menu, Dinner Special"
-              required
+              isRequired={true}
             />
           </div>
 
           <div className={styles.form__field}>
             <label htmlFor="menu-description">
-              <Typography variant="body-small" weight="semibold">
+              <Typography variant="body-small">
                 Description
               </Typography>
             </label>
@@ -147,7 +170,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({
               <Button
                 type="button"
                 variant="secondary"
-                size="small"
+                size="sm"
                 onClick={selectAll}
               >
                 Select All
@@ -155,7 +178,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({
               <Button
                 type="button"
                 variant="secondary"
-                size="small"
+                size="sm"
                 onClick={deselectAll}
               >
                 Deselect All
@@ -165,6 +188,7 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({
 
           <div className={styles.form__field}>
             <Input
+              id="search-items"
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -173,41 +197,52 @@ export const MenuEditor: React.FC<MenuEditorProps> = ({
           </div>
 
           <div className={styles.items__list}>
-            {filteredItems.length === 0 ? (
+            {filteredCategories.length === 0 ? (
               <div className={styles.items__empty}>
-                <Typography variant="body-small" color="secondary">
+                <Typography variant="body-small">
                   {searchTerm ? 'No items match your search' : 'No menu items available'}
                 </Typography>
               </div>
             ) : (
-              filteredItems.map((item) => (
-                <label key={item.id} className={styles.item}>
-                  <input
-                    type="checkbox"
-                    checked={selectedItems.has(item.id)}
-                    onChange={() => toggleItem(item.id)}
-                    className={styles.item__checkbox}
-                  />
-                  <div className={styles.item__details}>
-                    <Typography variant="body" weight="semibold">
-                      {item.title}
+              filteredCategories.map((category) => (
+                <div key={category.name} className={styles.category}>
+                  <div className={styles.category__header}>
+                    <Typography variant="body-medium">
+                      {category.name}
                     </Typography>
-                    {item.category_name && (
-                      <Typography variant="body-small" color="secondary">
-                        {item.category_name}
-                      </Typography>
-                    )}
                   </div>
-                  <Typography variant="body" weight="semibold">
-                    £{(item.base_price / 100).toFixed(2)}
-                  </Typography>
-                </label>
+                  <div className={styles.category__items}>
+                    {category.items.map((item) => (
+                      <label key={item.id} className={styles.item}>
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.has(item.id)}
+                          onChange={() => toggleItem(item.id)}
+                          className={styles.item__checkbox}
+                        />
+                        <div className={styles.item__details}>
+                          <Typography variant="body-small">
+                            {item.title}
+                          </Typography>
+                          {item.description && (
+                            <Typography variant="body-small" className={styles.item__description}>
+                              {item.description}
+                            </Typography>
+                          )}
+                        </div>
+                        <Typography variant="body-small">
+                          £{(item.base_price / 100).toFixed(2)}
+                        </Typography>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               ))
             )}
           </div>
 
           <div className={styles.items__summary}>
-            <Typography variant="body-small" color="secondary">
+            <Typography variant="body-small">
               {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''} selected
             </Typography>
           </div>

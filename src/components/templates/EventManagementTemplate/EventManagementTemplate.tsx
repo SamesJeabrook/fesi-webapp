@@ -76,7 +76,7 @@ export function EventManagementTemplate({
   });
 
   // API instance
-  const [api, setApi] = useState<EventAPIInterface | null>(null);
+  const [eventApi, setEventApi] = useState<EventAPIInterface | null>(null);
 
   // Initialize API when Auth0 is ready
   useEffect(() => {
@@ -87,7 +87,7 @@ export function EventManagementTemplate({
         };
         
         const apiInstance = createEventAPI(context, getToken, merchantId);
-        setApi(apiInstance);
+        setEventApi(apiInstance);
       } catch (error) {
         console.error('Failed to initialize API:', error);
       }
@@ -98,20 +98,25 @@ export function EventManagementTemplate({
 
   // Load events when API is ready
   useEffect(() => {
-    if (api) {
+    if (eventApi) {
       loadEvents();
       loadMenus();
       if (context === 'admin' && merchantId) {
         fetchMerchant();
       }
     }
-  }, [api, merchantId]);
+  }, [eventApi, merchantId]);
 
   const loadMenus = async () => {
     if (!merchantId) return;
     
     try {
-      const menusData = await api.get<Menu[]>(`/api/menus/merchant/${merchantId}`);
+      const token = await getAuthToken(getAccessTokenSilently);
+      const menusData = await api.get<Menu[]>(`/api/menus/merchant/${merchantId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setMenus(menusData);
     } catch (error) {
       console.error('Error loading menus:', error);
@@ -123,7 +128,12 @@ export function EventManagementTemplate({
     
     try {
       setMerchantLoading(true);
-      const data = await api.get(`/api/merchants/${merchantId}`);
+      const token = await getAuthToken(getAccessTokenSilently);
+      const data = await api.get(`/api/merchants/${merchantId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       setMerchant(data.data);
     } catch (error) {
       console.error('Error fetching merchant:', error);
@@ -133,11 +143,11 @@ export function EventManagementTemplate({
   };
 
   const loadEvents = async () => {
-    if (!api) return;
+    if (!eventApi) return;
     
     try {
       setLoading(true);
-      const eventData = await api.getMerchantEvents();
+      const eventData = await eventApi.getMerchantEvents();
       setEvents(eventData);
     } catch (error) {
       console.error('Failed to load events:', error);
@@ -147,11 +157,11 @@ export function EventManagementTemplate({
   };
 
     const handleCreateEvent = async () => {
-    if (!api) return;
+    if (!eventApi) return;
     
     try {
       setSubmitting(true);
-      await api.createEvent(eventForm, merchantId);
+      await eventApi.createEvent(eventForm, merchantId);
       await loadEvents();
       setIsCreateModalOpen(false);
       setEventForm({
@@ -160,6 +170,7 @@ export function EventManagementTemplate({
         longitude: -0.1278,
         eventType: 'multi_day',
         isOpen: false,
+        menu_id: undefined,
         schedules: [createDefaultSchedule(1)]
       });
     } catch (error) {
@@ -176,6 +187,7 @@ export function EventManagementTemplate({
       longitude: -0.1278,
       eventType: 'multi_day',
       isOpen: false,
+      menu_id: undefined,
       schedules: [createDefaultSchedule(1)]
     });
   };
@@ -186,7 +198,7 @@ export function EventManagementTemplate({
       return;
     }
     
-    if (!api) {
+    if (!eventApi) {
       alert('API not initialized.');
       return;
     }
@@ -207,6 +219,7 @@ export function EventManagementTemplate({
       longitude: quickEventLocation.longitude,
       eventType: 'single_day',
       isOpen: true,
+      menu_id: eventForm.menu_id,
       // Use full ISO timestamps instead of separate date/time
       date: dateStr,
       startTime: startTimeISO.split('T')[1].slice(0, 5),
@@ -216,7 +229,7 @@ export function EventManagementTemplate({
     try {
       setSubmitting(true);
       setIsQuickEventModalOpen(false);
-      await api.createEvent(quickEventData, merchantId);
+      await eventApi.createEvent(quickEventData, merchantId);
       await loadEvents();
     } catch (error) {
       console.error('Failed to create quick event:', error);
@@ -234,6 +247,7 @@ export function EventManagementTemplate({
       longitude: event.longitude,
       eventType: event.event_type as 'single_day' | 'multi_day',
       isOpen: event.is_open,
+      menu_id: event.menu_id || undefined,
       schedules: event.schedules?.map((schedule, index) => ({
         dayNumber: index + 1,
         date: schedule.date,
@@ -248,26 +262,29 @@ export function EventManagementTemplate({
   };
 
   const handleUpdateEvent = async () => {
-    if (!api || !selectedEvent) return;
+    if (!eventApi || !selectedEvent) return;
     
     // Debug: Check what methods are available on the API instance
-    console.log('API methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(api)));
-    console.log('Has updateEvent:', typeof api.updateEvent);
+    console.log('API methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(eventApi)));
+    console.log('Has updateEvent:', typeof eventApi.updateEvent);
+    console.log('Event form data:', eventForm);
+    console.log('Menu ID being sent:', eventForm.menu_id);
     
     try {
       setSubmitting(true);
       
-      // Update basic event details (name, location, status)
-      await api.updateEvent(selectedEvent.id, {
+      // Update basic event details (name, location, status, menu)
+      await eventApi.updateEvent(selectedEvent.id, {
         name: eventForm.name,
         latitude: eventForm.latitude,
         longitude: eventForm.longitude,
-        isOpen: eventForm.isOpen
+        isOpen: eventForm.isOpen,
+        menu_id: eventForm.menu_id || undefined
       });
       
       // If it's a multi-day event, also update schedules
       if (eventForm.eventType === 'multi_day' && eventForm.schedules) {
-        await api.updateEventSchedules(selectedEvent.id, {
+        await eventApi.updateEventSchedules(selectedEvent.id, {
           schedules: eventForm.schedules.map((schedule, index) => ({
             ...schedule,
             dayNumber: index + 1
@@ -317,10 +334,10 @@ export function EventManagementTemplate({
   };
 
   const toggleEventStatus = async (event: Event) => {
-    if (!api) return;
+    if (!eventApi) return;
     
     try {
-      await api.toggleEventStatus(event.id, !event.is_open);
+      await eventApi.toggleEventStatus(event.id, !event.is_open);
       await loadEvents();
     } catch (error) {
       console.error('Failed to toggle event status:', error);
@@ -367,6 +384,12 @@ export function EventManagementTemplate({
               variant="secondary"
               onClick={() => {
                 setQuickEventLocation({ latitude: 51.5074, longitude: -0.1278 });
+                // Set default menu for quick event
+                const defaultMenu = menus.find(m => m.is_default);
+                setEventForm(prev => ({
+                  ...prev,
+                  menu_id: defaultMenu?.id || undefined
+                }));
                 setIsQuickEventModalOpen(true);
               }}
             >
@@ -471,6 +494,26 @@ export function EventManagementTemplate({
         title="Quick Event Location"
       >
         <div className={styles.eventForm}>
+          <div className={styles.eventForm__section}>
+            <Typography variant="heading-6">Event Details</Typography>
+            
+            <div className={styles.eventForm__field}>
+              <label className={styles.eventForm__label}>Menu</label>
+              <select
+                value={eventForm.menu_id || ''}
+                onChange={(e) => setEventForm(prev => ({ ...prev, menu_id: e.target.value || undefined }))}
+                className={styles.eventForm__input}
+              >
+                <option value="">Use default menu</option>
+                {menus.map(menu => (
+                  <option key={menu.id} value={menu.id}>
+                    {menu.name} {menu.is_default ? '(Default)' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div className={styles.eventForm__section}>
             <Typography variant="heading-6">Confirm Event Location</Typography>
             <LocationPicker
@@ -639,6 +682,22 @@ export function EventManagementTemplate({
                 className={styles.eventForm__input}
                 placeholder="Enter event name"
               />
+            </div>
+
+            <div className={styles.eventForm__field}>
+              <label className={styles.eventForm__label}>Menu</label>
+              <select
+                value={eventForm.menu_id || ''}
+                onChange={(e) => setEventForm(prev => ({ ...prev, menu_id: e.target.value || undefined }))}
+                className={styles.eventForm__input}
+              >
+                <option value="">Use default menu</option>
+                {menus.map(menu => (
+                  <option key={menu.id} value={menu.id}>
+                    {menu.name} {menu.is_default ? '(Default)' : ''}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className={styles.eventForm__field}>

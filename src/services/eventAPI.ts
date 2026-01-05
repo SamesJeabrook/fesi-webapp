@@ -52,7 +52,8 @@ class AdminEventAPI implements EventAPIInterface {
           latitude: data.latitude,
           longitude: data.longitude,
           groupEventId: data.groupEventId,
-          isOpen: data.isOpen
+          isOpen: data.isOpen,
+          menuId: data.menu_id
         },
         schedules: data.schedules
       }, merchantId);
@@ -65,6 +66,7 @@ class AdminEventAPI implements EventAPIInterface {
       body: JSON.stringify({
         name: data.name,
         group_event_id: data.groupEventId,
+        menu_id: data.menu_id,
         latitude: data.latitude,
         longitude: data.longitude,
         // Create proper timestamps - if endTime is before startTime, it means next day
@@ -217,15 +219,24 @@ class AdminEventAPI implements EventAPIInterface {
   }
 
   async updateEvent(eventId: string, data: Partial<EventFormData>): Promise<Event> {
+    const payload: any = {
+      name: data.name,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      is_open: data.isOpen
+    };
+    
+    // Include menu_id in payload (could be null to clear it)
+    if ('menu_id' in data) {
+      payload.menu_id = data.menu_id;
+    }
+    
+    console.log('AdminEventAPI updateEvent payload:', payload);
+    
     const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
       method: 'PUT',
       headers: await this.getAuthHeaders(),
-      body: JSON.stringify({
-        name: data.name,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        is_open: data.isOpen
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -255,7 +266,8 @@ class MerchantEventAPI implements EventAPIInterface {
           latitude: data.latitude,
           longitude: data.longitude,
           groupEventId: data.groupEventId,
-          isOpen: data.isOpen
+          isOpen: data.isOpen,
+          menuId: data.menu_id
         },
         schedules: data.schedules
       });
@@ -268,6 +280,7 @@ class MerchantEventAPI implements EventAPIInterface {
       body: JSON.stringify({
         name: data.name,
         group_event_id: data.groupEventId,
+        menu_id: data.menu_id,
         latitude: data.latitude,
         longitude: data.longitude,
         start_time: data.date && data.startTime ? `${data.date}T${data.startTime}` : undefined,
@@ -408,15 +421,24 @@ class MerchantEventAPI implements EventAPIInterface {
   }
 
   async updateEvent(eventId: string, data: Partial<EventFormData>): Promise<Event> {
+    const payload: any = {
+      name: data.name,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      is_open: data.isOpen
+    };
+    
+    // Include menu_id in payload (could be null to clear it)
+    if ('menu_id' in data) {
+      payload.menu_id = data.menu_id;
+    }
+    
+    console.log('MerchantEventAPI updateEvent payload:', payload);
+    
     const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
       method: 'PUT',
       headers: await this.getAuthHeaders(),
-      body: JSON.stringify({
-        name: data.name,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        is_open: data.isOpen
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {

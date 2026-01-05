@@ -7,6 +7,7 @@ import { MenuList, MenuEditor } from '@/components/organisms';
 import { ConfirmationModal } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import api from '@/utils/api';
+import { getMerchantIdFromDevToken } from '@/utils/devAuth';
 import { Menu, CreateMenuPayload, UpdateMenuPayload } from '@/types/menu.types';
 import styles from './menus.module.scss';
 
@@ -21,6 +22,7 @@ export default function MenusPage() {
   const router = useRouter();
   const [menus, setMenus] = useState<Menu[]>([]);
   const [availableItems, setAvailableItems] = useState<MenuItem[]>([]);
+  const [merchantId, setMerchantId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showEditor, setShowEditor] = useState(false);
@@ -35,20 +37,28 @@ export default function MenusPage() {
     menuName: '',
   });
 
-  // Get merchantId from URL or localStorage
-  const getMerchantId = () => {
-    if (typeof window !== 'undefined') {
-      const pathParts = window.location.pathname.split('/');
-      const merchantIndex = pathParts.indexOf('merchant');
-      if (merchantIndex >= 0 && pathParts[merchantIndex + 1]) {
-        return pathParts[merchantIndex + 1];
+  // Get merchant ID on mount
+  useEffect(() => {
+    const fetchMerchantId = async () => {
+      try {
+        // Check for dev token first
+        const devMerchantId = getMerchantIdFromDevToken();
+        
+        if (devMerchantId) {
+          setMerchantId(devMerchantId);
+        } else {
+          // Get from /me endpoint
+          const data = await api.get('/api/merchants/me');
+          setMerchantId(data.id);
+        }
+      } catch (error) {
+        console.error('Error fetching merchant ID:', error);
+        alert('Failed to get merchant information');
       }
-      return localStorage.getItem('merchantId') || '';
-    }
-    return '';
-  };
+    };
 
-  const merchantId = getMerchantId();
+    fetchMerchantId();
+  }, []);
 
   useEffect(() => {
     if (merchantId) {
@@ -72,8 +82,10 @@ export default function MenusPage() {
 
   const loadAvailableItems = async () => {
     try {
-      const data = await api.get<MenuItem[]>(`/api/menu/${merchantId}`);
-      setAvailableItems(data);
+      const response = await api.get<any>(`/api/menu/merchant/${merchantId}/admin`);
+      // Extract menu items from the nested response structure
+      const items = response.data?.menu || [];
+      setAvailableItems(items);
     } catch (error) {
       console.error('Error loading menu items:', error);
     }

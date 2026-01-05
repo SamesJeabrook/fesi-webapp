@@ -62,22 +62,64 @@ export default async function VendorPage({
 
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-    // Use the menu API endpoint that returns the correct structure
-    const response = await fetch(`${apiUrl}/api/menu/merchant/${id}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch menu: ${response.status}`);
-    }
     
-    menuData = await response.json();
+    // First get merchant info
+    const merchantResponse = await fetch(`${apiUrl}/api/merchants/${id}`);
+    if (!merchantResponse.ok) {
+      throw new Error(`Failed to fetch merchant: ${merchantResponse.status}`);
+    }
+    const merchantData = await merchantResponse.json();
+    const merchant = merchantData.success ? merchantData.data : null;
+    
+    if (!merchant) {
+      throw new Error('Merchant not found');
+    }
 
-    const activeEventResponse = await fetch(`${apiUrl}/api/merchants/${menuData.data.merchant.id}/active-event`);
+    // Check for active event
+    const activeEventResponse = await fetch(`${apiUrl}/api/merchants/${merchant.id}/active-event`);
+    let menuIdToFetch: string | null = null;
+    
     if (activeEventResponse.ok) {
       const activeEventData = await activeEventResponse.json();
       activeEvent = activeEventData.hasActiveEvent;
       if (activeEvent) {
         eventData = activeEventData.event;
+        // If event has a specific menu assigned, use that
+        if (eventData.menu_id) {
+          menuIdToFetch = eventData.menu_id;
+        }
       }
     }
+
+    // If no event menu, get the default menu
+    if (!menuIdToFetch) {
+      const menusResponse = await fetch(`${apiUrl}/api/menus/merchant/${merchant.id}/public`);
+      if (menusResponse.ok) {
+        const menus = await menusResponse.json();
+        const defaultMenu = menus.find((m: any) => m.is_default && m.is_active);
+        if (defaultMenu) {
+          menuIdToFetch = defaultMenu.id;
+        }
+      }
+    }
+
+    // Fetch the specific menu with its items grouped by category
+    if (menuIdToFetch) {
+      const menuResponse = await fetch(`${apiUrl}/api/menus/${menuIdToFetch}/public`);
+      if (menuResponse.ok) {
+        menuData = await menuResponse.json();
+      } else {
+        throw new Error(`Failed to fetch menu: ${menuResponse.status}`);
+      }
+    } else {
+      // Fallback to legacy menu endpoint if no menu found
+      const response = await fetch(`${apiUrl}/api/menu/merchant/${id}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch menu: ${response.status}`);
+      }
+      menuData = await response.json();
+    }
+    
     console.log('Fetched menu data:', menuData ? 'Success' : 'No data');
   } catch (err) {
     console.error('Error fetching menu:', err);
