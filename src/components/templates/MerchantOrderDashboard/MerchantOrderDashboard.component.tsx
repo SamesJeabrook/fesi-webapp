@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { OrderBoard } from '@/components/molecules/OrderBoard';
+import { OrderDetailsModal } from '@/components/molecules/OrderDetailsModal';
 import { Typography, Button } from '@/components/atoms';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import api from '@/utils/api';
@@ -21,6 +22,7 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
   'data-testid': dataTestId,
 }) => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   const dashboardClasses = classNames(styles.merchantOrderDashboard, className);
@@ -139,6 +141,22 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
     setLastUpdated(new Date());
   };
 
+  const handleOrderClick = (order: any) => {
+    setSelectedOrder(order);
+  };
+
+  const handleRefund = (orderId: string) => {
+    // TODO: Implement refund logic
+    console.log('Refund order:', orderId);
+  };
+
+  const handleRefire = (orderId: string, itemIds?: string[]) => {
+    // Refresh orders after refire
+    onRefresh?.();
+    setLastUpdated(new Date());
+    setSelectedOrder(null);
+  };
+
   const getOrderStats = () => {
     const stats = {
       total: orders.length,
@@ -236,10 +254,23 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
           orders={orders}
           isReadOnly={false}
           onOrderStatusChange={handleOrderStatusChange}
+          onOrderClick={handleOrderClick}
           isLoading={isLoading}
           error={error}
         />
       </main>
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <OrderDetailsModal
+          isOpen={!!selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          order={selectedOrder}
+          onRefund={handleRefund}
+          onRefire={handleRefire}
+          merchantId={merchant.id}
+        />
+      )}
     </div>
   );
 };

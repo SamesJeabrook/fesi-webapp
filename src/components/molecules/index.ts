@@ -40,3 +40,4 @@ export * from './AdjustStockModal';
 export * from './MenuItemStockRequirementsModal';
 export * from './SubItemStockRequirementsModal';
 export * from './StockSearchSortToolbar';
+export * from './OrderDetailsModal';
