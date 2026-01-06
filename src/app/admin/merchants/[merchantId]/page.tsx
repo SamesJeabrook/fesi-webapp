@@ -50,6 +50,13 @@ const dashboardItems = [
     color: 'info'
   },
   {
+    title: 'Stock Management',
+    description: 'Manage inventory and stock levels',
+    icon: '📦',
+    href: '/admin/merchants/[merchantId]/stock',
+    color: 'warning'
+  },
+  {
     title: 'Events Management',
     description: 'Manage merchant events and schedules',
     icon: '🎉',
