@@ -15,6 +15,7 @@ export interface MenuItemManagementCardProps {
   imageUrl?: string;
   onToggleAvailability?: (id: string, currentStatus: boolean) => void;
   onEdit?: (id: string) => void;
+  onManageStock?: (id: string, name: string) => void;
   showOrder?: boolean;
 }
 
@@ -29,6 +30,7 @@ export const MenuItemManagementCard: React.FC<MenuItemManagementCardProps> = ({
   imageUrl,
   onToggleAvailability,
   onEdit,
+  onManageStock,
   showOrder = true,
 }) => {
   const formatPrice = (priceInCents: number) => {
@@ -93,6 +95,15 @@ export const MenuItemManagementCard: React.FC<MenuItemManagementCardProps> = ({
             onClick={() => onToggleAvailability(id, isActive)}
           >
             {isActive ? 'Make Unavailable' : 'Make Available'}
+          </Button>
+        )}
+        {onManageStock && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onManageStock(id, title)}
+          >
+            📦 Stock
           </Button>
         )}
         {onEdit && (

@@ -40,7 +40,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
           )}
         </div>
         <div className={styles.card__meta}>
-          <Typography variant="body-small" color="secondary">
+          <Typography variant="body-small">
             {menu.item_count || 0} item{menu.item_count !== 1 ? 's' : ''}
           </Typography>
         </div>
@@ -48,7 +48,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
 
       {menu.description && (
         <div className={styles.card__description}>
-          <Typography variant="body-small" color="secondary">
+          <Typography variant="body-small">
             {menu.description}
           </Typography>
         </div>
@@ -57,7 +57,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
       <div className={styles.card__actions}>
         <Button
           variant="secondary"
-          size="small"
+          size="sm"
           onClick={() => onEdit(menu.id)}
         >
           Edit
@@ -65,7 +65,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
         {!menu.is_default && (
           <Button
             variant="secondary"
-            size="small"
+            size="sm"
             onClick={() => onSetDefault(menu.id)}
           >
             Set as Default
@@ -74,7 +74,7 @@ export const MenuCard: React.FC<MenuCardProps> = ({
         {!menu.is_default && (
           <Button
             variant="danger"
-            size="small"
+            size="sm"
             onClick={() => onDelete(menu.id)}
           >
             Delete

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import { MenuItemManagementCard, EditMenuItemModal } from '@/components/molecules';
+import { MenuItemManagementCard, EditMenuItemModal, MenuItemStockRequirementsModal } from '@/components/molecules';
 import { CreateMenuItemForm } from '@/components/organisms';
 import { SubItemGroup } from '@/components/molecules/OptionGroupSelector';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -43,6 +43,8 @@ export default function MenuItemsPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [merchantId, setMerchantId] = useState<string>('');
+  const [stockModalItem, setStockModalItem] = useState<{ id: string; name: string } | null>(null);
+  const [authToken, setAuthToken] = useState<string>('');
 
   // Prevent hydration issues
   useEffect(() => {
@@ -55,19 +57,23 @@ export default function MenuItemsPage() {
 
       // Extract merchant ID from dev token or get from /me endpoint
       let currentMerchantId: string;
+      let token: string;
       const devToken = localStorage.getItem('dev_token');
       
       if (devToken && devToken.startsWith('dev-merchant-')) {
         // Extract merchant ID from dev token
         currentMerchantId = devToken.replace('dev-merchant-', '');
+        token = devToken;
         console.log('[DEV MODE] Using merchant ID from dev token:', currentMerchantId);
       } else {
         // For real Auth0 tokens, get merchant data from /me endpoint
         const merchantData = await api.get('/api/merchants/me');
         currentMerchantId = merchantData.id;
+        token = await getAccessTokenSilently();
       }
       
       setMerchantId(currentMerchantId);
+      setAuthToken(token);
 
       // Fetch categories and menu items in parallel
       const [categoriesData, menuData] = await Promise.all([
@@ -260,6 +266,7 @@ export default function MenuItemsPage() {
         {isCreating && (
           <CreateMenuItemForm
             categories={categories}
+            authToken={authToken}
             onSubmit={createItem}
             onCancel={() => setIsCreating(false)}
             isSubmitting={isSubmitting}
@@ -299,6 +306,7 @@ export default function MenuItemsPage() {
                   displayOrder={item.display_order}
                   imageUrl={item.image_url}
                   onToggleAvailability={toggleItemAvailability}
+                  onManageStock={(id, name) => setStockModalItem({ id, name })}
                   onEdit={() => handleEditItem(item)}
                 />
               </Grid.Item>
@@ -327,6 +335,17 @@ export default function MenuItemsPage() {
             isOpen={!!editingItem}
             onClose={() => setEditingItem(null)}
             onSave={handleUpdateItem}
+            merchantId={merchantId}
+          />
+        )}
+
+        {/* Stock Requirements Modal */}
+        {stockModalItem && (
+          <MenuItemStockRequirementsModal
+            isOpen={!!stockModalItem}
+            onClose={() => setStockModalItem(null)}
+            menuItemId={stockModalItem.id}
+            menuItemName={stockModalItem.name}
             merchantId={merchantId}
           />
         )}

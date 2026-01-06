@@ -75,6 +75,13 @@ const dashboardItems = [
     href: '/merchant/admin/analytics',
     color: 'secondary'
   },
+  {
+    title: 'Stock Management',
+    description: 'Track inventory and manage stock levels',
+    icon: '📦',
+    href: '/merchant/admin/stock',
+    color: 'success'
+  },
 ];
 
 export default function MerchantAdminDashboard() {

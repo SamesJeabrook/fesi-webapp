@@ -1,0 +1,41 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 8rem;
+}
+
+.track {
+  flex: 1;
+  height: 0.5rem;
+  background-color: var(--color-neutral-200);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+
+  &--out_of_stock {
+    background-color: #DC2626;
+  }
+
+  &--low_stock {
+    background-color: #EAB308;
+  }
+
+  &--in_stock {
+    background-color: #16A34A;
+  }
+}
+
+.label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  min-width: 2.5rem;
+  text-align: right;
+}

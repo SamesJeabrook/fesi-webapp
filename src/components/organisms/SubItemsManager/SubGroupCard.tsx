@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Typography, Button, FormInput, FormSelect, FormCheckbox } from '@/components/atoms';
-import { ExpandableCard, EditableListItem, ConfirmationModal, AddSubItemModal } from '@/components/molecules';
+import { ExpandableCard, EditableListItem, ConfirmationModal, AddSubItemModal, SubItemStockRequirementsModal } from '@/components/molecules';
 import { Badge } from '@/components/atoms/Badge';
 import { SubItemGroup, SubItem, UpdateSubGroupData, CreateSubItemData, UpdateSubItemData } from '@/services/subItemsAPI';
 import styles from './SubGroupCard.module.scss';
@@ -169,6 +169,7 @@ export const SubGroupCard: React.FC<SubGroupCardProps> = ({
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [deletingItem, setDeletingItem] = useState<string | null>(null);
+  const [stockModalItem, setStockModalItem] = useState<{ id: string; name: string } | null>(null);
 
   const handleUpdateGroup = (data: UpdateSubGroupData) => {
     onUpdateGroup(data);
@@ -291,6 +292,15 @@ export const SubGroupCard: React.FC<SubGroupCardProps> = ({
                         canDelete={true}
                         onEdit={() => setEditingItem(item.id)}
                         onDelete={() => setDeletingItem(item.id)}
+                        actions={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setStockModalItem({ id: item.id, name: item.name })}
+                          >
+                            📦 Stock
+                          </Button>
+                        }
                       />
                     )}
                   </div>
@@ -323,6 +333,17 @@ export const SubGroupCard: React.FC<SubGroupCardProps> = ({
           message={`Are you sure you want to delete "${itemToDelete.name}"?`}
           confirmText="Delete"
           variant="danger"
+        />
+      )}
+
+      {/* Stock Requirements Modal */}
+      {stockModalItem && (
+        <SubItemStockRequirementsModal
+          isOpen={true}
+          onClose={() => setStockModalItem(null)}
+          subItemId={stockModalItem.id}
+          subItemName={stockModalItem.name}
+          merchantId={group.merchant_id}
         />
       )}
     </>
