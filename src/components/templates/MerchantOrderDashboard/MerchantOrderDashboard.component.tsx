@@ -150,11 +150,15 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
     console.log('Refund order:', orderId);
   };
 
-  const handleRefire = (orderId: string, itemIds?: string[]) => {
-    // Refresh orders after refire
+  const handleRefire = (orderId: string, itemIds?: string[], newStatus?: string, refiredAt?: string) => {
+    console.log('Refire completed:', { orderId, itemIds, newStatus, refiredAt });
+    
+    // Close the modal
+    setSelectedOrder(null);
+    
+    // Refresh orders from parent to get updated data with refired_item_ids from DB
     onRefresh?.();
     setLastUpdated(new Date());
-    setSelectedOrder(null);
   };
 
   const getOrderStats = () => {

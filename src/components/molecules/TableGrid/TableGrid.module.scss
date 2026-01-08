@@ -1,0 +1,64 @@
+
+@import '@/styles/mixins';
+
+.tableGridContainer {
+  width: 100%;
+}
+
+.statusSummary {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-gray-50, #f9fafb);
+  border-radius: var(--border-radius-md);
+  flex-wrap: wrap;
+
+  .statusItem {
+    display: flex;
+    align-items: center;
+  }
+
+  .available {
+    color: var(--color-success);
+    font-weight: 600;
+  }
+
+  .occupied {
+    color: var(--color-error);
+    font-weight: 600;
+  }
+
+  .reserved {
+    color: var(--color-warning);
+    font-weight: 600;
+  }
+
+  .cleaning {
+    color: var(--color-info, #6b7280);
+    font-weight: 600;
+  }
+}
+
+.tableGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var(--spacing-sm);
+  }
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+  background: var(--color-gray-50, #f9fafb);
+  border-radius: var(--border-radius-md);
+  min-height: 200px;
+}

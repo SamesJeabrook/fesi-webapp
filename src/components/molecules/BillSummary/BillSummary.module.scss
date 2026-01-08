@@ -1,0 +1,84 @@
+.billSummary {
+  padding: var(--spacing-md);
+  background: var(--color-white);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.lineItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.secondary {
+  color: var(--color-text-secondary);
+}
+
+.discount {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.total {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.paid {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.remaining {
+  color: var(--color-error);
+  font-weight: 700;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--spacing-md) 0;
+}
+
+.splitSection {
+  margin-top: var(--spacing-md);
+}
+
+.splitLabel {
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+}
+
+.splitControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.splitCount {
+  min-width: 100px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.perPerson {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm);
+  background: var(--color-gray-50, #f9fafb);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-md);
+
+  .perPersonAmount {
+    color: var(--color-primary);
+  }
+}

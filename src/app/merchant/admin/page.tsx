@@ -62,6 +62,13 @@ const dashboardItems = [
     color: 'primary'
   },
   {
+    title: 'Table Management',
+    description: 'Manage restaurant tables and dining sessions',
+    icon: '🪑',
+    href: '/merchant/admin/tables',
+    color: 'info'
+  },
+  {
     title: 'System Settings',
     description: 'Configure your merchant settings and preferences',
     icon: '⚙️',

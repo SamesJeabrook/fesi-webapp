@@ -9,12 +9,15 @@ export interface OrderDetailsModalProps {
     customer_email?: string;
     order_type?: 'delivery' | 'pickup';
     special_instructions?: string;
+    notes?: string;
     created_at: string;
     items: OrderItem[];
-    subtotal: number;
+    subtotal?: number;
+    subtotal_amount?: number;
     delivery_fee?: number;
     platform_fee?: number;
-    total: number;
+    total?: number;
+    total_amount?: number;
     payment_status?: string;
     delivery_address?: {
       line1: string;
@@ -24,7 +27,7 @@ export interface OrderDetailsModalProps {
     };
   };
   onRefund?: (orderId: string) => void;
-  onRefire?: (orderId: string, itemIds?: string[]) => void;
+  onRefire?: (orderId: string, itemIds?: string[], newStatus?: string, refiredAt?: string) => void;
   merchantId: string;
 }
 

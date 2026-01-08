@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
 import { AnalyticsPageTemplate } from '@/components/templates/AnalyticsPageTemplate';
+import { RefireAnalytics } from '@/components/organisms';
 import type { OverviewStats, MonthlyBreakdown } from '@/components/templates/AnalyticsPageTemplate';
 import type { EventReport } from '@/components/organisms/EventReportsTable';
 import { getAuthToken, getMerchantIdFromDevToken } from '@/utils/devAuth';
@@ -121,18 +122,27 @@ export default function MerchantAnalyticsPage() {
   }
 
   return (
-    <AnalyticsPageTemplate
-      merchantName={merchantName}
-      overviewStats={overviewStats}
-      recentEvents={events}
-      monthlyBreakdowns={monthlyBreakdowns}
-      subscriptionTier={subscriptionTier}
-      dataRetentionMonths={dataRetentionMonths}
-      isApproachingLimit={events.length > 0}
-      loading={loading}
-      onEventClick={handleEventClick}
-      onUpgrade={handleUpgrade}
-      backLink="/merchant/admin"
-    />
+    <>
+      <AnalyticsPageTemplate
+        merchantName={merchantName}
+        overviewStats={overviewStats}
+        recentEvents={events}
+        monthlyBreakdowns={monthlyBreakdowns}
+        subscriptionTier={subscriptionTier}
+        dataRetentionMonths={dataRetentionMonths}
+        isApproachingLimit={events.length > 0}
+        loading={loading}
+        onEventClick={handleEventClick}
+        onUpgrade={handleUpgrade}
+        backLink="/merchant/admin"
+      />
+      
+      {/* Refire Analytics Section */}
+      {merchantId && (
+        <div style={{ padding: '2rem', background: 'var(--color-background)', borderTop: '1px solid var(--color-border)' }}>
+          <RefireAnalytics merchantId={merchantId} />
+        </div>
+      )}
+    </>
   );
 }

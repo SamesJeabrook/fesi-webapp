@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
+import Link from 'next/link';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { SystemSettingsTemplate } from '@/components/templates/SystemSettingsTemplate/SystemSettingsTemplate';
+import { Typography, Button } from '@/components/atoms';
 import { getMerchantIdFromDevToken, getAuthToken } from '@/utils/devAuth';
 import api from '@/utils/api';
+import styles from './settings.module.scss';
 
 interface Category {
   id: string;
@@ -104,13 +107,40 @@ export default function MerchantSettingsPage() {
 
   return (
     <ProtectedRoute requireRole={['merchant']}>
-      <SystemSettingsTemplate
-        company={company}
-        loading={loading}
-        availableTags={availableTags.map(cat => ({ id: cat.id, label: cat.name }))}
-        backLink={{ label: 'Back to Dashboard', href: '/merchant/admin' }}
-      />
-      {loadingTags && <div>Loading categories...</div>}
+      <div className={styles.settingsContainer}>
+        <div className={styles.settingsNav}>
+          <Typography variant="heading-5" className={styles.navTitle}>Settings</Typography>
+          <Link href="/merchant/admin/settings/operating-mode" className={styles.navLink}>
+            <div className={styles.navItem}>
+              <span className={styles.navIcon}>🏪</span>
+              <div>
+                <Typography variant="body-medium">Operating Mode</Typography>
+                <Typography variant="body-small" className={styles.navDescription}>
+                  Switch between event-based and static restaurant mode
+                </Typography>
+              </div>
+            </div>
+          </Link>
+          <div className={styles.navItem + ' ' + styles.navItemActive}>
+            <span className={styles.navIcon}>⚙️</span>
+            <div>
+              <Typography variant="body-medium">General Settings</Typography>
+              <Typography variant="body-small" className={styles.navDescription}>
+                Business info, categories, and compliance
+              </Typography>
+            </div>
+          </div>
+        </div>
+        <div className={styles.settingsContent}>
+          <SystemSettingsTemplate
+            company={company}
+            loading={loading}
+            availableTags={availableTags.map(cat => ({ id: cat.id, label: cat.name }))}
+            backLink={{ label: 'Back to Dashboard', href: '/merchant/admin' }}
+          />
+          {loadingTags && <div>Loading categories...</div>}
+        </div>
+      </div>
     </ProtectedRoute>
   );
 }

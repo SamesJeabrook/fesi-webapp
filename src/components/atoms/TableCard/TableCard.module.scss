@@ -1,0 +1,97 @@
+@import '@/styles/mixins';
+
+.tableCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-lg);
+  border: 2px solid var(--color-border);
+  background: var(--color-white);
+  transition: all 0.2s ease;
+  min-height: 120px;
+  aspect-ratio: 1;
+
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  &.available {
+    border-color: var(--color-success);
+    background: var(--color-success-light, #f0fdf4);
+
+    .statusIcon {
+      color: var(--color-success);
+    }
+  }
+
+  &.occupied {
+    border-color: var(--color-error);
+    background: var(--color-error-light, #fef2f2);
+
+    .statusIcon {
+      color: var(--color-error);
+    }
+  }
+
+  &.reserved {
+    border-color: var(--color-warning);
+    background: var(--color-warning-light, #fffbeb);
+
+    .statusIcon {
+      color: var(--color-warning);
+    }
+  }
+
+  &.cleaning {
+    border-color: var(--color-info, #6b7280);
+    background: var(--color-gray-50, #f9fafb);
+
+    .statusIcon {
+      color: var(--color-info, #6b7280);
+    }
+  }
+}
+
+.statusIcon {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  font-size: 1.25rem;
+}
+
+.tableNumber {
+  margin-bottom: var(--spacing-xs);
+  text-align: center;
+  font-weight: 700;
+}
+
+.capacity {
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.sessionInfo {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--color-border);
+  width: 100%;
+  text-align: center;
+
+  .guestCount {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .elapsed {
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+  }
+}

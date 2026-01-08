@@ -91,13 +91,22 @@ function useMerchantOrders(merchantId: string | null) {
           id: order.id,
           customerName: order.customer_name || order.guest_first_name + ' ' + order.guest_last_name || 'Anonymous',
           items: order.items?.map((item: any) => ({
+            id: item.id,
+            menu_item_id: item.menu_item_id,
             name: item.menu_item_title || item.menu_item_name || item.name,
             quantity: item.quantity,
-            price: (item.unit_price || item.price) / 100, // Convert from cents
+            price: (item.unit_price || item.total_price || item.price || 0) / 100, // Convert from cents
             menu_item_title: item.menu_item_title || item.menu_item_name || item.name, // For OrderCard component
+            // Keep raw values for modal
+            unit_price: item.unit_price,
+            total_price: item.total_price,
+            menu_item_name: item.menu_item_title || item.menu_item_name,
             customizations: item.customizations?.map((custom: any) => ({
+              sub_item_id: custom.sub_item_id,
               sub_item_name: custom.sub_item_name || custom.name,
-              quantity: custom.quantity || 1
+              quantity: custom.quantity || 1,
+              unit_price: custom.unit_price,
+              total_price: custom.total_price
             })) || []
           })) || [],
           total: (order.total_amount || order.total) / 100, // Convert from cents
@@ -105,16 +114,31 @@ function useMerchantOrders(merchantId: string | null) {
           timestamp: new Date(order.created_at || order.timestamp).toISOString(),
           qrVerified: order.qr_verified || false,
           version: order.version || 1,
-          // Additional fields for OrderCard
+          // Additional fields for OrderCard and OrderDetailsModal
           order_number: order.order_number || `ORD-${order.id?.slice(-6) || '000000'}`,
           customer_name: order.customer_name || order.guest_first_name + ' ' + order.guest_last_name || 'Anonymous',
           customer_email: order.customer_email || order.guest_email || '',
-          total_amount: order.total_amount || order.total || 0,
+          first_name: order.first_name || order.guest_first_name,
+          last_name: order.last_name || order.guest_last_name,
+          total_amount: order.total_amount || order.total || 0, // Keep raw value in pence for modal
+          subtotal_amount: order.subtotal_amount,
+          delivery_fee: order.delivery_fee,
+          platform_fee: order.platform_fee,
+          payment_status: order.payment_status,
+          order_type: order.order_type,
+          notes: order.notes,
+          special_instructions: order.special_instructions,
           created_at: order.created_at || order.timestamp || new Date().toISOString(),
           estimated_completion: order.estimated_completion,
-          notes: order.notes
+          refired_at: order.refired_at,
+          refired_item_ids: Array.isArray(order.refired_item_ids) 
+            ? order.refired_item_ids 
+            : (typeof order.refired_item_ids === 'string' 
+              ? JSON.parse(order.refired_item_ids) 
+              : []),
         }));      
         
+        console.log('Transformed orders sample:', transformedOrders[0]);
         setOrders(transformedOrders);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
@@ -215,35 +239,10 @@ export default function MerchantAdminPage() {
     : null;
 
   const handleOrderStatusChange = async (orderId: string, newStatus: string) => {
-    try {
-      const token = await getAuthToken(getAccessTokenSilently);
-      
-      const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          status: newStatus
-        }),
-      });
-
-      if (!response.ok) {
-        if (response.status === 409) {
-          alert('Order was modified by another process. Refreshing orders...');
-          refetch();
-          return;
-        }
-        throw new Error(`Failed to update order status: ${response.status}`);
-      }
-
-      console.log('Order status updated successfully:', { orderId, newStatus });
-      refetch();
-    } catch (error) {
-      console.error('Failed to update order status:', error);
-      alert('Failed to update order status. Please try again.');
-    }
+    // This is called AFTER MerchantOrderDashboard has already made the API call
+    // We just need to refetch to update the UI
+    console.log('Order status changed:', { orderId, newStatus });
+    refetch();
   };
 
   if (!merchantId) {

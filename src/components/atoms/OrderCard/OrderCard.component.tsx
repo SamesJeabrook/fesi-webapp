@@ -19,6 +19,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       [styles.draggable]: isDraggable,
       [styles.dragging]: isDragging,
       [styles.clickable]: onClick,
+      [styles.refired]: order.refired_at && order.status === 'preparing',
     },
     className
   );
@@ -45,6 +46,17 @@ export const OrderCard: React.FC<OrderCardProps> = ({
   const getTotalItems = () => {
     return order.items.reduce((total, item) => total + item.quantity, 0);
   };
+
+  // Debug refired items
+  if (order.refired_at) {
+    console.log('Refired order:', {
+      orderId: order.id,
+      orderNumber: order.order_number,
+      refired_at: order.refired_at,
+      refired_item_ids: order.refired_item_ids,
+      items: order.items.map(i => ({ id: i.id, title: i.menu_item_title }))
+    });
+  }
 
   return (
     <div
@@ -76,24 +88,47 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       <div className={styles.items}>
         <Typography variant="body-small" className={styles.itemCount}>
           {getTotalItems()} item{getTotalItems() !== 1 ? 's' : ''}
+          {order.refired_at && order.refired_item_ids && order.refired_item_ids.length > 0 && (
+            <span className={styles.refiredBadge}> 🔥 {order.refired_item_ids.length} refired</span>
+          )}
         </Typography>
         <div className={styles.itemList}>
-          {order.items.slice(0, 3).map((item, index) => (
-            <div key={index} className={styles.item}>
-              <Typography variant="body-small">
-                {item.quantity}x {item.menu_item_title}
-              </Typography>
-              {item.customizations && item.customizations.length > 0 && (
-                <div className={styles.customizations}>
-                  {item.customizations.map((custom, customIndex) => (
-                    <Typography key={customIndex} variant="caption" className={styles.customization}>
-                      + {custom.sub_item_name}
-                    </Typography>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+          {order.items.slice(0, 3).map((item, index) => {
+            const isRefired = order.refired_item_ids?.includes(item.id || '');
+            
+            // Debug logging
+            if (order.refired_at && index === 0) {
+              console.log('OrderCard item check:', {
+                orderId: order.id,
+                itemId: item.id,
+                itemTitle: item.menu_item_title,
+                refired_item_ids: order.refired_item_ids,
+                isRefired,
+                refiredItemIdsType: typeof order.refired_item_ids,
+                refiredItemIdsArray: Array.isArray(order.refired_item_ids)
+              });
+            }
+            
+            return (
+              <div key={index} className={classNames(styles.item, {
+                [styles.refiredItem]: isRefired
+              })}>
+                <Typography variant="body-small">
+                  {isRefired && <span className={styles.fireIcon}>🔥 </span>}
+                  {item.quantity}x {item.menu_item_title}
+                </Typography>
+                {item.customizations && item.customizations.length > 0 && (
+                  <div className={styles.customizations}>
+                    {item.customizations.map((custom, customIndex) => (
+                      <Typography key={customIndex} variant="caption" className={styles.customization}>
+                        + {custom.sub_item_name}
+                      </Typography>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
           {order.items.length > 3 && (
             <Typography variant="body-small" className={styles.moreItems}>
               +{order.items.length - 3} more items

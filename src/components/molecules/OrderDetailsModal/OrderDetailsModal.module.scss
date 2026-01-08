@@ -1,4 +1,4 @@
-@import '@/styles/mixins';
+@use '@/styles/mixins';
 
 .modal {
   :global(.modal__content) {
@@ -147,6 +147,13 @@
   border-radius: var(--border-radius-md);
   border: 2px solid var(--color-border);
 
+  &__refired {
+    background: linear-gradient(to right, rgba(255, 107, 0, 0.1), rgba(255, 170, 0, 0.05));
+    border-left: 4px solid #ff6b00;
+    border-color: rgba(255, 107, 0, 0.3);
+    box-shadow: 0 0 10px rgba(255, 107, 0, 0.2);
+  }
+
   &__header {
     display: flex;
     justify-content: space-between;
@@ -158,6 +165,23 @@
     font-size: var(--font-size-md);
     font-weight: 600;
     color: var(--color-text-primary);
+    
+    .fireIcon {
+      display: inline-block;
+      animation: flicker 1.5s ease-in-out infinite;
+      margin-right: 4px;
+    }
+  }
+
+  @keyframes flicker {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
   }
 
   &__quantity {

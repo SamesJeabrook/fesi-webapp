@@ -8,3 +8,8 @@ export * from './POSOrderSummary';
 export * from './CreateMenuItemForm';
 export * from './MenuList';
 export * from './MenuEditor';
+export * from './RefireAnalytics';
+export * from './TableFloorPlan';
+export * from './TableSessionModal';
+export * from './PaymentModal';
+export * from './OperatingModeSettings';

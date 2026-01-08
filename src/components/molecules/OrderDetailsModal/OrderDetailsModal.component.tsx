@@ -19,6 +19,18 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isRefiring, setIsRefiring] = useState(false);
 
+  // Debug: Log the order data to see what we're receiving
+  React.useEffect(() => {
+    if (isOpen && order) {
+      console.log('OrderDetailsModal - Full order data:', order);
+      console.log('OrderDetailsModal - Order items:', order.items);
+      if (order.items?.[0]) {
+        console.log('OrderDetailsModal - First item:', order.items[0]);
+        console.log('OrderDetailsModal - First item customizations:', order.items[0].customizations);
+      }
+    }
+  }, [isOpen, order]);
+
   const formatPrice = (amount: number) => {
     return `£${(amount / 100).toFixed(2)}`;
   };
@@ -64,16 +76,34 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     try {
       setIsRefiring(true);
 
+      console.log('Refiring items:', {
+        orderId: order.id,
+        selectedItems,
+        merchantId
+      });
+
       // Call API to refire items
-      await api.post(`/api/orders/${order.id}/refire`, {
+      const response = await api.post<{
+        success: boolean;
+        status: string;
+        refired_at: string;
+        refired_items: number;
+      }>(`/api/orders/${order.id}/refire`, {
         item_ids: selectedItems,
         merchant_id: merchantId,
       });
 
-      alert(`Successfully refired ${selectedItems.length} item(s). Stock has been deducted.`);
+      console.log('Refire response:', response);
+
+      // Close both modals immediately
       setShowRefireModal(false);
       setSelectedItems([]);
-      onRefire?.(order.id, selectedItems);
+      
+      // Pass the updated status, refired_at, and refired item IDs to parent
+      onRefire?.(order.id, selectedItems, response.status, response.refired_at);
+      
+      // Close the main modal via onClose
+      onClose();
     } catch (error) {
       console.error('Error refiring items:', error);
       alert('Failed to refire items. Please try again.');
@@ -172,11 +202,14 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div className={styles.items}>
             <div className={styles.items__title}>Order Items</div>
             <div className={styles.items__list}>
-              {order.items.map((item) => (
-                <div key={item.id} className={styles.item}>
+              {order.items.map((item, i) => {
+                const isRefired = order.refired_item_ids?.includes(item.id);
+                return (
+                <div key={`${item.id}-${i}`} className={`${styles.item} ${isRefired ? styles.item__refired : ''}`}>
                   <div className={styles.item__header}>
                     <div>
                       <span className={styles.item__name}>
+                        {isRefired && <span className={styles.fireIcon}>🔥 </span>}
                         {item.menu_item_name || item.menu_item_title}
                       </span>
                       <span className={styles.item__quantity}>x{item.quantity}</span>
@@ -215,18 +248,19 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     </div>
                   )}
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
 
           {/* Special Instructions */}
-          {order.special_instructions && (
+          {(order.special_instructions || order.notes) && (
             <div className={styles.specialInstructions}>
               <div className={styles.specialInstructions__title}>
                 ⚠️ Special Instructions
               </div>
               <div className={styles.specialInstructions__text}>
-                {order.special_instructions}
+                {order.special_instructions || order.notes}
               </div>
             </div>
           )}
@@ -235,7 +269,9 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           <div className={styles.summary}>
             <div className={styles.summary__row}>
               <span className={styles.summary__label}>Subtotal</span>
-              <span className={styles.summary__value}>{formatPrice(order.subtotal)}</span>
+              <span className={styles.summary__value}>
+                {formatPrice(order.subtotal || order.subtotal_amount || order.total_amount || order.total || 0)}
+              </span>
             </div>
             {order.delivery_fee !== undefined && order.delivery_fee > 0 && (
               <div className={styles.summary__row}>
@@ -251,7 +287,9 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             )}
             <div className={`${styles.summary__row} ${styles['summary__row--total']}`}>
               <span className={styles.summary__label}>Total</span>
-              <span className={styles.summary__value}>{formatPrice(order.total)}</span>
+              <span className={styles.summary__value}>
+                {formatPrice(order.total_amount || 0)}
+              </span>
             </div>
           </div>
 
@@ -297,7 +335,7 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                     onChange={() => toggleItemSelection(item.id)}
                   />
                   <span>
-                    {item.menu_item_name} x{item.quantity}
+                    {item.menu_item_name || item.menu_item_title} x{item.quantity}
                   </span>
                 </label>
               </div>

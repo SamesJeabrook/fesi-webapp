@@ -1,0 +1,86 @@
+
+
+.tableSessionModal {
+  min-height: 300px;
+}
+
+.loading,
+.error,
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  text-align: center;
+}
+
+.error {
+  .errorText {
+    color: var(--color-error);
+  }
+}
+
+.sessionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: var(--color-gray-50, #f9fafb);
+  border-radius: var(--border-radius-md);
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.paymentStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.badge {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+
+  &.pending {
+    background: var(--color-warning-light, #fffbeb);
+    color: var(--color-warning);
+  }
+
+  &.partial {
+    background: var(--color-info-light, #eff6ff);
+    color: var(--color-info, #3b82f6);
+  }
+
+  &.complete {
+    background: var(--color-success-light, #f0fdf4);
+    color: var(--color-success);
+  }
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: var(--spacing-lg) 0;
+}
+
+.ordersSection,
+.billSection {
+  margin-bottom: var(--spacing-lg);
+}
+
+.sectionTitle {
+  margin-bottom: var(--spacing-md);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}

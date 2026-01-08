@@ -8,6 +8,7 @@ export interface OrderCardProps {
     last_name: string;
     customer_email?: string;
     items: Array<{
+      id?: string;
       menu_item_title: string;
       quantity: number;
       customizations?: Array<{
@@ -20,6 +21,8 @@ export interface OrderCardProps {
     created_at: string;
     estimated_completion?: string;
     notes?: string;
+    refired_at?: string;
+    refired_item_ids?: string[];
   };
   /** Whether the card is draggable */
   isDraggable?: boolean;
