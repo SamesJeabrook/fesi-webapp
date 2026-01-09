@@ -1,7 +1,7 @@
 
 
 .tablesPage {
-  padding: var(--spacing-lg);
+  padding: var(--spacing-8);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -10,8 +10,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: var(--spacing-xl);
-  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-10);
+  gap: var(--spacing-8);
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -21,25 +21,40 @@
 .titleSection {
   flex: 1;
 
+  .backLink {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--color-primary-500);
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-4);
+    transition: color var(--duration-fast);
+
+    &:hover {
+      color: var(--color-primary-700);
+    }
+  }
+
   .subtitle {
-    margin-top: var(--spacing-xs);
+    margin-top: var(--spacing-2);
     color: var(--color-text-secondary);
   }
 }
 
 .headerActions {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-6);
   align-items: center;
 }
 
 .statusBadge {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
+  gap: var(--spacing-2);
+  padding: var(--spacing-4) var(--spacing-6);
   background: var(--color-success-light, #f0fdf4);
-  border: 1px solid var(--color-success);
+  border: 1px solid var(--color-success-main);
   border-radius: var(--border-radius-full);
 
   &.closed {
@@ -71,8 +86,8 @@
 }
 
 .content {
-  background: var(--color-white);
-  padding: var(--spacing-lg);
+  background: var(--color-neutral-white);
+  padding: var(--spacing-8);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
 }
@@ -86,17 +101,17 @@
   justify-content: center;
   min-height: 60vh;
   text-align: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-10);
 }
 
 .notStaticMode {
-  background: var(--color-gray-50, #f9fafb);
+  background: var(--color-neutral-50, #f9fafb);
   border-radius: var(--border-radius-lg);
   max-width: 600px;
-  margin: var(--spacing-xl) auto;
+  margin: var(--spacing-10) auto;
 
   .description {
-    margin: var(--spacing-lg) 0;
+    margin: var(--spacing-8) 0;
     color: var(--color-text-secondary);
   }
 }
@@ -105,5 +120,5 @@
   background: var(--color-error-light, #fef2f2);
   border-radius: var(--border-radius-lg);
   max-width: 600px;
-  margin: var(--spacing-xl) auto;
+  margin: var(--spacer-xl) auto;
 }

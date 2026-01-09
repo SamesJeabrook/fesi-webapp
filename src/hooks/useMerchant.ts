@@ -12,6 +12,16 @@ interface Merchant {
   table_count?: number;
   static_location?: any;
   permanent_event_id?: string;
+  reservation_enabled?: boolean;
+  min_reservation_duration?: number;
+  max_reservation_duration?: number;
+  min_guests_per_reservation?: number;
+  max_guests_per_reservation?: number;
+  reservation_interval?: number;
+  advance_booking_days?: number;
+  deposit_required?: boolean;
+  deposit_percentage?: number;
+  auto_confirm_reservations?: boolean;
 }
 
 export const useMerchant = () => {

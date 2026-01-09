@@ -20,7 +20,7 @@ export const TableGrid: React.FC<TableGridProps> = ({
   if (filteredTables.length === 0) {
     return (
       <div className={styles.emptyState}>
-        <Typography variant="body">
+        <Typography variant="body-medium">
           {filterStatus === 'all' 
             ? 'No tables configured. Add tables to get started.' 
             : `No ${filterStatus} tables.`}

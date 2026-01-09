@@ -13,3 +13,4 @@ export * from './TableFloorPlan';
 export * from './TableSessionModal';
 export * from './PaymentModal';
 export * from './OperatingModeSettings';
+export * from './CreateTablesModal';

@@ -97,3 +97,42 @@
     min-width: 120px;
   }
 }
+
+.notesSection {
+  margin-top: var(--spacing-5);
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--color-neutral-200);
+}
+
+.notesLabel {
+  color: var(--color-neutral-900);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-1);
+}
+
+.notesHint {
+  color: var(--color-neutral-600);
+  margin-bottom: var(--spacing-2);
+}
+
+.notesInput {
+  width: 100%;
+  padding: var(--spacing-3);
+  border: 2px solid var(--color-neutral-200);
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-neutral-900);
+  resize: vertical;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary-600);
+  }
+
+  &::placeholder {
+    color: var(--color-neutral-500);
+  }
+}

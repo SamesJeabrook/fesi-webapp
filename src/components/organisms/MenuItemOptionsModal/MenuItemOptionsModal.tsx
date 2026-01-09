@@ -42,6 +42,10 @@ export interface MenuItemOptionsModalProps {
   onOptionSelect: (groupId: string, subItemId: string, selectionType: 'single' | 'multiple', maxSelections: number | null) => void;
   /** Handler for adding item to cart with selections */
   onAddToCart: () => void;
+  /** Optional notes for the item */
+  notes?: string;
+  /** Handler for notes change */
+  onNotesChange?: (notes: string) => void;
 }
 
 export const MenuItemOptionsModal: React.FC<MenuItemOptionsModalProps> = ({
@@ -50,7 +54,9 @@ export const MenuItemOptionsModal: React.FC<MenuItemOptionsModalProps> = ({
   isOpen,
   onClose,
   onOptionSelect,
-  onAddToCart
+  onAddToCart,
+  notes = '',
+  onNotesChange
 }) => {
   if (!menuItem) return null;
 
@@ -153,6 +159,24 @@ export const MenuItemOptionsModal: React.FC<MenuItemOptionsModalProps> = ({
           </div>
         ))}
       </div>
+
+      {onNotesChange && (
+        <div className={styles.notesSection}>
+          <Typography variant="heading-6" className={styles.notesLabel}>
+            Additional Notes
+          </Typography>
+          <Typography variant="body-small" className={styles.notesHint}>
+            e.g., "No onions", "Extra sauce on the side"
+          </Typography>
+          <textarea
+            className={styles.notesInput}
+            value={notes}
+            onChange={(e) => onNotesChange(e.target.value)}
+            placeholder="Add any special requests..."
+            rows={3}
+          />
+        </div>
+      )}
     </Modal>
   );
 };

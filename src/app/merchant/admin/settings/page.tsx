@@ -121,6 +121,17 @@ export default function MerchantSettingsPage() {
               </div>
             </div>
           </Link>
+          <Link href="/merchant/admin/settings/reservations" className={styles.navLink}>
+            <div className={styles.navItem}>
+              <span className={styles.navIcon}>📅</span>
+              <div>
+                <Typography variant="body-medium">Reservations</Typography>
+                <Typography variant="body-small" className={styles.navDescription}>
+                  Configure table booking and reservation settings
+                </Typography>
+              </div>
+            </div>
+          </Link>
           <div className={styles.navItem + ' ' + styles.navItemActive}>
             <span className={styles.navIcon}>⚙️</span>
             <div>

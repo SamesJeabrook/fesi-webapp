@@ -68,7 +68,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       <div className={styles.header}>
         <div className={styles.orderInfo}>
           <Typography variant="heading-6" className={styles.orderNumber}>
-            #{order.order_number}
+            {order.table_number ? `Table ${order.table_number}` : `#${order.order_number}`}
           </Typography>
           <div className={`${styles.status} ${getStatusColor(order.status)}`}>
             {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
@@ -83,6 +83,11 @@ export const OrderCard: React.FC<OrderCardProps> = ({
         <Typography variant="body-medium" className={styles.customerName}>
           {order.first_name} {order.last_name}
         </Typography>
+        {order.table_number && (
+          <Typography variant="body-small" className={styles.tableNumber}>
+            🪑 Table {order.table_number}
+          </Typography>
+        )}
       </div>
 
       <div className={styles.items}>

@@ -1,5 +1,3 @@
-
-
 .tableSessionModal {
   min-height: 300px;
 }
@@ -10,22 +8,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-12);
   text-align: center;
 }
 
 .error {
   .errorText {
-    color: var(--color-error);
+    color: var(--color-error-main);
   }
 }
 
 .sessionInfo {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
-  background: var(--color-gray-50, #f9fafb);
+  gap: var(--spacing-2);
+  padding: var(--spacing-4);
+  background: var(--color-neutral-100);
   border-radius: var(--border-radius-md);
 }
 
@@ -38,49 +36,49 @@
 .paymentStatus {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-2);
 }
 
 .badge {
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-1) var(--spacing-2);
   border-radius: var(--border-radius-sm);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   text-transform: capitalize;
 
   &.pending {
-    background: var(--color-warning-light, #fffbeb);
-    color: var(--color-warning);
+    background: var(--color-warning-light);
+    color: var(--color-warning-dark);
   }
 
   &.partial {
-    background: var(--color-info-light, #eff6ff);
-    color: var(--color-info, #3b82f6);
+    background: var(--color-info-light);
+    color: var(--color-info-dark);
   }
 
   &.complete {
-    background: var(--color-success-light, #f0fdf4);
-    color: var(--color-success);
+    background: var(--color-success-light);
+    color: var(--color-success-dark);
   }
 }
 
 .divider {
   height: 1px;
-  background: var(--color-border);
-  margin: var(--spacing-lg) 0;
+  background: var(--color-neutral-300);
+  margin: var(--spacing-6) 0;
 }
 
 .ordersSection,
 .billSection {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-6);
 }
 
 .sectionTitle {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-4);
 }
 
 .modalFooter {
   display: flex;
   justify-content: flex-end;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-2);
 }

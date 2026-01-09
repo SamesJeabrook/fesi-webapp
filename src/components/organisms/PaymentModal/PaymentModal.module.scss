@@ -1,45 +1,43 @@
-
-
 .paymentModal {
   min-height: 400px;
 }
 
 .error {
-  padding: var(--spacing-md);
-  background: var(--color-error-light, #fef2f2);
-  border: 1px solid var(--color-error);
+  padding: var(--spacing-4);
+  background: var(--color-error-light);
+  border: 1px solid var(--color-error-main);
   border-radius: var(--border-radius-md);
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-6);
 
   .errorText {
-    color: var(--color-error);
+    color: var(--color-error-main);
   }
 }
 
 .billSection {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-6);
 }
 
 .divider {
   height: 1px;
-  background: var(--color-border);
-  margin: var(--spacing-lg) 0;
+  background: var(--color-neutral-300);
+  margin: var(--spacing-6) 0;
 }
 
 .paymentOptions,
 .amountSection {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-6);
 }
 
 .sectionTitle {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-4);
 }
 
 .methodButtons,
 .amountOptions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: var(--spacing-sm);
+  gap: var(--spacing-2);
 }
 
 .methodButton,
@@ -48,23 +46,23 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-md);
-  background: var(--color-white);
-  border: 2px solid var(--color-border);
+  padding: var(--spacing-4);
+  background: var(--color-neutral-white);
+  border: 2px solid var(--color-neutral-300);
   border-radius: var(--border-radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--duration-normal) var(--easing-ease);
   min-height: 100px;
 
   &:hover:not(:disabled) {
-    border-color: var(--color-primary);
+    border-color: var(--color-primary-600);
     transform: translateY(-2px);
     box-shadow: var(--shadow-sm);
   }
 
   &.active {
-    border-color: var(--color-primary);
-    background: var(--color-primary-light, #eff6ff);
+    border-color: var(--color-primary-600);
+    background: var(--color-primary-100);
   }
 
   &:disabled {
@@ -74,21 +72,21 @@
 }
 
 .methodIcon {
-  font-size: 2rem;
-  margin-bottom: var(--spacing-sm);
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--spacing-2);
 }
 
 .amount {
-  margin-top: var(--spacing-xs);
-  color: var(--color-primary);
+  margin-top: var(--spacing-1);
+  color: var(--color-primary-700);
 }
 
 .customAmount {
-  margin-top: var(--spacing-md);
+  margin-top: var(--spacing-4);
 }
 
 .modalFooter {
   display: flex;
   justify-content: flex-end;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-2);
 }

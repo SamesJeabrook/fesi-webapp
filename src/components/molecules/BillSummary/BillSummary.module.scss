@@ -1,15 +1,15 @@
 .billSummary {
-  padding: var(--spacing-md);
-  background: var(--color-white);
+  padding: var(--spacing-4);
+  background: var(--color-neutral-white);
   border-radius: var(--border-radius-md);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-neutral-300);
 }
 
 .lineItem {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-2);
 
   &:last-child {
     margin-bottom: 0;
@@ -17,68 +17,68 @@
 }
 
 .secondary {
-  color: var(--color-text-secondary);
+  color: var(--color-neutral-600);
 }
 
 .discount {
-  color: var(--color-success);
-  font-weight: 600;
+  color: var(--color-success-main);
+  font-weight: var(--font-weight-semibold);
 }
 
 .total {
-  color: var(--color-primary);
-  font-weight: 700;
+  color: var(--color-primary-700);
+  font-weight: var(--font-weight-bold);
 }
 
 .paid {
-  color: var(--color-success);
-  font-weight: 600;
+  color: var(--color-success-main);
+  font-weight: var(--font-weight-semibold);
 }
 
 .remaining {
-  color: var(--color-error);
-  font-weight: 700;
+  color: var(--color-error-main);
+  font-weight: var(--font-weight-bold);
 }
 
 .divider {
   height: 1px;
-  background: var(--color-border);
-  margin: var(--spacing-md) 0;
+  background: var(--color-neutral-300);
+  margin: var(--spacing-4) 0;
 }
 
 .splitSection {
-  margin-top: var(--spacing-md);
+  margin-top: var(--spacing-4);
 }
 
 .splitLabel {
-  font-weight: 600;
-  margin-bottom: var(--spacing-sm);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--spacing-2);
 }
 
 .splitControls {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
 }
 
 .splitCount {
   min-width: 100px;
   text-align: center;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
 }
 
 .perPerson {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--spacing-sm);
-  background: var(--color-gray-50, #f9fafb);
+  padding: var(--spacing-2);
+  background: var(--color-neutral-100);
   border-radius: var(--border-radius-sm);
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-4);
 
   .perPersonAmount {
-    color: var(--color-primary);
+    color: var(--color-primary-700);
   }
 }

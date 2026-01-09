@@ -120,6 +120,8 @@ function useMerchantOrders(merchantId: string | null) {
           customer_email: order.customer_email || order.guest_email || '',
           first_name: order.first_name || order.guest_first_name,
           last_name: order.last_name || order.guest_last_name,
+          table_number: order.table_number, // Add table number for table service orders
+          order_source: order.order_source, // Add order source (pos, table_service, online, etc.)
           total_amount: order.total_amount || order.total || 0, // Keep raw value in pence for modal
           subtotal_amount: order.subtotal_amount,
           delivery_fee: order.delivery_fee,

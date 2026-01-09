@@ -1,16 +1,16 @@
 .sessionTimer {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-1);
 }
 
 .label {
-  color: var(--color-text-secondary);
-  font-weight: 500;
+  color: var(--color-neutral-600);
+  font-weight: var(--font-weight-medium);
 }
 
 .time {
-  font-weight: 700;
-  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-600);
   font-variant-numeric: tabular-nums;
 }

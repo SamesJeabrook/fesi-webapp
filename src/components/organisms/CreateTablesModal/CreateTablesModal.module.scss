@@ -1,0 +1,86 @@
+.createTablesModal {
+  padding: var(--spacing-4) 0;
+}
+
+.description {
+  margin-bottom: var(--spacing-6);
+  color: var(--color-neutral-600);
+}
+
+.error {
+  background: var(--color-error-light);
+  border: 1px solid var(--color-error-main);
+  border-radius: var(--border-radius-base);
+  padding: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+  
+  p {
+    color: var(--color-error-dark);
+    margin: 0;
+  }
+}
+
+.tablesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-4);
+  max-height: 400px;
+  overflow-y: auto;
+  padding: var(--spacing-2);
+}
+
+.tableRow {
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-4);
+  background: var(--color-neutral-white);
+  position: relative;
+}
+
+.tableFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: var(--spacing-4);
+  margin-bottom: var(--spacing-2);
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  min-width: 0;
+}
+
+.fieldWide {
+  grid-column: span 1;
+  min-width: 0;
+
+  @media (min-width: 769px) {
+    grid-column: span 1;
+  }
+}
+
+.removeButton {
+  margin-top: var(--spacing-2);
+}
+
+.addButton {
+  margin-bottom: var(--spacing-4);
+}
+
+.summary {
+  background: var(--color-neutral-100);
+  border-radius: var(--border-radius-base);
+  padding: var(--spacing-3) var(--spacing-4);
+  text-align: center;
+}
+
+.summaryText {
+  color: var(--color-neutral-600);
+  
+  strong {
+    color: var(--color-neutral-900);
+  }
+}

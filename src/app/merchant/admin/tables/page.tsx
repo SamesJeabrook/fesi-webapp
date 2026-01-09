@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Typography, Button } from '@/components/atoms';
-import { TableFloorPlan, TableSessionModal, PaymentModal } from '@/components/organisms';
+import { TableFloorPlan, TableSessionModal, PaymentModal, CreateTablesModal } from '@/components/organisms';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useMerchant } from '@/hooks/useMerchant';
 import api from '@/utils/api';
@@ -14,6 +15,7 @@ export default function TablesManagement() {
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showCreateTablesModal, setShowCreateTablesModal] = useState(false);
   const [sessionTotal, setSessionTotal] = useState(0);
   const [sessionPaid, setSessionPaid] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -102,6 +104,9 @@ export default function TablesManagement() {
       <div className={styles.tablesPage}>
         <div className={styles.header}>
           <div className={styles.titleSection}>
+            <Link href="/merchant/admin" className={styles.backLink}>
+              ← Back to Dashboard
+            </Link>
             <Typography variant="heading-3">Table Management</Typography>
             <Typography variant="body-medium" className={styles.subtitle}>
               Manage your restaurant tables and dining sessions
@@ -127,14 +132,18 @@ export default function TablesManagement() {
           <TableFloorPlan
             key={refreshKey}
             merchantId={merchantId!}
-            onCreateTables={() => {
-              // TODO: Open create tables modal
-              console.log('Create tables clicked');
-            }}
+            onCreateTables={() => setShowCreateTablesModal(true)}
           />
         </div>
 
         {/* Modals */}
+        <CreateTablesModal
+          isOpen={showCreateTablesModal}
+          onClose={() => setShowCreateTablesModal(false)}
+          merchantId={merchantId!}
+          onTablesCreated={handleSessionUpdate}
+        />
+
         {showSessionModal && selectedSessionId && (
           <TableSessionModal
             isOpen={showSessionModal}
