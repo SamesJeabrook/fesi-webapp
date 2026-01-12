@@ -64,11 +64,34 @@
     gap: 1rem;
   }
 
+  &__section {
+    margin-bottom: 4rem;
+
+    &:last-of-type {
+      margin-bottom: 3rem;
+    }
+  }
+
+  &__sectionHeader {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-neutral-200);
+  }
+
+  &__sectionTitle {
+    margin-bottom: 0.25rem;
+    color: var(--color-neutral-900);
+  }
+
+  &__sectionDescription {
+    color: var(--color-neutral-600);
+    font-size: var(--font-size-sm);
+  }
+
   &__grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
-    margin-bottom: 3rem;
   }
 
   &__link {

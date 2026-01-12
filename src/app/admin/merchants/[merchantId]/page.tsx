@@ -18,65 +18,139 @@ interface Merchant {
   email: string;
   username: string;
   status: string;
+  operating_mode?: string;
+  reservation_enabled?: boolean;
 }
 
-const dashboardItems = [
+interface DashboardItem {
+  title: string;
+  description: string;
+  icon: string;
+  href: string;
+  color: string;
+  showWhen?: (merchant: Merchant) => boolean;
+}
+
+interface DashboardSection {
+  title: string;
+  description: string;
+  items: DashboardItem[];
+}
+
+const dashboardSections: DashboardSection[] = [
   {
-    title: 'Orders Management',
-    description: 'View and manage merchant orders',
-    icon: '📋',
-    href: '/admin/merchants/[merchantId]/orders',
-    color: 'primary'
+    title: 'Daily Operations',
+    description: 'Day-to-day business management',
+    items: [
+      {
+        title: 'Point of Sale',
+        description: 'Take orders directly at the counter',
+        icon: '💳',
+        href: '/admin/merchants/[merchantId]/pos',
+        color: 'primary'
+      },
+      {
+        title: 'Table Service',
+        description: 'Waitstaff order taking for dine-in customers',
+        icon: '🍽️',
+        href: '/admin/merchants/[merchantId]/table-service',
+        color: 'primary',
+        showWhen: (merchant) => merchant?.operating_mode === 'static'
+      },
+      {
+        title: 'Orders Management',
+        description: 'View and manage incoming orders',
+        icon: '📋',
+        href: '/admin/merchants/[merchantId]/orders',
+        color: 'primary'
+      },
+      {
+        title: 'Table Management',
+        description: 'Manage restaurant tables and dining sessions',
+        icon: '🪑',
+        href: '/admin/merchants/[merchantId]/tables',
+        color: 'info',
+        showWhen: (merchant) => merchant?.operating_mode === 'static'
+      },
+      {
+        title: 'Reservations',
+        description: 'Manage table reservations and bookings',
+        icon: '📅',
+        href: '/admin/merchants/[merchantId]/reservations',
+        color: 'success',
+        showWhen: (merchant) => merchant?.operating_mode === 'static'
+      },
+      {
+        title: 'Events Management',
+        description: 'Create and manage multi-day events',
+        icon: '🎉',
+        href: '/admin/merchants/[merchantId]/events',
+        color: 'secondary',
+        showWhen: (merchant) => merchant?.operating_mode !== 'static'
+      },
+    ]
   },
   {
-    title: 'Menu Categories',
-    description: 'Manage menu categories and organization',
-    icon: '📁',
-    href: '/admin/merchants/[merchantId]/menu/categories',
-    color: 'success'
+    title: 'Insights & Inventory',
+    description: 'Analytics and stock tracking',
+    items: [
+      {
+        title: 'Analytics & Reports',
+        description: 'View sales and performance metrics',
+        icon: '📊',
+        href: '/admin/merchants/[merchantId]/analytics',
+        color: 'secondary'
+      },
+      {
+        title: 'Stock Management',
+        description: 'Track inventory and manage stock levels',
+        icon: '📦',
+        href: '/admin/merchants/[merchantId]/stock',
+        color: 'success'
+      },
+    ]
   },
   {
-    title: 'Menu Items',
-    description: 'Edit menu items and pricing',
-    icon: '🍽️',
-    href: '/admin/merchants/[merchantId]/menu/items',
-    color: 'warning'
-  },
-  {
-    title: 'Sub-Items & Options',
-    description: 'Manage customizations and add-ons',
-    icon: '⚙️',
-    href: '/admin/merchants/[merchantId]/menu/sub-items',
-    color: 'info'
-  },
-  {
-    title: 'Stock Management',
-    description: 'Manage inventory and stock levels',
-    icon: '📦',
-    href: '/admin/merchants/[merchantId]/stock',
-    color: 'warning'
-  },
-  {
-    title: 'Events Management',
-    description: 'Manage merchant events and schedules',
-    icon: '🎉',
-    href: '/admin/merchants/[merchantId]/events',
-    color: 'secondary'
-  },
-  {
-    title: 'Merchant Settings',
-    description: 'Restaurant settings and configuration',
-    icon: '🏪',
-    href: '/admin/merchants/[merchantId]/settings',
-    color: 'secondary'
-  },
-  {
-    title: 'Analytics & Reports',
-    description: 'View sales and performance metrics',
-    icon: '📊',
-    href: '/admin/merchants/[merchantId]/analytics',
-    color: 'primary'
-  },
+    title: 'Menu & Configuration',
+    description: 'Menu setup and system settings',
+    items: [
+      {
+        title: 'Menu Categories',
+        description: 'Add, edit and organize menu categories',
+        icon: '📁',
+        href: '/admin/merchants/[merchantId]/menu/categories',
+        color: 'success'
+      },
+      {
+        title: 'Menu Items',
+        description: 'Manage menu items and pricing',
+        icon: '🍽️',
+        href: '/admin/merchants/[merchantId]/menu/items',
+        color: 'warning'
+      },
+      {
+        title: 'Menus',
+        description: 'Create and manage menus for events',
+        icon: '📋',
+        href: '/admin/merchants/[merchantId]/menu/menus',
+        color: 'primary'
+      },
+      {
+        title: 'Sub-Items & Options',
+        description: 'Configure customizations and add-ons',
+        icon: '🔧',
+        href: '/admin/merchants/[merchantId]/menu/sub-items',
+        color: 'info'
+      },
+      {
+        title: 'System Settings',
+        description: 'Configure merchant settings and preferences',
+        icon: '⚙️',
+        href: '/admin/merchants/[merchantId]/settings',
+        color: 'warning'
+      },
+    ]
+  }
 ];
 
 export default function AdminMerchantDashboard() {
@@ -177,31 +251,56 @@ export default function AdminMerchantDashboard() {
           </div>
         </div>
 
-        <div className={styles.dashboard__grid}>
-          {dashboardItems.map((item) => {
-            const href = item.href.replace('[merchantId]', merchantId);
-            return (
-              <Link key={item.href} href={href} className={styles.dashboard__link}>
-                <Card className={`${styles.dashboard__card} ${styles[`dashboard__card--${item.color}`]}`}>
-                  <div className={styles.dashboard__cardIcon}>
-                    {item.icon}
-                  </div>
-                  <div className={styles.dashboard__cardContent}>
-                    <Typography variant="heading-5" className={styles.dashboard__cardTitle}>
-                      {item.title}
-                    </Typography>
-                    <Typography variant="body-medium" className={styles.dashboard__cardDescription}>
-                      {item.description}
-                    </Typography>
-                  </div>
-                  <div className={styles.dashboard__cardArrow}>
-                    →
-                  </div>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
+        {dashboardSections.map((section) => {
+          const visibleItems = section.items.filter((item) => {
+            if (item.showWhen && merchant) {
+              return item.showWhen(merchant);
+            }
+            return true;
+          });
+
+          // Don't render section if no items are visible
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <div key={section.title} className={styles.dashboard__section}>
+              <div className={styles.dashboard__sectionHeader}>
+                <Typography variant="heading-4" className={styles.dashboard__sectionTitle}>
+                  {section.title}
+                </Typography>
+                <Typography variant="body-medium" className={styles.dashboard__sectionDescription}>
+                  {section.description}
+                </Typography>
+              </div>
+
+              <div className={styles.dashboard__grid}>
+                {visibleItems.map((item) => {
+                  const href = item.href.replace('[merchantId]', merchantId);
+                  return (
+                    <Link key={item.href} href={href} className={styles.dashboard__link}>
+                      <Card className={`${styles.dashboard__card} ${styles[`dashboard__card--${item.color}`]}`}>
+                        <div className={styles.dashboard__cardIcon}>
+                          {item.icon}
+                        </div>
+                        <div className={styles.dashboard__cardContent}>
+                          <Typography variant="heading-5" className={styles.dashboard__cardTitle}>
+                            {item.title}
+                          </Typography>
+                          <Typography variant="body-medium" className={styles.dashboard__cardDescription}>
+                            {item.description}
+                          </Typography>
+                        </div>
+                        <div className={styles.dashboard__cardArrow}>
+                          →
+                        </div>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
 
         <div className={styles.dashboard__footer}>
           <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>

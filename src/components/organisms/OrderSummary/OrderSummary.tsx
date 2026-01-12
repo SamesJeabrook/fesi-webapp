@@ -16,10 +16,12 @@ export interface OrderSummaryProps {
   onPaymentError?: (error: any) => void;
   event: Event;
   onOrderAccepted?: (order: OrderListItem) => void;
+  tableId?: string;
+  tableNumber?: string;
 }
 
 
-const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRemoveItem, clientSecret, onPaymentSuccess, onPaymentError, event, onOrderAccepted }) => {
+const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRemoveItem, clientSecret, onPaymentSuccess, onPaymentError, event, onOrderAccepted, tableId, tableNumber }) => {
   return (
     <div className={styles.summary}>
       {items.length === 0 ? (
@@ -35,6 +37,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRem
             eventData={event}
             basketItems={items}
             onOrderAccepted={typeof onOrderAccepted === 'function' ? onOrderAccepted : undefined}
+            tableId={tableId}
+            tableNumber={tableNumber}
           />
         </>
       )}

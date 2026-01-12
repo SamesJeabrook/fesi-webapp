@@ -1,0 +1,25 @@
+.page {
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.backLink {
+  display: inline-block;
+  color: var(--color-primary);
+  text-decoration: none;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+
+  &:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--color-text-secondary);
+}

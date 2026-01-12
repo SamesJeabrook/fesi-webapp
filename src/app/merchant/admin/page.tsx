@@ -62,6 +62,14 @@ const dashboardSections: DashboardSection[] = [
         showWhen: (merchant: any) => merchant?.operating_mode === 'static'
       },
       {
+        title: 'Table QR Codes',
+        description: 'Generate QR codes for customers to order from tables',
+        icon: '📱',
+        href: '/merchant/admin/table-qr-codes',
+        color: 'success',
+        showWhen: (merchant: any) => merchant?.operating_mode === 'static'
+      },
+      {
         title: 'Reservations',
         description: 'Manage table reservations and bookings',
         icon: '📅',

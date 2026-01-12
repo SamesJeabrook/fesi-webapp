@@ -17,11 +17,13 @@ export interface OrderPaymentFormProps {
   onPaymentError?: (error: any) => void;
   eventData: Event;
   onOrderAccepted?: (order: OrderListItem) => void;
+  tableId?: string;
+  tableNumber?: string;
 }
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
-const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBreakdown, onPaymentSuccess, onPaymentError, eventData, onOrderAccepted }) => {
+const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBreakdown, onPaymentSuccess, onPaymentError, eventData, onOrderAccepted, tableId, tableNumber }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
@@ -254,6 +256,12 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
         items: sanitizedItems,
         notes
       };
+      
+      // Add table info if ordering from a table QR code
+      if (tableId) {
+        orderPayload.table_id = tableId;
+        console.log('🪑 Table service order - table_id:', tableId, 'table_number:', tableNumber);
+      }
       
       console.log('🔍 Order submission - isAuthenticated:', isAuthenticated);
       console.log('🔍 Order submission - customerProfile:', customerProfile);

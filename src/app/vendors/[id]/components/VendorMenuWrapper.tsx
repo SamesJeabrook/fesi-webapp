@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Notification from '@/components/atoms/Notification/Notification';
 import OrderList, { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
@@ -43,6 +44,10 @@ interface OrderSelection {
 }
 
 export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData }: VendorMenuWrapperProps) {
+  const searchParams = useSearchParams();
+  const tableNumber = searchParams.get('table');
+  const tableId = searchParams.get('table_id');
+  
   // Track all completed/accepted orders
   const [orders, setOrders] = useState<OrderListItem[]>(() => {
     // Restore from localStorage if available
@@ -414,6 +419,21 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
 
   return (
     <>
+      {tableNumber && (
+        <div style={{ 
+          background: 'var(--color-primary-lightest)', 
+          padding: '1rem', 
+          borderRadius: 'var(--border-radius-md)',
+          marginBottom: '1rem',
+          textAlign: 'center',
+          border: '2px solid var(--color-primary-light)'
+        }}>
+          <strong>🪑 Table {tableNumber}</strong>
+          <p style={{ margin: '0.5rem 0 0', fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
+            Your order will be delivered to your table
+          </p>
+        </div>
+      )}
       {!activeEvent && (<Notification message={`${merchant.name} is not taking orders right now,`} subMessage=' but you can still view their menu.' type="warning" />)}
       <MenuDisplay
         merchant={merchant}
@@ -457,6 +477,8 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
                 onRemoveItem={handleRemoveOrderItem}
                 event={eventData}
                 onOrderAccepted={handleOrderAccepted}
+                tableId={tableId ?? undefined}
+                tableNumber={tableNumber ?? undefined}
               />
             </Tab>
             <Tab tabKey='orders'>
