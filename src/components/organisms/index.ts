@@ -1,5 +1,7 @@
 export { MenuCategory } from './MenuCategory';
 export type { MenuCategoryProps } from './MenuCategory';
+export { NotificationContainer } from './NotificationContainer';
+export type { Notification } from './NotificationContainer';
 export { StockManagement } from './StockManagement';
 export type { StockManagementProps } from './StockManagement';
 

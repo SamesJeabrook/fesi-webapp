@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Notification from '@/components/atoms/Notification/Notification';
 import OrderList, { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 import { MenuDisplay } from '@/components/templates/MenuDisplay';
@@ -16,7 +16,6 @@ import { Button } from '@/components';
 import OrderSummary from '@/components/organisms/OrderSummary/OrderSummary';
 import { paymentConfig } from '@/config/paymentConfig';
 import Tabs, { Tab } from '@/components/molecules/Tabs/Tabs';
-import { useWebSocket } from '@/hooks/useWebSocket';
 import api from '@/utils/api';
 
 interface VendorMenuWrapperProps {
@@ -66,8 +65,6 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   const [checkoutDisplay, setCheckoutDisplay] = useState(false);
   const [activeCheckoutTab, setActiveCheckoutTab] = useState('summary');
 
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-
   // Restore basket and cost breakdown from localStorage on mount
   useEffect(() => {
     const savedBasketItems = localStorage.getItem('basketItems');
@@ -95,70 +92,13 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     console.log(orderSelections)
   }, [orderSelections])
 
-  // Use centralized WebSocket connection for order updates
-  const { sendMessage, status: wsStatus } = useWebSocket({
-    enabled: orders.length > 0,
-    onMessage: (message) => {
-      if (message.type === 'ORDER_STATUS_UPDATE') {
-        const updatedOrder = message.payload;
-        
-        setOrders((prevOrders) => {
-          const index = prevOrders.findIndex((order) => order.id === updatedOrder.id);
-          if (index !== -1) {
-            const updatedOrders = [...prevOrders];
-            updatedOrders[index] = { ...updatedOrders[index], status: updatedOrder.status };
-            localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
-            return updatedOrders;
-          }
-          return prevOrders;
-        });
+  // Poll for order updates (push notifications will handle real-time updates)
+  useEffect(() => {
+    if (orders.length === 0) return;
 
-        // Show notification for ready orders
-        if (updatedOrder.status === 'ready') {
-          if ('Notification' in window && (window as any).Notification.permission === 'granted') {
-            new (window as any).Notification(`Order ${updatedOrder.order_number || updatedOrder.id} is ready for collection!`);
-          } else {
-            alert(`Order ${updatedOrder.order_number || updatedOrder.id} is ready for collection!`);
-          }
-        }
-      } else if (message.type === 'SUBSCRIBED_MULTIPLE') {
-        console.log(`Subscribed to ${message.orderIds.length} order updates`);
-      }
-    },
-    onOpen: () => {
-      console.log('Customer order WebSocket connected');
-      const orderIds = orders.map(order => order.id);
-      if (orderIds.length > 0) {
-        sendMessage({
-          type: 'SUBSCRIBE_ORDERS',
-          orderIds
-        });
-      }
-    },
-    onClose: () => {
-      console.log('Customer order WebSocket disconnected, starting polling');
-      startPolling();
-    },
-    onError: () => {
-      console.error('Customer order WebSocket error, starting polling');
-      startPolling();
-    },
-    autoReconnect: true,
-    reconnectDelay: 3000,
-  });
-
-  // Fallback polling mechanism
-  const startPolling = () => {
-    if (pollingRef.current) clearInterval(pollingRef.current);
-    
-    // Don't poll if WebSocket is connected
-    if (wsStatus === 'connected') return;
-    
-    pollingRef.current = setInterval(async () => {
+    const pollOrders = async () => {
       try {
         const orderIds = orders.map(order => order.id);
-        if (orderIds.length === 0) return;
-
         const data = await api.post('/orders/batch', { orderIds }, { skipAuth: true });
 
         const updatedOrders = orders.map(order => {
@@ -169,20 +109,18 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
         setOrders(updatedOrders);
         localStorage.setItem('acceptedOrders', JSON.stringify(updatedOrders));
       } catch (error) {
-        console.error('Polling failed:', error);
-      }
-    }, 10000); // Poll every 10 seconds
-  };
-
-  // Cleanup polling on unmount
-  useEffect(() => {
-    return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
+        console.error('Order polling failed:', error);
       }
     };
-  }, []);
+
+    // Initial poll
+    pollOrders();
+
+    // Poll every 30 seconds as fallback (push notifications are primary)
+    const interval = setInterval(pollOrders, 30000);
+
+    return () => clearInterval(interval);
+  }, [orders.length]); // Only re-run if number of orders changes
 
   // Handle option group selection changes for the modal
   const handleOptionsChange = (groupId: string, selected: string[], menuItem?: MenuItem) => {

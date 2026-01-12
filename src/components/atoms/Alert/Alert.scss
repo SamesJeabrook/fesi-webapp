@@ -1,0 +1,116 @@
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4) var(--spacing-6);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid;
+  box-shadow: var(--shadow-sm);
+  animation: slideIn 0.3s ease-out;
+
+  &__icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-base);
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-1);
+  }
+
+  &__message {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+  }
+
+  &__close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-md);
+    transition: background-color var(--duration-fast);
+    color: inherit;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  &--success {
+    background-color: var(--color-success-light);
+    border-color: var(--color-success-main);
+    color: var(--color-success-dark);
+
+    .alert__icon {
+      background-color: var(--color-success-main);
+      color: white;
+    }
+  }
+
+  &--error {
+    background-color: var(--color-error-light);
+    border-color: var(--color-error-main);
+    color: var(--color-error-dark);
+
+    .alert__icon {
+      background-color: var(--color-error-main);
+      color: white;
+    }
+  }
+
+  &--warning {
+    background-color: var(--color-warning-light);
+    border-color: var(--color-warning-main);
+    color: var(--color-warning-dark);
+
+    .alert__icon {
+      background-color: var(--color-warning-main);
+      color: white;
+    }
+  }
+
+  &--info {
+    background-color: var(--color-info-light);
+    border-color: var(--color-info-main);
+    color: var(--color-info-dark);
+
+    .alert__icon {
+      background-color: var(--color-info-main);
+      color: white;
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

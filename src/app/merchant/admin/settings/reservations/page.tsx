@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useMerchant } from '@/hooks/useMerchant';
+import { useNotification } from '@/contexts/NotificationContext';
 import { api } from '@/utils/api';
 import './reservation-settings.scss';
 
 export default function ReservationSettingsPage() {
   const { merchant, refetchMerchant } = useMerchant();
+  const { showSuccess, showError } = useNotification();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     reservationEnabled: false,
@@ -19,7 +21,8 @@ export default function ReservationSettingsPage() {
     advanceBookingDays: 30,
     depositRequired: false,
     depositPercentage: 20,
-    autoConfirmReservations: false
+    autoConfirmReservations: false,
+    allowMultipleTables: true
   });
 
   useEffect(() => {
@@ -34,7 +37,8 @@ export default function ReservationSettingsPage() {
         advanceBookingDays: merchant.advance_booking_days || 30,
         depositRequired: merchant.deposit_required || false,
         depositPercentage: merchant.deposit_percentage || 20,
-        autoConfirmReservations: merchant.auto_confirm_reservations || false
+        autoConfirmReservations: merchant.auto_confirm_reservations || false,
+        allowMultipleTables: merchant.allow_multiple_tables !== false // Default to true
       });
     }
   }, [merchant]);
@@ -47,9 +51,9 @@ export default function ReservationSettingsPage() {
     try {
       await api.patch(`/api/merchants/${merchant.id}/reservation-settings`, formData);
       await refetchMerchant();
-      alert('Reservation settings updated successfully!');
+      showSuccess('Reservation settings updated successfully!');
     } catch (error: any) {
-      alert(error.message || 'Error updating settings');
+      showError(error.message || 'Error updating settings');
     } finally {
       setLoading(false);
     }
@@ -105,6 +109,18 @@ export default function ReservationSettingsPage() {
               <span>Auto-Confirm Reservations</span>
             </label>
             <p className="help-text">Automatically confirm bookings without manual approval</p>
+          </div>
+
+          <div className="form-group checkbox-group">
+            <label>
+              <input
+                type="checkbox"
+                checked={formData.allowMultipleTables}
+                onChange={(e) => setFormData({ ...formData, allowMultipleTables: e.target.checked })}
+              />
+              <span>Allow Multiple Tables per Reservation</span>
+            </label>
+            <p className="help-text">Enable for large parties that need tables joined together</p>
           </div>
         </div>
 

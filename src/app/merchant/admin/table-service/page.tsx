@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useMerchant } from '@/hooks/useMerchant';
+import { useNotification } from '@/contexts/NotificationContext';
 import { api } from '@/utils/api';
 import { Typography } from '@/components/atoms/Typography';
 import { Button } from '@/components/atoms/Button';
@@ -51,6 +52,7 @@ interface CartItem {
 
 export default function TableServicePage() {
   const { merchant } = useMerchant();
+  const { showSuccess, showError, showWarning, confirm } = useNotification();
   const [loading, setLoading] = useState(true);
   const [activeTables, setActiveTables] = useState<TableSession[]>([]);
   const [selectedTable, setSelectedTable] = useState<TableSession | null>(null);
@@ -176,7 +178,7 @@ export default function TableServicePage() {
     // Validate required options
     for (const group of selectedMenuItem.option_groups || []) {
       if (group.is_required && (!selectedOptions[group.id] || selectedOptions[group.id].length === 0)) {
-        alert(`Please select ${group.name}`);
+        showWarning(`Please select ${group.name}`);
         return;
       }
     }
@@ -290,10 +292,10 @@ export default function TableServicePage() {
       setSelectedTable(null);
       await loadActiveTables();
       
-      alert('Order submitted successfully!');
+      showSuccess('Order submitted successfully!');
     } catch (error: any) {
       console.error('Error submitting order:', error);
-      alert(error.response?.data?.error || 'Failed to submit order');
+      showError(error.response?.data?.error || 'Failed to submit order');
     } finally {
       setLoading(false);
     }
@@ -346,16 +348,45 @@ export default function TableServicePage() {
         });
       }
       
-      alert('Payment processed successfully!');
+      showSuccess('Payment processed successfully!');
       setShowPayBillModal(false);
       setCustomerEmail('');
       setSelectedTable(null);
       await loadActiveTables();
     } catch (error: any) {
       console.error('Error processing payment:', error);
-      alert(error.response?.data?.error || 'Failed to process payment');
+      showError(error.response?.data?.error || 'Failed to process payment');
     } finally {
       setProcessingPayment(false);
+    }
+  };
+
+  const handleEndSession = async () => {
+    if (!selectedTable) return;
+    
+    const confirmed = await confirm({
+      title: 'End Table Session',
+      message: `Are you sure you want to end the session for Table ${selectedTable.table_number}? This will close the table and mark it as available.`,
+      confirmText: 'End Session',
+      variant: 'warning'
+    });
+    
+    if (!confirmed) return;
+    
+    setLoading(true);
+    try {
+      // End the table session
+      await api.post(`/api/tables/${selectedTable.table_id}/sessions/${selectedTable.id}/end`);
+      
+      showSuccess(`Session ended for Table ${selectedTable.table_number}`);
+      setSelectedTable(null);
+      setCart([]);
+      await loadActiveTables();
+    } catch (error: any) {
+      console.error('Error ending session:', error);
+      showError(error.response?.data?.error || 'Failed to end session');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -441,6 +472,13 @@ export default function TableServicePage() {
                     onClick={handlePayBill}
                   >
                     💳 Pay Bill
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="lg"
+                    onClick={handleEndSession}
+                  >
+                    ✕ End Session
                   </Button>
                 </div>
               </div>

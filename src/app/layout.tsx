@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { fontVariables } from '@/styles/fonts';
 import AuthProvider from '@/components/providers/AuthProvider';
 import { AdminProvider } from '@/components/providers/AdminProvider';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 import CsrfInit from '@/components/providers/CsrfProvider';
 import '@/styles/globals.scss';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -28,10 +29,12 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <AdminProvider>
-            <CsrfInit />
-            <div id="root">
-              {children}
-            </div>
+            <NotificationProvider>
+              <CsrfInit />
+              <div id="root">
+                {children}
+              </div>
+            </NotificationProvider>
           </AdminProvider>
         </AuthProvider>
       </body>

@@ -1,5 +1,6 @@
 // Molecular components export
 export * from './AdminHeader';
+export * from './ConfirmDialog';
 export * from './Navigation';
 export * from './OrderBoard';
 export * from './MenuItemCard';

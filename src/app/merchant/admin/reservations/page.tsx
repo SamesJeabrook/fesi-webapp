@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useMerchant } from '@/hooks/useMerchant';
+import { useNotification } from '@/contexts/NotificationContext';
 import { api } from '@/utils/api';
 import { Typography } from '@/components/atoms/Typography';
 import { Button } from '@/components/atoms/Button';
@@ -12,6 +13,7 @@ interface Reservation {
   id: string;
   merchant_id: string;
   table_id: string | null;
+  table_ids?: string[]; // Multiple tables support
   customer_id: string | null;
   reservation_date: string;
   start_time: string;
@@ -41,6 +43,7 @@ interface Table {
 
 export default function ReservationsPage() {
   const { merchant } = useMerchant();
+  const { showSuccess, showError } = useNotification();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +51,8 @@ export default function ReservationsPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showNewReservationModal, setShowNewReservationModal] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'table'>('list');
+  const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
 
   useEffect(() => {
     if (merchant?.id) {
@@ -89,22 +94,22 @@ export default function ReservationsPage() {
     try {
       await api.post(`/api/reservations/${reservationId}/confirm`);
       loadReservations();
+      showSuccess('Reservation confirmed successfully');
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error confirming reservation');
+      showError(error.response?.data?.error || 'Error confirming reservation');
     }
   };
 
   const handleCancelReservation = async (reservationId: string) => {
-    const reason = prompt('Cancellation reason (optional):');
-    
+    // Note: For now we'll skip the reason prompt. Can be added to a custom modal later.
     try {
       await api.post(`/api/reservations/${reservationId}/cancel`, {
-        reason,
         cancelledBy: 'merchant'
       });
       loadReservations();
+      showSuccess('Reservation cancelled');
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error cancelling reservation');
+      showError(error.response?.data?.error || 'Error cancelling reservation');
     }
   };
 
@@ -112,9 +117,9 @@ export default function ReservationsPage() {
     try {
       await api.post(`/api/reservations/${reservationId}/seat`);
       loadReservations();
-      alert('Customer seated successfully! Table session created.');
+      showSuccess('Customer seated successfully! Table session created.');
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error seating customer');
+      showError(error.response?.data?.error || 'Error seating customer');
     }
   };
 
@@ -177,43 +182,61 @@ export default function ReservationsPage() {
         </Button>
       </div>
 
-      <div className="filters">
-        <div className="filter-group">
-          <label htmlFor="date-filter">Date</label>
-          <input
-            id="date-filter"
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-          />
+      <div className="controls-bar">
+        <div className="view-toggle">
+          <button
+            className={`toggle-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+          >
+            📋 List View
+          </button>
+          <button
+            className={`toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
+            onClick={() => setViewMode('table')}
+          >
+            🪑 Table View
+          </button>
         </div>
 
-        <div className="filter-group">
-          <label htmlFor="status-filter">Status</label>
-          <select
-            id="status-filter"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="all">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="seated">Seated</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="no_show">No Show</option>
-          </select>
+        <div className="filters">
+          <div className="filter-group">
+            <label htmlFor="date-filter">Date</label>
+            <input
+              id="date-filter"
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="status-filter">Status</label>
+            <select
+              id="status-filter"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="seated">Seated</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="no_show">No Show</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {loading ? (
         <div className="loading">Loading reservations...</div>
-      ) : reservations.length === 0 ? (
-        <div className="empty-state">
-          <p>No reservations found for {formatDate(selectedDate)}</p>
-        </div>
-      ) : (
-        <div className="reservations-list">
+      ) : viewMode === 'list' ? (
+        reservations.length === 0 ? (
+          <div className="empty-state">
+            <p>No reservations found for {formatDate(selectedDate)}</p>
+          </div>
+        ) : (
+          <div className="reservations-list">
           {reservations.map((reservation) => (
             <div key={reservation.id} className="reservation-card">
               <div className="reservation-header">
@@ -239,11 +262,18 @@ export default function ReservationsPage() {
                   <span className="guest-count">👥 {reservation.guest_count} guests</span>
                 </div>
 
-                {reservation.table_number && (
+                {(reservation.table_ids && reservation.table_ids.length > 0) ? (
+                  <div className="table-info">
+                    {reservation.table_ids.length === 1 
+                      ? `Table ${tables.find(t => t.id === reservation.table_ids[0])?.table_number || reservation.table_number}`
+                      : `Tables ${reservation.table_ids.map(tid => tables.find(t => t.id === tid)?.table_number).filter(Boolean).join(', ')}`
+                    }
+                  </div>
+                ) : reservation.table_number ? (
                   <div className="table-info">
                     Table {reservation.table_number}
                   </div>
-                )}
+                ) : null}
 
                 {reservation.special_requests && (
                   <div className="special-requests">
@@ -284,7 +314,7 @@ export default function ReservationsPage() {
                       variant="primary"
                       size="sm"
                       onClick={() => handleSeatCustomer(reservation.id)}
-                      disabled={!reservation.table_id}
+                      disabled={!reservation.table_id && (!reservation.table_ids || reservation.table_ids.length === 0)}
                     >
                       Seat Customer
                     </Button>
@@ -317,6 +347,114 @@ export default function ReservationsPage() {
             </div>
           ))}
         </div>
+        )
+      ) : (
+        <div className="table-view">
+          <div className="tables-grid">
+            {tables.map((table) => {
+              const tableReservations = reservations.filter(r => 
+                r.table_id === table.id || (r.table_ids && r.table_ids.includes(table.id))
+              );
+              const nextReservation = tableReservations
+                .filter(r => ['pending', 'confirmed'].includes(r.status))
+                .sort((a, b) => a.start_time.localeCompare(b.start_time))[0];
+
+              return (
+                <div
+                  key={table.id}
+                  className={`table-card ${selectedTableId === table.id ? 'selected' : ''} ${table.status}`}
+                  onClick={() => setSelectedTableId(selectedTableId === table.id ? null : table.id)}
+                >
+                  <div className="table-header">
+                    <span className="table-number">Table {table.table_number}</span>
+                    <span className="capacity">👥 {table.capacity}</span>
+                  </div>
+                  <div className="table-status">
+                    <span className={`status-dot ${table.status}`}></span>
+                    {table.status}
+                  </div>
+                  {tableReservations.length > 0 && (
+                    <div className="booking-count">
+                      {tableReservations.length} booking{tableReservations.length !== 1 ? 's' : ''}
+                    </div>
+                  )}
+                  {nextReservation && (
+                    <div className="next-booking">
+                      Next: {formatTime(nextReservation.start_time)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {selectedTableId && (
+            <div className="table-bookings-panel">
+              <div className="panel-header">
+                <Typography variant="heading-4">
+                  Table {tables.find(t => t.id === selectedTableId)?.table_number} Bookings
+                </Typography>
+                <button className="close-btn" onClick={() => setSelectedTableId(null)}>×</button>
+              </div>
+              <div className="bookings-list">
+                {reservations
+                  .filter(r => r.table_id === selectedTableId || (r.table_ids && r.table_ids.includes(selectedTableId)))
+                  .sort((a, b) => a.start_time.localeCompare(b.start_time))
+                  .map((reservation) => (
+                    <div key={reservation.id} className="booking-item">
+                      <div className="booking-time">
+                        <strong>{formatTime(reservation.start_time)}</strong>
+                        <span className="duration">{reservation.duration_minutes}min</span>
+                      </div>
+                      <div className="booking-details">
+                        <div className="guest-name">
+                          {reservation.customer_first_name 
+                            ? `${reservation.customer_first_name} ${reservation.customer_last_name}`
+                            : reservation.guest_name}
+                        </div>
+                        <div className="guest-info">
+                          <span>👥 {reservation.guest_count}</span>
+                          <span className={`status-badge-small ${reservation.status}`}>
+                            {reservation.status}
+                          </span>
+                        </div>
+                        {reservation.special_requests && (
+                          <div className="special-requests-small">
+                            {reservation.special_requests}
+                          </div>
+                        )}
+                      </div>
+                      <div className="booking-actions">
+                        {reservation.status === 'pending' && (
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() => handleConfirmReservation(reservation.id)}
+                          >
+                            Confirm
+                          </Button>
+                        )}
+                        {reservation.status === 'confirmed' && (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleSeatCustomer(reservation.id)}
+                          >
+                            Seat
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                {reservations.filter(r => r.table_id === selectedTableId || (r.table_ids && r.table_ids.includes(selectedTableId))).length === 0 && (
+                  <div className="no-bookings">
+                    <p>No bookings for this table today</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {showNewReservationModal && (
@@ -348,6 +486,7 @@ export default function ReservationsPage() {
 
 // New Reservation Modal Component
 function NewReservationModal({ merchant, tables, onClose, onSuccess }: any) {
+  const { showSuccess, showError } = useNotification();
   const [formData, setFormData] = useState({
     reservationDate: new Date().toISOString().split('T')[0],
     startTime: '',
@@ -355,7 +494,7 @@ function NewReservationModal({ merchant, tables, onClose, onSuccess }: any) {
     guestName: '',
     guestEmail: '',
     guestPhone: '',
-    tableId: '',
+    tableIds: [] as string[],
     specialRequests: ''
   });
   const [submitting, setSubmitting] = useState(false);
@@ -369,7 +508,7 @@ function NewReservationModal({ merchant, tables, onClose, onSuccess }: any) {
       
       await api.post('/api/reservations', {
         merchantId: merchant.id,
-        tableId: formData.tableId || null,
+        tableIds: formData.tableIds.length > 0 ? formData.tableIds : null,
         customerId: null,
         reservationDate: formData.reservationDate,
         startTime: formData.startTime,
@@ -382,8 +521,9 @@ function NewReservationModal({ merchant, tables, onClose, onSuccess }: any) {
       });
 
       onSuccess();
+      showSuccess('Reservation created successfully');
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error creating reservation');
+      showError(error.response?.data?.error || 'Error creating reservation');
     } finally {
       setSubmitting(false);
     }
@@ -473,19 +613,30 @@ function NewReservationModal({ merchant, tables, onClose, onSuccess }: any) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="tableId">Table (optional)</label>
-            <select
-              id="tableId"
-              value={formData.tableId}
-              onChange={(e) => setFormData({ ...formData, tableId: e.target.value })}
-            >
-              <option value="">Auto-assign</option>
-              {tables.filter((t: Table) => t.capacity >= formData.guestCount).map((table: Table) => (
-                <option key={table.id} value={table.id}>
-                  Table {table.table_number} (Capacity: {table.capacity})
-                </option>
-              ))}
-            </select>
+            <label>Table Selection</label>
+            <div className="table-selection-group">
+              {tables
+                .filter((t: Table) => t.capacity >= formData.guestCount)
+                .map((table: Table) => (
+                  <label key={table.id} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.tableIds.includes(table.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData({ ...formData, tableIds: [...formData.tableIds, table.id] });
+                        } else {
+                          setFormData({ ...formData, tableIds: formData.tableIds.filter(id => id !== table.id) });
+                        }
+                      }}
+                    />
+                    <span>Table {table.table_number} (Capacity: {table.capacity})</span>
+                  </label>
+                ))}
+            </div>
+            <p className="help-text">
+              Select one or more tables for this reservation. Leave empty for auto-assignment.
+            </p>
           </div>
 
           <div className="form-group">
@@ -514,8 +665,9 @@ function NewReservationModal({ merchant, tables, onClose, onSuccess }: any) {
 
 // Edit Reservation Modal Component
 function EditReservationModal({ reservation, tables, onClose, onSuccess }: any) {
+  const { showSuccess, showError } = useNotification();
   const [formData, setFormData] = useState({
-    tableId: reservation.table_id || '',
+    tableIds: (reservation.table_ids || []) as string[],
     startTime: reservation.start_time.substring(0, 5),
     guestCount: reservation.guest_count,
     internalNotes: reservation.internal_notes || ''
@@ -528,15 +680,16 @@ function EditReservationModal({ reservation, tables, onClose, onSuccess }: any) 
 
     try {
       await api.patch(`/api/reservations/${reservation.id}`, {
-        tableId: formData.tableId || null,
+        tableIds: formData.tableIds.length > 0 ? formData.tableIds : null,
         startTime: formData.startTime + ':00',
         guestCount: formData.guestCount,
         internalNotes: formData.internalNotes
       });
 
       onSuccess();
+      showSuccess('Reservation updated successfully');
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Error updating reservation');
+      showError(error.response?.data?.error || 'Error updating reservation');
     } finally {
       setSubmitting(false);
     }
@@ -552,19 +705,30 @@ function EditReservationModal({ reservation, tables, onClose, onSuccess }: any) 
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="edit-tableId">Table</label>
-            <select
-              id="edit-tableId"
-              value={formData.tableId}
-              onChange={(e) => setFormData({ ...formData, tableId: e.target.value })}
-            >
-              <option value="">Unassigned</option>
-              {tables.filter((t: Table) => t.capacity >= formData.guestCount).map((table: Table) => (
-                <option key={table.id} value={table.id}>
-                  Table {table.table_number} (Capacity: {table.capacity})
-                </option>
-              ))}
-            </select>
+            <label>Table Selection</label>
+            <div className="table-selection-group">
+              {tables
+                .filter((t: Table) => t.capacity >= formData.guestCount)
+                .map((table: Table) => (
+                  <label key={table.id} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.tableIds.includes(table.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFormData({ ...formData, tableIds: [...formData.tableIds, table.id] });
+                        } else {
+                          setFormData({ ...formData, tableIds: formData.tableIds.filter(id => id !== table.id) });
+                        }
+                      }}
+                    />
+                    <span>Table {table.table_number} (Capacity: {table.capacity})</span>
+                  </label>
+                ))}
+            </div>
+            <p className="help-text">
+              Select one or more tables for this reservation. Leave empty for unassigned.
+            </p>
           </div>
 
           <div className="form-group">
