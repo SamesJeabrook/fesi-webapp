@@ -26,11 +26,31 @@ export interface CartItem {
   notes?: string;
 }
 
+export interface StaffMember {
+  id: string;
+  merchant_id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  role: string;
+  is_active: boolean;
+}
+
 export interface TableServiceTemplateProps {
   /**
    * Merchant ID to load data for
    */
   merchantId: string;
+  
+  /**
+   * Currently logged in staff member (if staff login enabled)
+   */
+  currentStaff?: StaffMember | null;
+  
+  /**
+   * Callback when staff logs out
+   */
+  onStaffLogout?: () => void;
   
   /**
    * Show back link to dashboard

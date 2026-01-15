@@ -183,7 +183,7 @@ export const OperatingModeSettings: React.FC<OperatingModeSettingsProps> = ({
           <Button
             variant={isOpen ? 'outline' : 'primary'}
             fullWidth
-            onClick={handleToggleOpen}
+            onClick={() => handleToggleOpen()}
             isDisabled={toggling}
             size="lg"
           >

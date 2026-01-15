@@ -1,0 +1,83 @@
+@use '@/styles/tokens' as *;
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--spacing-4);
+  background: var(--color-neutral-100);
+}
+
+.loginCard {
+  max-width: 400px;
+  width: 100%;
+  padding: var(--spacing-8);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--spacing-8);
+}
+
+.pinDisplay {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-6);
+}
+
+.pinDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--color-neutral-300);
+  background-color: var(--color-neutral-white);
+  transition: all var(--duration-fast);
+
+  &__filled {
+    background-color: var(--color-primary-500);
+    border-color: var(--color-primary-500);
+  }
+}
+
+.error {
+  text-align: center;
+  margin-bottom: var(--spacing-4);
+  padding: var(--spacing-3);
+  background-color: var(--color-error-light);
+  border-radius: var(--border-radius-md);
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-6);
+}
+
+.keypadButton {
+  aspect-ratio: 1;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-family-body);
+  background-color: var(--color-neutral-white);
+  border: 2px solid var(--color-neutral-300);
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-50);
+    border-color: var(--color-primary-500);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

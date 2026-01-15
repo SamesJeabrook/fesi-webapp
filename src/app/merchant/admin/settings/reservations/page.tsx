@@ -22,7 +22,8 @@ export default function ReservationSettingsPage() {
     depositRequired: false,
     depositPercentage: 20,
     autoConfirmReservations: false,
-    allowMultipleTables: true
+    allowMultipleTables: true,
+    requireStaffLogin: false
   });
 
   useEffect(() => {
@@ -38,7 +39,8 @@ export default function ReservationSettingsPage() {
         depositRequired: merchant.deposit_required || false,
         depositPercentage: merchant.deposit_percentage || 20,
         autoConfirmReservations: merchant.auto_confirm_reservations || false,
-        allowMultipleTables: merchant.allow_multiple_tables !== false // Default to true
+        allowMultipleTables: merchant.allow_multiple_tables !== false, // Default to true
+        requireStaffLogin: merchant.require_staff_login || false
       });
     }
   }, [merchant]);
@@ -121,6 +123,23 @@ export default function ReservationSettingsPage() {
               <span>Allow Multiple Tables per Reservation</span>
             </label>
             <p className="help-text">Enable for large parties that need tables joined together</p>
+          </div>
+        </div>
+
+        {/* Staff Security Settings */}
+        <div className="settings-section">
+          <h2>Staff Security</h2>
+          
+          <div className="form-group checkbox-group">
+            <label>
+              <input
+                type="checkbox"
+                checked={formData.requireStaffLogin}
+                onChange={(e) => setFormData({ ...formData, requireStaffLogin: e.target.checked })}
+              />
+              <span>Require Staff PIN Login</span>
+            </label>
+            <p className="help-text">Require staff to enter their PIN before accessing POS and Table Service. Manage staff in the <Link href="/merchant/admin/staff" style={{ color: 'var(--color-primary)', textDecoration: 'underline' }}>Staff Management</Link> page.</p>
           </div>
         </div>
 

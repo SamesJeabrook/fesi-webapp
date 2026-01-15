@@ -51,6 +51,8 @@ export interface Merchant extends BaseEntity {
   stripeAccountId?: string;
   logoUrl?: string;
   bannerUrl?: string;
+  allow_multiple_tables?: boolean;
+  require_staff_login?: boolean;
 }
 
 export interface OpeningHours {

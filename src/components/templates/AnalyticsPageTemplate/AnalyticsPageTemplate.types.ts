@@ -17,6 +17,7 @@ export interface MonthlyBreakdown {
 }
 
 export interface AnalyticsPageTemplateProps {
+  merchantId: string;
   merchantName: string;
   overviewStats: OverviewStats;
   recentEvents: EventReport[];

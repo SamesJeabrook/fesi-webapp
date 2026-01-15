@@ -14,6 +14,8 @@ import {
 import {
   MenuItemOptionsModal,
   POSOrderSummary,
+  StaffPinLogin,
+  type StaffMember,
   type MenuItem as ModalMenuItem,
   type OptionGroup,
   type SubItem,
@@ -31,6 +33,8 @@ type Event = OrderSummaryEvent & { is_open: boolean };
 
 export default function POSPage() {
   const { getAccessTokenSilently } = useAuth0();
+  const [merchantData, setMerchantData] = useState<any>(null);
+  const [currentStaff, setCurrentStaff] = useState<StaffMember | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<string>('');
@@ -48,6 +52,45 @@ export default function POSPage() {
   const [showPaymentQR, setShowPaymentQR] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string>('');
   const [pendingOrderId, setPendingOrderId] = useState<string>('');
+
+  // Check session storage for existing staff login
+  useEffect(() => {
+    const savedStaff = sessionStorage.getItem('currentStaff_pos');
+    if (savedStaff) {
+      setCurrentStaff(JSON.parse(savedStaff));
+    }
+  }, []);
+
+  // Load merchant data to check if staff login is required
+  useEffect(() => {
+    const loadMerchant = async () => {
+      try {
+        const token = await getAuthToken(getAccessTokenSilently);
+        let merchantId: string;
+        if (token.startsWith('dev-merchant-')) {
+          merchantId = token.replace('dev-merchant-', '');
+        } else {
+          const merchantDataResponse = await api.get('/api/merchants/me');
+          merchantId = merchantDataResponse.id;
+        }
+        const merchant = await api.get(`/api/merchants/${merchantId}`);
+        setMerchantData(merchant);
+      } catch (error) {
+        console.error('Error loading merchant:', error);
+      }
+    };
+    loadMerchant();
+  }, []);
+
+  const handleStaffLogin = (staff: StaffMember) => {
+    setCurrentStaff(staff);
+    sessionStorage.setItem('currentStaff_pos', JSON.stringify(staff));
+  };
+
+  const handleStaffLogout = () => {
+    setCurrentStaff(null);
+    sessionStorage.removeItem('currentStaff_pos');
+  };
 
   // Get token with dev token override support
   const getToken = async () => {
@@ -313,6 +356,7 @@ export default function POSPage() {
           last_name: 'Customer',
           phone: customerPhone?.trim() || null,
         },
+        staff_id: currentStaff?.id || undefined,
         items: cart.map(item => ({
           menu_item_id: item.menu_item_id,
           quantity: item.quantity,
@@ -362,6 +406,7 @@ export default function POSPage() {
           last_name: 'Customer',
           phone: customerPhone?.trim() || null,
         },
+        staff_id: currentStaff?.id || undefined,
         items: cart.map(item => ({
           menu_item_id: item.menu_item_id,
           quantity: item.quantity,
@@ -400,17 +445,48 @@ export default function POSPage() {
     return null;
   }
 
+  // Show PIN login if staff login is required and no staff logged in
+  if (merchantData && merchantData.require_staff_login && !currentStaff) {
+    return (
+      <ProtectedRoute requireRole={['merchant']}>
+        <StaffPinLogin
+          merchantId={merchantData.id}
+          onSuccess={handleStaffLogin}
+          title="POS Login"
+          subtitle="Enter your PIN to access point of sale"
+        />
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute requireRole={['merchant']}>
       <div className={styles.pos}>
         <div className={styles.pos__header}>
-          <Link href="/merchant/admin" className={styles.pos__backLink}>
-            ← Back to Dashboard
-          </Link>
-          <Typography variant="heading-2">Point of Sale</Typography>
-          <Typography variant="body-large" style={{ color: 'var(--color-text-secondary)' }}>
-            Take orders directly at the counter
-          </Typography>
+          <div>
+            <Link href="/merchant/admin" className={styles.pos__backLink}>
+              ← Back to Dashboard
+            </Link>
+            <Typography variant="heading-2">Point of Sale</Typography>
+            <Typography variant="body-large" style={{ color: 'var(--color-text-secondary)' }}>
+              Take orders directly at the counter
+            </Typography>
+          </div>
+          
+          {currentStaff && (
+            <div className={styles.pos__staffInfo}>
+              <Typography variant="body-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                Logged in as: <strong>{currentStaff.name}</strong> ({currentStaff.role})
+              </Typography>
+              <Button
+                variant="outline"
+                size="small"
+                onClick={handleStaffLogout}
+              >
+                Switch Staff
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Success Screen */}

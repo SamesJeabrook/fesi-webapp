@@ -23,6 +23,8 @@ interface ExtendedMenuItem extends ModalMenuItem {
 
 export function TableServiceTemplate({
   merchantId,
+  currentStaff,
+  onStaffLogout,
   showBackLink = true,
   backLinkUrl = '/merchant/admin'
 }: TableServiceTemplateProps) {
@@ -248,6 +250,7 @@ export function TableServiceTemplate({
         payment_status: 'pending',
         table_session_id: selectedTable.id,
         table_number: selectedTable.table_number,
+        staff_id: currentStaff?.id || undefined,
         guest_info: {
           email: `table${selectedTable.table_number}-${Date.now()}@dine-in.local`,
           first_name: 'Dine-In',
@@ -392,6 +395,21 @@ export function TableServiceTemplate({
             Take orders for dine-in customers
           </Typography>
         </div>
+        
+        {currentStaff && onStaffLogout && (
+          <div className={styles.staffInfo}>
+            <Typography variant="body-small">
+              Logged in as: <strong>{currentStaff.name}</strong> ({currentStaff.role})
+            </Typography>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onStaffLogout}
+            >
+              Switch Staff
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className={styles.tableService__content}>

@@ -54,6 +54,13 @@ const dashboardSections: DashboardSection[] = [
         color: 'primary'
       },
       {
+        title: 'Staff Management',
+        description: 'Manage your team members and assign roles',
+        icon: '👥',
+        href: '/merchant/admin/staff',
+        color: 'info'
+      },
+      {
         title: 'Table Management',
         description: 'Manage restaurant tables and dining sessions',
         icon: '🪑',

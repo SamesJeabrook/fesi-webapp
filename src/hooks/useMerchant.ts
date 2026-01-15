@@ -22,6 +22,8 @@ interface Merchant {
   deposit_required?: boolean;
   deposit_percentage?: number;
   auto_confirm_reservations?: boolean;
+  allow_multiple_tables?: boolean;
+  require_staff_login?: boolean;
 }
 
 export const useMerchant = () => {

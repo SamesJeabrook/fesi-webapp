@@ -6,10 +6,13 @@ import { EventReportCard } from '@/components/molecules/EventReportCard';
 import { TopItemsTable } from '@/components/molecules/TopItemsTable';
 import { SubscriptionBanner } from '@/components/molecules/SubscriptionBanner';
 import { EventReportsTable } from '@/components/organisms/EventReportsTable';
+import { StaffAnalytics } from '@/components/organisms/StaffAnalytics';
+import { RefireAnalytics } from '@/components/organisms/RefireAnalytics';
 import { AnalyticsPageTemplateProps } from './AnalyticsPageTemplate.types';
 import styles from './AnalyticsPageTemplate.module.scss';
 
 export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
+  merchantId,
   merchantName,
   overviewStats,
   recentEvents,
@@ -153,6 +156,16 @@ export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
           onEventClick={onEventClick}
           showFilters={true}
         />
+      </div>
+
+      {/* Staff Performance Analytics */}
+      <div className={styles.analyticsPageTemplate__section}>
+        <StaffAnalytics merchantId={merchantId} />
+      </div>
+
+      {/* Refire Analytics */}
+      <div className={styles.analyticsPageTemplate__section}>
+        <RefireAnalytics merchantId={merchantId} />
       </div>
 
       {/* Monthly Breakdown */}
