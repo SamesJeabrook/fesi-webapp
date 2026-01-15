@@ -1,0 +1,164 @@
+@use '../../../styles/variables' as *;
+@use '../../../styles/mixins' as *;
+
+.tipSelector {
+  padding: 1.5rem;
+  background: $color-background-light;
+  border-radius: $border-radius-lg;
+  margin: 1rem 0;
+
+  &__header {
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: $color-text-primary;
+    margin: 0 0 0.25rem 0;
+  }
+
+  &__subtitle {
+    font-size: 0.875rem;
+    color: $color-text-secondary;
+    margin: 0;
+  }
+
+  &__options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    @media (max-width: $breakpoint-sm) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  &__button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0.5rem;
+    background: white;
+    border: 2px solid $color-border;
+    border-radius: $border-radius-md;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 70px;
+
+    &:hover {
+      border-color: $color-primary;
+      background: rgba($color-primary, 0.05);
+    }
+
+    &--selected {
+      border-color: $color-primary;
+      background: rgba($color-primary, 0.1);
+      
+      .tipSelector__percentage {
+        color: $color-primary;
+        font-weight: 600;
+      }
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  &__percentage {
+    font-size: 1rem;
+    font-weight: 500;
+    color: $color-text-primary;
+    margin-bottom: 0.25rem;
+  }
+
+  &__amount {
+    font-size: 0.875rem;
+    color: $color-text-secondary;
+  }
+
+  &__customInput {
+    padding: 1rem;
+    background: white;
+    border-radius: $border-radius-md;
+    border: 2px solid $color-primary;
+  }
+
+  &__label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $color-text-secondary;
+    margin-bottom: 0.5rem;
+  }
+
+  &__inputWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  &__currencySymbol {
+    position: absolute;
+    left: 1rem;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: $color-text-secondary;
+    pointer-events: none;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2rem;
+    font-size: 1.125rem;
+    border: 1px solid $color-border;
+    border-radius: $border-radius-md;
+    outline: none;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-color: $color-primary;
+    }
+
+    &::placeholder {
+      color: $color-text-tertiary;
+    }
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .tipSelector {
+    background: $color-background-dark;
+
+    &__button {
+      background: $color-background-darker;
+      border-color: $color-border-dark;
+
+      &:hover {
+        background: rgba($color-primary, 0.15);
+      }
+
+      &--selected {
+        background: rgba($color-primary, 0.2);
+      }
+    }
+
+    &__customInput {
+      background: $color-background-darker;
+    }
+
+    &__input {
+      background: $color-background-darker;
+      border-color: $color-border-dark;
+      color: $color-text-primary-dark;
+
+      &:focus {
+        border-color: $color-primary;
+      }
+    }
+  }
+}
