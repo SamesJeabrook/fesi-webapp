@@ -7,6 +7,7 @@ import { api } from '@/utils/api';
 import { Typography } from '@/components/atoms/Typography';
 import { Button } from '@/components/atoms/Button';
 import { MenuItemOptionsModal, type MenuItem as ModalMenuItem, type OptionGroup } from '@/components/organisms';
+import { TipSelector } from '@/components/molecules/TipSelector';
 import type {
   TableServiceTemplateProps,
   TableSession,
@@ -44,6 +45,7 @@ export function TableServiceTemplate({
   const [customerEmail, setCustomerEmail] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [merchant, setMerchant] = useState<any>(null);
+  const [tipAmount, setTipAmount] = useState(0);
 
   useEffect(() => {
     if (merchantId) {
@@ -285,6 +287,8 @@ export function TableServiceTemplate({
       const response = await api.get(`/api/orders/merchant/${merchantId}/active`);
       const allOrders = response.data || [];
       const filteredOrders = allOrders.filter((order: any) => order.table_session_id === tableSessionId);
+      console.log('Filtered table orders:', filteredOrders);
+      console.log('First order items:', filteredOrders[0]?.items);
       setTableOrders(filteredOrders);
     } catch (error) {
       console.error('Error fetching table orders:', error);
@@ -294,6 +298,7 @@ export function TableServiceTemplate({
   const handlePayBill = async () => {
     if (!selectedTable) return;
     
+    setTipAmount(0);
     await fetchTableOrders(selectedTable.id);
     setShowPayBillModal(true);
   };
@@ -625,20 +630,41 @@ export function TableServiceTemplate({
                         <Typography variant="body-small" className={styles.billOrder__header}>
                           Order #{order.order_number} - {new Date(order.created_at).toLocaleTimeString()}
                         </Typography>
-                        {order.items.map((item: any) => (
+                        {(order.items || []).map((item: any) => (
                           <div key={item.id} className={styles.billItem}>
-                            <span>{item.quantity}x {item.menu_item_title}</span>
-                            <span>£{(item.total_price / 100).toFixed(2)}</span>
+                            <span>{item.quantity}x {item.menu_item_title || item.name || 'Item'}</span>
+                            <span>£{((item.total_price || item.unit_price * item.quantity) / 100).toFixed(2)}</span>
                           </div>
                         ))}
                       </div>
                     ))}
                   </div>
                   
+                  <div className={styles.billSubtotal}>
+                    <Typography variant="body-medium">Subtotal</Typography>
+                    <Typography variant="body-medium">
+                      £{(tableOrders.reduce((sum, order) => sum + order.total_amount, 0) / 100).toFixed(2)}
+                    </Typography>
+                  </div>
+                  
+                  <TipSelector
+                    subtotal={tableOrders.reduce((sum, order) => sum + order.total_amount, 0)}
+                    onTipChange={setTipAmount}
+                  />
+                  
+                  {tipAmount > 0 && (
+                    <div className={styles.billTip}>
+                      <Typography variant="body-medium">Tip</Typography>
+                      <Typography variant="body-medium">
+                        £{(tipAmount / 100).toFixed(2)}
+                      </Typography>
+                    </div>
+                  )}
+                  
                   <div className={styles.billTotal}>
                     <Typography variant="heading-4">Total</Typography>
                     <Typography variant="heading-4">
-                      £{(tableOrders.reduce((sum, order) => sum + order.total_amount, 0) / 100).toFixed(2)}
+                      £{((tableOrders.reduce((sum, order) => sum + order.total_amount, 0) + tipAmount) / 100).toFixed(2)}
                     </Typography>
                   </div>
                   
