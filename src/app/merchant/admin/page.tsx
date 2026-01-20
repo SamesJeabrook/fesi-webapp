@@ -8,6 +8,7 @@ import { Card } from '@/components/atoms/Card';
 import { MerchantQrModal } from '@/components/molecules/MerchantQrModal/MerchantQrModal';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getMerchantIdFromDevToken, getAuthToken } from '@/utils/devAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import api from '@/utils/api';
 import styles from './dashboard.module.scss';
 
@@ -18,6 +19,7 @@ interface DashboardItem {
   href: string;
   color: string;
   showWhen?: (merchant: any) => boolean;
+  requireFeature?: string;
 }
 
 interface DashboardSection {
@@ -36,7 +38,8 @@ const dashboardSections: DashboardSection[] = [
         description: 'Take orders directly at the counter',
         icon: '💳',
         href: '/merchant/admin/pos',
-        color: 'primary'
+        color: 'primary',
+        requireFeature: 'pos_system'
       },
       {
         title: 'Table Service',
@@ -44,7 +47,8 @@ const dashboardSections: DashboardSection[] = [
         icon: '🍽️',
         href: '/merchant/admin/table-service',
         color: 'primary',
-        showWhen: (merchant: any) => merchant?.operating_mode === 'static'
+        showWhen: (merchant: any) => merchant?.operating_mode === 'static',
+        requireFeature: 'table_service'
       },
       {
         title: 'Orders Management',
@@ -58,7 +62,8 @@ const dashboardSections: DashboardSection[] = [
         description: 'Manage your team members and assign roles',
         icon: '👥',
         href: '/merchant/admin/staff',
-        color: 'info'
+        color: 'info',
+        requireFeature: 'staff_management'
       },
       {
         title: 'Table Management',
@@ -66,7 +71,8 @@ const dashboardSections: DashboardSection[] = [
         icon: '🪑',
         href: '/merchant/admin/tables',
         color: 'info',
-        showWhen: (merchant: any) => merchant?.operating_mode === 'static'
+        showWhen: (merchant: any) => merchant?.operating_mode === 'static',
+        requireFeature: 'table_service'
       },
       {
         title: 'Table QR Codes',
@@ -74,7 +80,8 @@ const dashboardSections: DashboardSection[] = [
         icon: '📱',
         href: '/merchant/admin/table-qr-codes',
         color: 'success',
-        showWhen: (merchant: any) => merchant?.operating_mode === 'static'
+        showWhen: (merchant: any) => merchant?.operating_mode === 'static',
+        requireFeature: 'table_service'
       },
       {
         title: 'Reservations',
@@ -82,7 +89,8 @@ const dashboardSections: DashboardSection[] = [
         icon: '📅',
         href: '/merchant/admin/reservations',
         color: 'success',
-        showWhen: (merchant: any) => merchant?.operating_mode === 'static'
+        showWhen: (merchant: any) => merchant?.operating_mode === 'static',
+        requireFeature: 'reservations'
       },
       {
         title: 'Events Management',
@@ -110,7 +118,8 @@ const dashboardSections: DashboardSection[] = [
         description: 'Track inventory and manage stock levels',
         icon: '📦',
         href: '/merchant/admin/stock',
-        color: 'success'
+        color: 'success',
+        requireFeature: 'inventory_management'
       },
     ]
   },
@@ -147,6 +156,13 @@ const dashboardSections: DashboardSection[] = [
         color: 'info'
       },
       {
+        title: 'Subscription & Billing',
+        description: 'Manage your subscription plan and view features',
+        icon: '💎',
+        href: '/merchant/subscription',
+        color: 'secondary'
+      },
+      {
         title: 'System Settings',
         description: 'Configure your merchant settings and preferences',
         icon: '⚙️',
@@ -159,6 +175,7 @@ const dashboardSections: DashboardSection[] = [
 
 export default function MerchantAdminDashboard() {
   const { getAccessTokenSilently } = useAuth0();
+  const { hasFeature } = useSubscription();
   const [merchantId, setMerchantId] = useState<string | null>(null);
   const [merchant, setMerchant] = useState<any>(null);
   const [qrOpen, setQrOpen] = useState(false);
@@ -270,9 +287,16 @@ export default function MerchantAdminDashboard() {
 
         {dashboardSections.map((section) => {
           const visibleItems = section.items.filter((item) => {
+            // Check operating mode condition
             if (item.showWhen && merchant) {
-              return item.showWhen(merchant);
+              if (!item.showWhen(merchant)) return false;
             }
+            
+            // Check subscription feature requirement
+            if (item.requireFeature) {
+              return hasFeature(item.requireFeature as any);
+            }
+            
             return true;
           });
 

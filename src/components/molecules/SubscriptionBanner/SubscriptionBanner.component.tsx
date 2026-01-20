@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Typography } from '@/components/atoms/Typography';
 import { Button } from '@/components/atoms/Button';
 import { Card } from '@/components/atoms/Card';
@@ -12,6 +13,16 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
   onUpgrade,
   className,
 }) => {
+  const router = useRouter();
+  
+  const handleUpgrade = () => {
+    if (onUpgrade) {
+      onUpgrade();
+    } else {
+      router.push('/merchant/subscription');
+    }
+  };
+  
   const getTierInfo = (tier: SubscriptionTier) => {
     switch (tier) {
       case 'free':
@@ -19,21 +30,31 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
           name: 'Free',
           icon: '🆓',
           color: 'secondary',
-          nextTier: 'Basic',
-          nextRetention: 3,
+          nextTier: 'Professional',
+          nextRetention: 12,
         };
       case 'basic':
+      case 'professional':
         return {
-          name: 'Basic',
+          name: 'Professional',
           icon: '📊',
           color: 'primary',
-          nextTier: 'Premium',
-          nextRetention: 6,
+          nextTier: 'Business',
+          nextRetention: null, // Unlimited
+        };
+      case 'business':
+        return {
+          name: 'Business',
+          icon: '⭐',
+          color: 'success',
+          nextTier: 'Enterprise',
+          nextRetention: null, // Unlimited
         };
       case 'premium':
+      case 'enterprise':
         return {
-          name: 'Premium',
-          icon: '⭐',
+          name: 'Enterprise',
+          icon: '💎',
           color: 'success',
           nextTier: null,
           nextRetention: null,
@@ -42,7 +63,7 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
   };
 
   const tierInfo = getTierInfo(currentTier);
-  const showUpgradePrompt = currentTier !== 'premium' && (isApproachingLimit || onUpgrade);
+  const showUpgradePrompt = !['business', 'enterprise', 'premium'].includes(currentTier) && (isApproachingLimit || onUpgrade);
 
   const bannerClasses = [
     styles.subscriptionBanner,
@@ -66,15 +87,21 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
             {isApproachingLimit ? (
               <>
                 ⚠️ You're viewing data from the past <strong>{dataRetentionMonths} months</strong>.
-                {tierInfo.nextTier && (
+                {tierInfo.nextTier && tierInfo.nextRetention && (
                   <> Upgrade to <strong>{tierInfo.nextTier}</strong> to access {tierInfo.nextRetention} months of history.</>
+                )}
+                {tierInfo.nextTier && !tierInfo.nextRetention && (
+                  <> Upgrade to <strong>{tierInfo.nextTier}</strong> for unlimited history.</>
                 )}
               </>
             ) : (
               <>
-                Access to <strong>{dataRetentionMonths} months</strong> of analytics data.
-                {tierInfo.nextTier && (
+                Access to <strong>{dataRetentionMonths === null ? 'unlimited' : `${dataRetentionMonths} months`}</strong> of analytics data.
+                {tierInfo.nextTier && tierInfo.nextRetention && (
                   <> Upgrade to unlock {tierInfo.nextRetention} months of history.</>
+                )}
+                {tierInfo.nextTier && !tierInfo.nextRetention && (
+                  <> Upgrade for unlimited history.</>
                 )}
               </>
             )}
@@ -86,7 +113,7 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
             <Button
               variant={isApproachingLimit ? 'primary' : 'secondary'}
               size="md"
-              onClick={onUpgrade}
+              onClick={handleUpgrade}
               className={styles.subscriptionBanner__upgradeButton}
             >
               🚀 Upgrade to {tierInfo.nextTier}
@@ -95,7 +122,7 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
         )}
       </div>
 
-      {currentTier === 'premium' && (
+      {['business', 'enterprise', 'premium'].includes(currentTier) && (
         <div className={styles.subscriptionBanner__badge}>
           <Typography variant="body-small" className={styles.subscriptionBanner__badgeText}>
             ✨ Unlimited History
