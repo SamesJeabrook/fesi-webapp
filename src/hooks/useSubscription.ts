@@ -72,7 +72,7 @@ export function useSubscription() {
 
   useEffect(() => {
     fetchSubscription();
-  }, [fetchSubscription]);
+  }, []);
 
   const hasFeature = useCallback((feature: keyof SubscriptionFeatures): boolean => {
     return subscription?.features?.[feature] ?? false;

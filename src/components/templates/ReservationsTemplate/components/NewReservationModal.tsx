@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNotification } from '@/contexts/NotificationContext';
 import { api } from '@/utils/api';
 import { Typography } from '@/components/atoms/Typography';
@@ -13,21 +13,61 @@ interface NewReservationModalProps {
   tables: Table[];
   onClose: () => void;
   onSuccess: () => void;
+  prefilledTime?: string;
+  prefilledTableId?: string;
+  prefilledDate?: string;
 }
 
-export function NewReservationModal({ merchantId, tables, onClose, onSuccess }: NewReservationModalProps) {
+export function NewReservationModal({ 
+  merchantId, 
+  tables, 
+  onClose, 
+  onSuccess,
+  prefilledTime = '',
+  prefilledTableId = '',
+  prefilledDate = ''
+}: NewReservationModalProps) {
   const { showSuccess, showError } = useNotification();
   const [formData, setFormData] = useState({
-    reservationDate: new Date().toISOString().split('T')[0],
-    startTime: '',
+    reservationDate: prefilledDate || new Date().toISOString().split('T')[0],
+    startTime: prefilledTime,
     guestCount: 2,
     guestName: '',
     guestEmail: '',
     guestPhone: '',
-    tableIds: [] as string[],
+    tableIds: prefilledTableId ? [prefilledTableId] : [] as string[],
     specialRequests: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [unavailableTables, setUnavailableTables] = useState<string[]>([]);
+
+  // Check table availability when date/time changes
+  useEffect(() => {
+    if (formData.reservationDate && formData.startTime) {
+      checkTableAvailability();
+    }
+  }, [formData.reservationDate, formData.startTime]);
+
+  const checkTableAvailability = async () => {
+    try {
+      const endTime = calculateEndTime(formData.startTime, 90);
+      const response = await api.get(
+        `/api/reservations/merchant/${merchantId}/availability?date=${formData.reservationDate}&startTime=${formData.startTime}&endTime=${endTime}`
+      );
+      
+      // Get IDs of tables that are already booked
+      const bookedTableIds = response.unavailableTables || [];
+      setUnavailableTables(bookedTableIds);
+      
+      // Remove any selected tables that are now unavailable
+      setFormData(prev => ({
+        ...prev,
+        tableIds: prev.tableIds.filter(id => !bookedTableIds.includes(id))
+      }));
+    } catch (error) {
+      console.error('Error checking availability:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +149,7 @@ export function NewReservationModal({ merchantId, tables, onClose, onSuccess }: 
               min={1}
               max={20}
               value={formData.guestCount}
-              onChange={(e) => setFormData({ ...formData, guestCount: parseInt(e.target.value) })}
+              onChange={(e) => setFormData({ ...formData, guestCount: parseInt(e.target.value) || 0 })}
               className={styles.input}
             />
           </div>
@@ -152,26 +192,51 @@ export function NewReservationModal({ merchantId, tables, onClose, onSuccess }: 
             <label>Table Selection</label>
             <div className={styles.tableSelectionGroup}>
               {tables
-                .filter((t) => t.capacity >= formData.guestCount)
-                .map((table) => (
-                  <label key={table.id} className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={formData.tableIds.includes(table.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setFormData({ ...formData, tableIds: [...formData.tableIds, table.id] });
-                        } else {
-                          setFormData({ ...formData, tableIds: formData.tableIds.filter(id => id !== table.id) });
-                        }
-                      }}
-                    />
-                    <span>Table {table.table_number} (Capacity: {table.capacity})</span>
-                  </label>
-                ))}
+                .sort((a, b) => a.table_number - b.table_number)
+                .map((table) => {
+                  const isUnavailable = unavailableTables.includes(table.id);
+                  const selectedCapacity = formData.tableIds
+                    .map(id => tables.find(t => t.id === id)?.capacity || 0)
+                    .reduce((sum, cap) => sum + cap, 0);
+                  
+                  return (
+                    <label 
+                      key={table.id} 
+                      className={`${styles.checkboxLabel} ${isUnavailable ? styles.unavailable : ''}`}
+                      title={isUnavailable ? 'This table is already booked for this time' : ''}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.tableIds.includes(table.id)}
+                        disabled={isUnavailable}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData({ ...formData, tableIds: [...formData.tableIds, table.id] });
+                          } else {
+                            setFormData({ ...formData, tableIds: formData.tableIds.filter(id => id !== table.id) });
+                          }
+                        }}
+                      />
+                      <span>
+                        Table {table.table_number} (Capacity: {table.capacity})
+                        {isUnavailable && <span className={styles.bookedBadge}> - Already Booked</span>}
+                      </span>
+                    </label>
+                  );
+                })}
             </div>
             <p className={styles.helpText}>
-              Select one or more tables for this reservation. Leave empty for auto-assignment.
+              Select one or more tables to combine capacity for larger groups. Leave empty for auto-assignment.
+              {formData.tableIds.length > 0 && (
+                <span className={styles.successText}> Combined capacity: {
+                  formData.tableIds
+                    .map(id => tables.find(t => t.id === id)?.capacity || 0)
+                    .reduce((sum, cap) => sum + cap, 0)
+                } guests.</span>
+              )}
+              {unavailableTables.length > 0 && (
+                <span className={styles.warningText}> Note: Some tables are unavailable at this time.</span>
+              )}
             </p>
           </div>
 

@@ -13,7 +13,7 @@
 }
 
 .modalContent {
-  background: var(--color-background);
+  background: white;
   border-radius: var(--border-radius-lg);
   max-width: 600px;
   width: 100%;
@@ -126,6 +126,41 @@
     font-size: var(--font-size-sm);
     color: var(--color-neutral-900);
   }
+  
+  &.unavailable {
+    opacity: 0.5;
+    cursor: not-allowed;
+    
+    &:hover {
+      background-color: transparent;
+    }
+    
+    input[type="checkbox"] {
+      cursor: not-allowed;
+    }
+    
+    span {
+      color: var(--color-neutral-500);
+      text-decoration: line-through;
+    }
+  }
+}
+
+.bookedBadge {
+  color: var(--color-danger-600);
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  text-decoration: none !important;
+}
+
+.warningText {
+  color: var(--color-warning-700);
+  font-weight: 500;
+}
+
+.successText {
+  color: var(--color-success-700);
+  font-weight: 600;
 }
 
 .helpText {

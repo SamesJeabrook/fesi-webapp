@@ -38,39 +38,12 @@ export const useMerchant = () => {
       try {
         setIsLoading(true);
         
-        // Check for dev token first
-        const devMerchantId = getMerchantIdFromDevToken();
-        if (devMerchantId) {
-          setMerchantId(devMerchantId);
-          await fetchMerchantDetails(devMerchantId, getAuthToken());
-          return;
-        }
-
-        // Get Auth0 token and user
-        try {
-          const token = await getAccessTokenSilently();
-          const response = await fetch('/api/auth/user', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-            credentials: 'include',
-          });
-
-          if (response.ok) {
-            const user = await response.json();
-            if (user.merchant_id) {
-              setMerchantId(user.merchant_id);
-              await fetchMerchantDetails(user.merchant_id, token);
-            } else {
-              throw new Error('No merchant ID found for user');
-            }
-          } else {
-            throw new Error('Failed to fetch user data');
-          }
-        } catch (authError) {
-          console.error('Auth error:', authError);
-          throw new Error('Authentication failed');
-        }
+        // Use /me endpoint which works for both dev tokens and Auth0
+        const response = await api.get('/api/merchants/me');
+        const merchantData = response.data || response;
+        
+        setMerchantId(merchantData.id);
+        setMerchant(merchantData);
       } catch (err) {
         console.error('Error fetching merchant:', err);
         setError(err instanceof Error ? err.message : 'Failed to load merchant');
@@ -79,20 +52,15 @@ export const useMerchant = () => {
       }
     };
 
-    const fetchMerchantDetails = async (id: string, token: string) => {
-      const response = await api.get(`/api/merchants/${id}`);
-      setMerchant(response.data || response.merchant || response);
-    };
-
     fetchMerchantData();
-  }, [getAccessTokenSilently]);
+  }, []);
 
   const refetchMerchant = async () => {
-    if (!merchantId) return;
-    
     try {
-      const response = await api.get(`/api/merchants/${merchantId}`);
-      setMerchant(response.data || response.merchant || response);
+      const response = await api.get('/api/merchants/me');
+      const merchantData = response.data || response;
+      setMerchantId(merchantData.id);
+      setMerchant(merchantData);
     } catch (err) {
       console.error('Error refetching merchant:', err);
     }

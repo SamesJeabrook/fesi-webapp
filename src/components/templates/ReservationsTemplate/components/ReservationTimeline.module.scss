@@ -1,0 +1,201 @@
+.timeline {
+  background: white;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.timelineHeader {
+  display: flex;
+  border-bottom: 2px solid var(--color-neutral-300);
+  background: var(--color-neutral-50);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tablesColumn {
+  flex-shrink: 0;
+  width: 160px;
+  border-right: 2px solid var(--color-neutral-300);
+  background: white;
+}
+
+.cornerCell {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  background: var(--color-neutral-100);
+}
+
+.hoursScroll {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.hoursContainer {
+  display: flex;
+  height: 50px;
+}
+
+.hourCell {
+  border-right: 1px solid var(--color-neutral-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.timelineBody {
+  display: flex;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.tableRow {
+  border-bottom: 1px solid var(--color-neutral-200);
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-3);
+  background: white;
+}
+
+.tableLabel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+}
+
+.gridScroll {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.gridContainer {
+  position: relative;
+  height: 100%;
+}
+
+.gridRow {
+  position: relative;
+  display: flex;
+  border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.timeSlot {
+  border-right: 1px solid var(--color-neutral-100);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background-color: var(--color-primary-50);
+  }
+}
+
+.reservationBlock {
+  position: absolute;
+  top: 4px;
+  height: calc(100% - 8px);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-2);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+  overflow: hidden;
+  color: white;
+  font-size: var(--font-size-xs);
+  
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    z-index: 5;
+  }
+}
+
+.reservationContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.reservationTime {
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+}
+
+.reservationGuest {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reservationInfo {
+  font-size: var(--font-size-xs);
+  opacity: 0.9;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  padding: var(--spacing-3);
+  border-top: 1px solid var(--color-neutral-200);
+  background: var(--color-neutral-50);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.legendColor {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-xs);
+}
+
+/* Sync scrolling */
+.hoursScroll,
+.gridScroll {
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--color-neutral-100);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-neutral-400);
+    border-radius: 4px;
+
+    &:hover {
+      background: var(--color-neutral-500);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .tablesColumn {
+    width: 100px;
+  }
+
+  .tableLabel {
+    font-size: var(--font-size-sm);
+  }
+
+  .reservationBlock {
+    font-size: 10px;
+  }
+}

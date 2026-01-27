@@ -190,24 +190,22 @@ export default function MerchantAdminDashboard() {
         
         // Check for dev token first
         const devMerchantId = getMerchantIdFromDevToken();
-        let id: string;
         
         if (devMerchantId) {
-          id = devMerchantId;
+          // For dev mode, we still need to fetch merchant data
+          const merchantData = await api.get('/api/merchants/me');
+          setMerchantId(devMerchantId);
+          setMerchant(merchantData.data);
         } else {
-          // Get from /me endpoint
-          const data = await api.get('/api/merchants/me');
-          id = data.id;
+          // Get from /me endpoint - this returns all merchant data
+          const response = await api.get('/api/merchants/me');
+          const merchantData = response.data;
+          setMerchantId(merchantData.id);
+          setMerchant(merchantData);
+          console.log('Merchant data loaded:', merchantData);
+          console.log('Operating mode:', merchantData?.operating_mode);
+          console.log('Reservation enabled:', merchantData?.reservation_enabled);
         }
-
-        setMerchantId(id);
-
-        // Fetch full merchant details
-        const merchantData = await api.get(`/api/merchants/${id}`);
-        setMerchant(merchantData.data);
-        console.log('Merchant data loaded:', merchantData.data);
-        console.log('Operating mode:', merchantData.data?.operating_mode);
-        console.log('Reservation enabled:', merchantData.data?.reservation_enabled);
       } catch (error) {
         console.error('Error fetching merchant data:', error);
       } finally {
@@ -216,7 +214,7 @@ export default function MerchantAdminDashboard() {
     };
 
     fetchMerchantData();
-  }, [getAccessTokenSilently]);
+  }, []);
 
   const toggleOpenStatus = async () => {
     if (!merchantId) return;

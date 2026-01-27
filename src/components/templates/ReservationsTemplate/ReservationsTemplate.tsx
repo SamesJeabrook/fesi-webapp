@@ -11,7 +11,7 @@ import type {
   Reservation,
   Table
 } from './ReservationsTemplate.types';
-import { NewReservationModal, EditReservationModal } from './components';
+import { NewReservationModal, EditReservationModal, ReservationTimeline } from './components';
 import styles from './ReservationsTemplate.module.scss';
 
 export function ReservationsTemplate({
@@ -29,8 +29,10 @@ export function ReservationsTemplate({
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [showNewReservationModal, setShowNewReservationModal] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'table'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'timeline'>('timeline');
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [prefilledTime, setPrefilledTime] = useState<string>('');
+  const [prefilledTableId, setPrefilledTableId] = useState<string>('');
 
   useEffect(() => {
     if (merchantId) {
@@ -168,10 +170,10 @@ export function ReservationsTemplate({
             📋 List View
           </button>
           <button
-            className={`${styles.toggleBtn} ${viewMode === 'table' ? styles.active : ''}`}
-            onClick={() => setViewMode('table')}
+            className={`${styles.toggleBtn} ${viewMode === 'timeline' ? styles.active : ''}`}
+            onClick={() => setViewMode('timeline')}
           >
-            🪑 Table View
+            📅 Timeline View
           </button>
         </div>
 
@@ -328,123 +330,37 @@ export function ReservationsTemplate({
           </div>
         )
       ) : (
-        <div className={styles.tableView}>
-          <div className={styles.tablesGrid}>
-            {tables.map((table) => {
-              const tableReservations = reservations.filter(r => 
-                r.table_id === table.id || (r.table_ids && r.table_ids.includes(table.id))
-              );
-              const nextReservation = tableReservations
-                .filter(r => ['pending', 'confirmed'].includes(r.status))
-                .sort((a, b) => a.start_time.localeCompare(b.start_time))[0];
-
-              return (
-                <div
-                  key={table.id}
-                  className={`${styles.tableCard} ${selectedTableId === table.id ? styles.selected : ''} ${styles[`status-${table.status}`]}`}
-                  onClick={() => setSelectedTableId(selectedTableId === table.id ? null : table.id)}
-                >
-                  <div className={styles.tableCard__header}>
-                    <span className={styles.tableNumber}>Table {table.table_number}</span>
-                    <span className={styles.capacity}>👥 {table.capacity}</span>
-                  </div>
-                  <div className={styles.tableCard__status}>
-                    <span className={`${styles.statusDot} ${styles[`status-${table.status}`]}`}></span>
-                    {table.status}
-                  </div>
-                  {tableReservations.length > 0 && (
-                    <div className={styles.bookingCount}>
-                      {tableReservations.length} booking{tableReservations.length !== 1 ? 's' : ''}
-                    </div>
-                  )}
-                  {nextReservation && (
-                    <div className={styles.nextBooking}>
-                      Next: {formatTime(nextReservation.start_time)}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {selectedTableId && (
-            <div className={styles.tableBookingsPanel}>
-              <div className={styles.panelHeader}>
-                <Typography variant="heading-4">
-                  Table {tables.find(t => t.id === selectedTableId)?.table_number} Bookings
-                </Typography>
-                <button className={styles.closeBtn} onClick={() => setSelectedTableId(null)}>×</button>
-              </div>
-              <div className={styles.bookingsList}>
-                {reservations
-                  .filter(r => r.table_id === selectedTableId || (r.table_ids && r.table_ids.includes(selectedTableId)))
-                  .sort((a, b) => a.start_time.localeCompare(b.start_time))
-                  .map((reservation) => (
-                    <div key={reservation.id} className={styles.bookingItem}>
-                      <div className={styles.bookingTime}>
-                        <strong>{formatTime(reservation.start_time)}</strong>
-                        <span className={styles.bookingDuration}>{reservation.duration_minutes}min</span>
-                      </div>
-                      <div className={styles.bookingDetails}>
-                        <div className={styles.bookingGuest}>
-                          {reservation.customer_first_name 
-                            ? `${reservation.customer_first_name} ${reservation.customer_last_name}`
-                            : reservation.guest_name}
-                        </div>
-                        <div className={styles.bookingInfo}>
-                          <span>👥 {reservation.guest_count}</span>
-                          <span className={`${styles.statusBadgeSmall} ${styles[`status-${reservation.status}`]}`}>
-                            {reservation.status}
-                          </span>
-                        </div>
-                        {reservation.special_requests && (
-                          <div className={styles.specialRequestsSmall}>
-                            {reservation.special_requests}
-                          </div>
-                        )}
-                      </div>
-                      <div className={styles.bookingActions}>
-                        {reservation.status === 'pending' && (
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleConfirmReservation(reservation.id)}
-                          >
-                            Confirm
-                          </Button>
-                        )}
-                        {reservation.status === 'confirmed' && (
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleSeatCustomer(reservation.id)}
-                          >
-                            Seat
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                {reservations.filter(r => r.table_id === selectedTableId || (r.table_ids && r.table_ids.includes(selectedTableId))).length === 0 && (
-                  <div className={styles.noBookings}>
-                    <p>No bookings for this table today</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        <ReservationTimeline
+          tables={tables}
+          reservations={reservations}
+          selectedDate={selectedDate}
+          onReservationClick={(reservation) => setSelectedReservation(reservation)}
+          onTimeSlotClick={(tableId, time) => {
+            setPrefilledTableId(tableId);
+            setPrefilledTime(time);
+            setShowNewReservationModal(true);
+          }}
+        />
       )}
 
       {showNewReservationModal && (
         <NewReservationModal
           merchantId={merchantId}
           tables={tables}
-          onClose={() => setShowNewReservationModal(false)}
+          onClose={() => {
+            setShowNewReservationModal(false);
+            setPrefilledTime('');
+            setPrefilledTableId('');
+          }}
           onSuccess={() => {
             setShowNewReservationModal(false);
+            setPrefilledTime('');
+            setPrefilledTableId('');
             loadReservations();
           }}
+          prefilledTime={prefilledTime}
+          prefilledTableId={prefilledTableId}
+          prefilledDate={selectedDate}
         />
       )}
 
