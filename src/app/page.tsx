@@ -1,8 +1,21 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Typography } from '@/components/atoms/Typography';
 
 export default function HomePage() {
+  const router = useRouter();
+
+  // Check if user just logged out and should be redirected
+  useEffect(() => {
+    const postLogoutRedirect = sessionStorage.getItem('postLogoutRedirect');
+    if (postLogoutRedirect) {
+      sessionStorage.removeItem('postLogoutRedirect');
+      router.push(postLogoutRedirect);
+    }
+  }, [router]);
+
   return (
     <main className="min-h-screen bg-neutral-50">
       <div className="container mx-auto px-4 py-8">
@@ -73,6 +86,18 @@ export default function HomePage() {
               className="inline-block text-primary-600 px-8 py-3 rounded-lg hover:bg-primary-50 transition-colors font-medium"
             >
               Log In
+            </a>
+          </div>
+
+          <div className="mb-8">
+            <Typography variant="body-medium" className="text-neutral-600 mb-3">
+              Are you a restaurant or vendor?
+            </Typography>
+            <a 
+              href="/merchant/onboarding"
+              className="inline-block bg-secondary-600 text-white px-8 py-3 rounded-lg hover:bg-secondary-700 transition-colors font-medium"
+            >
+              Become a Merchant
             </a>
           </div>
           

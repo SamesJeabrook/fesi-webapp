@@ -114,6 +114,7 @@ export default function CustomerSettingsPage() {
       });
       
       alert('Your account has been deleted. You will be logged out.');
+      sessionStorage.setItem('postLogoutRedirect', '/customer/login');
       logout({ logoutParams: { returnTo: window.location.origin } });
     } catch (error) {
       console.error('Error deleting account:', error);

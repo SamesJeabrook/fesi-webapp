@@ -264,3 +264,123 @@ img {
   flex-direction: row;
   gap: var(--spacing-md);
 }
+
+// Auth0 Lock Customization
+// Override Auth0 Lock styles to match our design system
+.auth0-lock.auth0-lock {
+  font-family: var(--font-family-base);
+
+  // Header styling
+  .auth0-lock-header {
+    display: none; // Hide default header, we use our own
+  }
+
+  // Main widget container
+  .auth0-lock-widget {
+    box-shadow: none;
+    overflow: visible;
+    
+    .auth0-lock-widget-container {
+      box-shadow: none;
+    }
+  }
+
+  // Form container
+  .auth0-lock-cred-pane {
+    border-radius: var(--border-radius-lg);
+  }
+
+  // Input fields
+  .auth0-lock-input-wrap {
+    .auth0-lock-input {
+      border-radius: var(--border-radius-md);
+      border: 1px solid var(--color-neutral-300);
+      font-size: var(--font-size-base);
+      padding: var(--spacing-3);
+      
+      &:focus {
+        border-color: var(--color-primary-500);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+      }
+    }
+
+    .auth0-lock-input-email,
+    .auth0-lock-input-password {
+      background-color: var(--color-neutral-50);
+    }
+  }
+
+  // Primary button
+  .auth0-lock-submit {
+    background: var(--color-primary-500);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-3) var(--spacing-4);
+    font-weight: 600;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: var(--color-primary-600);
+    }
+    
+    &:active {
+      background: var(--color-primary-700);
+    }
+  }
+
+  // Social buttons
+  .auth0-lock-social-button {
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-neutral-300);
+    transition: all 0.2s ease;
+    
+    &:hover {
+      border-color: var(--color-neutral-400);
+      background-color: var(--color-neutral-50);
+    }
+    
+    .auth0-lock-social-button-text {
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  // Tabs (login/signup)
+  .auth0-lock-tabs {
+    li {
+      a {
+        color: var(--color-neutral-600);
+        font-weight: 500;
+        
+        &.auth0-lock-tabs-current {
+          color: var(--color-primary-600);
+          border-bottom-color: var(--color-primary-600);
+        }
+      }
+    }
+  }
+
+  // Alternative link
+  .auth0-lock-alternative-link {
+    color: var(--color-primary-600);
+    
+    &:hover {
+      color: var(--color-primary-700);
+    }
+  }
+
+  // Error messages
+  .auth0-global-message {
+    &.auth0-global-message-error {
+      background-color: var(--color-error-light);
+      border-color: var(--color-error);
+      color: var(--color-error-dark);
+      border-radius: var(--border-radius-md);
+    }
+    
+    &.auth0-global-message-success {
+      background-color: var(--color-success-light);
+      border-color: var(--color-success);
+      color: var(--color-success-dark);
+      border-radius: var(--border-radius-md);
+    }
+  }
+}

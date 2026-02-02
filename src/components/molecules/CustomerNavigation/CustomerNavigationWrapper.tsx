@@ -26,9 +26,10 @@ export function CustomerNavigationWrapper() {
   };
 
   const handleLogoutClick = () => {
+    sessionStorage.setItem('postLogoutRedirect', '/customer/login');
     logout({
       logoutParams: {
-        returnTo: `${window.location.origin}/vendors`,
+        returnTo: window.location.origin,
       },
     });
   };

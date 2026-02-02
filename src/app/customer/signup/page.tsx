@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
 import { FormInput } from '@/components/atoms';
+import { Auth0LockWidget } from '@/components/auth/Auth0LockWidget';
 import api from '@/utils/api';
 import Link from 'next/link';
 import styles from './signup.module.scss';
@@ -12,9 +13,10 @@ import styles from './signup.module.scss';
 export default function CustomerSignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { loginWithRedirect, isAuthenticated, isLoading, user } = useAuth0();
+  const { isAuthenticated, isLoading, user } = useAuth0();
   const [step, setStep] = useState<'auth' | 'details'>('auth');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showLock, setShowLock] = useState(false);
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -62,15 +64,16 @@ export default function CustomerSignupPage() {
     }
   }, [isAuthenticated, user, isLoading, router, searchParams]);
 
-  const handleAuth0Signup = async () => {
-    const returnTo = searchParams?.get('returnTo') || '/customer/signup?step=details';
-    
-    await loginWithRedirect({
-      authorizationParams: {
-        screen_hint: 'signup',
-        redirect_uri: `${window.location.origin}/customer/signup`,
-      },
-    });
+  // Show lock after initial load to avoid SSR issues
+  useEffect(() => {
+    if (!isAuthenticated && !isLoading && step === 'auth') {
+      setShowLock(true);
+    }
+  }, [isAuthenticated, isLoading, step]);
+
+  const handleAuthenticated = async (authResult: any) => {
+    // Move to details step after authentication
+    setStep('details');
   };
 
   const validateForm = (): boolean => {
@@ -194,14 +197,20 @@ export default function CustomerSignupPage() {
             <div className={styles.signup__divider}></div>
 
             <div className={styles.signup__actions}>
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={handleAuth0Signup}
-                className={styles.signup__button}
-              >
-                Sign Up with Email
-              </Button>
+              {showLock ? (
+                <div style={{ padding: 'var(--spacing-4) 0' }}>
+                  <Auth0LockWidget
+                    onAuthenticated={handleAuthenticated}
+                    returnTo="/customer/signup"
+                    container="customer-signup-lock-container"
+                    allowSignUp={true}
+                    allowLogin={true}
+                    initialScreen="signUp"
+                  />
+                </div>
+              ) : (
+                <Typography variant="body-medium">Loading signup form...</Typography>
+              )}
 
               <Typography 
                 variant="body-small" 

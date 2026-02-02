@@ -1,4 +1,7 @@
+'use client';
+
 import { AdminHeader, Navigation } from '@/components/molecules';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 export default function MerchantAdminLayout({
   children,
@@ -6,10 +9,10 @@ export default function MerchantAdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-        <Navigation />
-        <AdminHeader />
-        {children}
-    </>
+    <AuthGuard requireRole="merchant" loginPath="/merchant/login">
+      <Navigation />
+      <AdminHeader />
+      {children}
+    </AuthGuard>
   );
 }

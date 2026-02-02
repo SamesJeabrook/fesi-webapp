@@ -33,7 +33,7 @@ interface MenuCategory {
 }
 
 export default function MenuItemsPage() {
-  const { getAccessTokenSilently } = useAuth0();
+  const { getAccessTokenSilently, user } = useAuth0();
   const [items, setItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,8 +55,8 @@ export default function MenuItemsPage() {
     try {
       setIsLoading(true);
 
-      // Extract merchant ID from dev token or get from /me endpoint
-      let currentMerchantId: string;
+      // Extract merchant ID from dev token or API
+      let currentMerchantId: string | undefined;
       let token: string;
       const devToken = localStorage.getItem('dev_token');
       
@@ -66,10 +66,24 @@ export default function MenuItemsPage() {
         token = devToken;
         console.log('[DEV MODE] Using merchant ID from dev token:', currentMerchantId);
       } else {
-        // For real Auth0 tokens, get merchant data from /me endpoint
-        const merchantData = await api.get('/api/merchants/me');
-        currentMerchantId = merchantData.id;
+        // For real Auth0 tokens, get merchant_ids from /api/auth/me
         token = await getAccessTokenSilently();
+        
+        const userData = await api.get('/api/auth/me');
+        const merchantIds = userData.user?.merchant_ids || [];
+        
+        if (merchantIds.length > 0) {
+          currentMerchantId = merchantIds[0];
+          console.log('[Auth0] User merchant_id:', currentMerchantId);
+        } else {
+          console.error('No merchant ID found for user');
+          throw new Error('No merchant account found. Please contact support.');
+        }
+      }
+      
+      if (!currentMerchantId) {
+        console.error('No merchant ID found for user');
+        throw new Error('No merchant account found. Please contact support.');
       }
       
       setMerchantId(currentMerchantId);

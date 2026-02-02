@@ -21,7 +21,7 @@ interface MenuCategory {
 }
 
 export default function MenuCategoriesPage() {
-  const { getAccessTokenSilently } = useAuth0();
+  const { getAccessTokenSilently, user } = useAuth0();
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -39,17 +39,24 @@ export default function MenuCategoriesPage() {
         return;
       }
 
-      // Otherwise, get from /me endpoint
+      // For real Auth0 tokens, get merchant_ids from /api/auth/me
       try {
-        const data = await api.get('/api/merchants/me');
-        setMerchantId(data.id);
+        const userData = await api.get('/api/auth/me');
+        const merchantIds = userData.user?.merchant_ids || [];
+        
+        if (merchantIds.length > 0) {
+          setMerchantId(merchantIds[0]);
+          console.log('[Auth0] User merchant_id:', merchantIds[0]);
+        } else {
+          console.error('No merchant ID found for user');
+        }
       } catch (error) {
         console.error('Error fetching merchant ID:', error);
       }
     };
 
     getMerchantId();
-  }, [getAccessTokenSilently]);
+  }, []);
 
   const fetchCategories = async () => {
     try {

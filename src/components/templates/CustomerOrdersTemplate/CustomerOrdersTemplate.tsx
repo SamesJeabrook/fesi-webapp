@@ -125,6 +125,7 @@ export function CustomerOrdersTemplate({
   };
 
   const handleLogoutClick = () => {
+    sessionStorage.setItem('postLogoutRedirect', '/customer/login');
     logout({ logoutParams: { returnTo: window.location.origin } });
   };
 
