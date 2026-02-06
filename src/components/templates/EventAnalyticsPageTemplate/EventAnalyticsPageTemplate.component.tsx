@@ -64,7 +64,7 @@ export const EventAnalyticsPageTemplate: React.FC<EventAnalyticsPageTemplateProp
         )}
         
         <div className={styles.eventAnalyticsPageTemplate__titleRow}>
-          <Typography variant="heading-1" className={styles.eventAnalyticsPageTemplate__title}>
+          <Typography variant="heading-1" as="h1" className={styles.eventAnalyticsPageTemplate__title}>
             📊 {eventName}
           </Typography>
           <span className={`${styles.eventAnalyticsPageTemplate__badge} ${
@@ -83,7 +83,7 @@ export const EventAnalyticsPageTemplate: React.FC<EventAnalyticsPageTemplateProp
 
       {/* Overview Stats */}
       <div className={styles.eventAnalyticsPageTemplate__section}>
-        <Typography variant="heading-2" className={styles.eventAnalyticsPageTemplate__sectionTitle}>
+        <Typography variant="heading-2" as="h2" className={styles.eventAnalyticsPageTemplate__sectionTitle}>
           Event Performance
         </Typography>
         <div className={styles.eventAnalyticsPageTemplate__statsGrid}>
@@ -111,7 +111,7 @@ export const EventAnalyticsPageTemplate: React.FC<EventAnalyticsPageTemplateProp
       {/* Top Selling Items */}
       {topItems.length > 0 && (
         <div className={styles.eventAnalyticsPageTemplate__section}>
-          <Typography variant="heading-2" className={styles.eventAnalyticsPageTemplate__sectionTitle}>
+          <Typography variant="heading-2" as="h2" className={styles.eventAnalyticsPageTemplate__sectionTitle}>
             🔥 Best Selling Items
           </Typography>
           <TopItemsTable items={topItems} maxItems={20} showRevenue={true} />
@@ -121,7 +121,7 @@ export const EventAnalyticsPageTemplate: React.FC<EventAnalyticsPageTemplateProp
       {/* Hourly Breakdown Chart */}
       {hourlyBreakdown.length > 0 && (
         <div className={styles.eventAnalyticsPageTemplate__section}>
-          <Typography variant="heading-2" className={styles.eventAnalyticsPageTemplate__sectionTitle}>
+          <Typography variant="heading-2" as="h2" className={styles.eventAnalyticsPageTemplate__sectionTitle}>
             📈 Orders by Hour
           </Typography>
           <div className={styles.eventAnalyticsPageTemplate__chartContainer}>
@@ -130,7 +130,7 @@ export const EventAnalyticsPageTemplate: React.FC<EventAnalyticsPageTemplateProp
             </Typography>
             <div className={styles.eventAnalyticsPageTemplate__hourlyChart}>
               {hourlyBreakdown.map((hourData) => {
-                const heightPercentage = (hourData.orders / maxOrders) * 100;
+                const heightPercentage = Math.max((hourData.orders / maxOrders) * 100, hourData.orders > 0 ? 5 : 0);
                 
                 return (
                   <div key={hourData.hour} className={styles.eventAnalyticsPageTemplate__hourBar}>
@@ -160,7 +160,7 @@ export const EventAnalyticsPageTemplate: React.FC<EventAnalyticsPageTemplateProp
       {/* Empty State */}
       {!loading && stats.totalOrders === 0 && (
         <div className={styles.eventAnalyticsPageTemplate__emptyState}>
-          <Typography variant="heading-3">No Orders Yet</Typography>
+          <Typography variant="heading-3" as="h3">No Orders Yet</Typography>
           <Typography variant="body-large">
             This event hasn't received any completed orders yet.
           </Typography>

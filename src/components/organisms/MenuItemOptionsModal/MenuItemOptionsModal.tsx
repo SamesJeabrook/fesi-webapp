@@ -58,6 +58,8 @@ export const MenuItemOptionsModal: React.FC<MenuItemOptionsModalProps> = ({
   notes = '',
   onNotesChange
 }) => {
+  console.log('MenuItemOptionsModal render - isOpen:', isOpen, 'menuItem:', menuItem);
+  
   if (!menuItem) return null;
 
   const calculateTotal = () => {

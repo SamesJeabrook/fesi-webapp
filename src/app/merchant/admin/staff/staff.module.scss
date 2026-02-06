@@ -27,6 +27,22 @@
   }
 }
 
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary-600);
+  text-decoration: none;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-4);
+  transition: color var(--duration-normal) var(--easing-ease-out);
+
+  &:hover {
+    color: var(--color-primary-700);
+    text-decoration: underline;
+  }
+}
+
 .staffGrid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);

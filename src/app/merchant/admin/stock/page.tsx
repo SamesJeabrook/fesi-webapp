@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { StockManagement } from '@/components/organisms';
 import { Typography, Button } from '@/components/atoms';
@@ -10,6 +11,7 @@ import api from '@/utils/api';
 import styles from '../dashboard.module.scss';
 
 export default function StockManagementPage() {
+  const { user } = useAuth0();
   const router = useRouter();
   const [merchantId, setMerchantId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,9 +27,15 @@ export default function StockManagementPage() {
         if (devMerchantId) {
           setMerchantId(devMerchantId);
         } else {
-          // Get from /me endpoint
-          const data = await api.get('/api/merchants/me');
-          setMerchantId(data.id);
+          // Try Auth0 user's merchant_ids
+          const merchantIds = user?.['https://fesi.app/merchant_ids'];
+          if (merchantIds && merchantIds.length > 0) {
+            setMerchantId(merchantIds[0]);
+          } else {
+            // Get from /me endpoint
+            const data = await api.get('/api/merchants/me');
+            setMerchantId(data.id);
+          }
         }
       } catch (error) {
         console.error('Error fetching merchant ID:', error);
@@ -37,7 +45,7 @@ export default function StockManagementPage() {
     };
 
     fetchMerchantId();
-  }, []);
+  }, [user]);
 
   if (isLoading) {
     return (

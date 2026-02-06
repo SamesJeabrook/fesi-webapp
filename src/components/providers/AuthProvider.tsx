@@ -1,7 +1,7 @@
 'use client';
 
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
-import { ReactNode, createContext, useContext, useEffect } from 'react';
+import { ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { getDevToken } from '@/utils/devAuth';
 import { setGlobalAuth0TokenGetter } from '@/utils/api';
 
@@ -20,7 +20,7 @@ export function useDevAuth() {
 }
 
 function DevAuthWrapper({ children }: { children: ReactNode }) {
-  const { getAccessTokenSilently } = useAuth0();
+  const { getAccessTokenSilently, user, isAuthenticated } = useAuth0();
 
   const getToken = async (): Promise<string> => {
     // Check for dev token first
@@ -42,6 +42,36 @@ function DevAuthWrapper({ children }: { children: ReactNode }) {
   useEffect(() => {
     setGlobalAuth0TokenGetter(getToken);
   }, [getAccessTokenSilently]);
+
+  // Sync Auth0 user to database on login
+  useEffect(() => {
+    const syncUserToDatabase = async () => {
+      if (isAuthenticated && user) {
+        try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+          
+          const response = await fetch(`${apiUrl}/api/auth/callback`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log('✅ User synced to database:', data.user?.email);
+          } else {
+            console.error('❌ Failed to sync user to database:', response.status);
+          }
+        } catch (error) {
+          console.error('❌ Error syncing user to database:', error);
+        }
+      }
+    };
+
+    syncUserToDatabase();
+  }, [isAuthenticated, user]);
 
   return (
     <DevAuthContext.Provider value={{ getToken }}>

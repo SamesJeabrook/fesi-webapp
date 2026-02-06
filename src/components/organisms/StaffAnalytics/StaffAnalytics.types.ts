@@ -23,5 +23,6 @@ export interface StaffAnalyticsData {
 
 export interface StaffAnalyticsProps {
   merchantId: string;
+  operatingMode?: 'event_based' | 'static';
   className?: string;
 }

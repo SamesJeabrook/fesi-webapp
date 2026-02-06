@@ -32,7 +32,7 @@ type CartItem = OrderSummaryCartItem;
 type Event = OrderSummaryEvent & { is_open: boolean };
 
 export default function POSPage() {
-  const { getAccessTokenSilently } = useAuth0();
+  const { user, getAccessTokenSilently } = useAuth0();
   const [merchantData, setMerchantData] = useState<any>(null);
   const [currentStaff, setCurrentStaff] = useState<StaffMember | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -48,6 +48,8 @@ export default function POSPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMounted, setIsMounted] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItem | null>(null);
+  const [noEventsError, setNoEventsError] = useState(false);
+  const [loadingError, setLoadingError] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
   const [showPaymentQR, setShowPaymentQR] = useState(false);
   const [checkoutUrl, setCheckoutUrl] = useState<string>('');
@@ -70,17 +72,25 @@ export default function POSPage() {
         if (token.startsWith('dev-merchant-')) {
           merchantId = token.replace('dev-merchant-', '');
         } else {
-          const merchantDataResponse = await api.get('/api/merchants/me');
-          merchantId = merchantDataResponse.id;
+          // Try Auth0 user's merchant_ids
+          const merchantIds = user?.['https://fesi.app/merchant_ids'];
+          if (merchantIds && merchantIds.length > 0) {
+            merchantId = merchantIds[0];
+          } else {
+            const merchantDataResponse = await api.get('/api/merchants/me');
+            merchantId = merchantDataResponse.id;
+          }
         }
-        const merchant = await api.get(`/api/merchants/${merchantId}`);
+        const response = await api.get(`/api/merchants/${merchantId}`);
+        // Handle wrapped response (API returns { success, data })
+        const merchant = response.data || response;
         setMerchantData(merchant);
       } catch (error) {
         console.error('Error loading merchant:', error);
       }
     };
     loadMerchant();
-  }, []);
+  }, [user]);
 
   const handleStaffLogin = (staff: StaffMember) => {
     setCurrentStaff(staff);
@@ -119,47 +129,58 @@ export default function POSPage() {
         if (token.startsWith('dev-merchant-')) {
             merchantId = token.replace('dev-merchant-', '');
         } else {
-            // For real Auth0 tokens, get merchant data from /me endpoint
-            const merchantData = await api.get('/api/merchants/me');
-            merchantId = merchantData.id;
+            // Try Auth0 user's merchant_ids
+            const merchantIds = user?.['https://fesi.app/merchant_ids'];
+            if (merchantIds && merchantIds.length > 0) {
+              merchantId = merchantIds[0];
+            } else {
+              // For real Auth0 tokens, get merchant data from /me endpoint
+              const merchantData = await api.get('/api/merchants/me');
+              merchantId = merchantData.id;
+            }
         }
 
         // Fetch only active events where this merchant is participating
         const eventsData = await api.get(`/api/events?merchant_id=${merchantId}&is_open=true`);
+        
+        if (!eventsData || eventsData.length === 0) {
+          setNoEventsError(true);
+          setLoadingError('No active events found. Please create an event to use the POS.');
+          return;
+        }
+        
         setEvents(eventsData);
         // Auto-select first event
         if (eventsData.length > 0) {
           setSelectedEvent(eventsData[0].id);
         }
 
-        const menuData = await api.get(`/api/menu/merchant/${merchantId}`);
+        const menuData = await api.get(`/api/menu/merchant/${merchantId}?includeOptionGroups=true`);
+        
+        console.log('Menu data received:', menuData);
         
         // Extract all items from all categories
         if (menuData.data?.menu && Array.isArray(menuData.data.menu)) {
             const allItems: MenuItem[] = [];
             
-            // Flatten items from all categories
+            // Flatten items from all categories with their option groups
             for (const category of menuData.data.menu) {
               if (category.items && Array.isArray(category.items)) {
                 for (const item of category.items) {
-                  // Fetch full item details with options
-                  try {
-                    const itemDetail = await api.get(`/api/menu/${item.id}`);
-                    allItems.push({
-                        id: itemDetail.id,
-                        title: itemDetail.title,
-                        base_price: itemDetail.base_price,
-                        category_name: category.name,
-                        description: itemDetail.description,
-                        image_url: itemDetail.image_url,
-                        option_groups: itemDetail.option_groups || [],
-                    });
-                  } catch (err) {
-                    console.error(`Failed to fetch details for item ${item.id}:`, err);
-                  }
+                  console.log(`Item: ${item.title}, has_options: ${item.has_options}, option_groups:`, item.option_groups);
+                  allItems.push({
+                      id: item.id,
+                      title: item.title,
+                      base_price: item.base_price,
+                      category_name: category.name,
+                      description: item.description,
+                      image_url: item.image_url,
+                      option_groups: item.option_groups || [],
+                  });
                 }
               }
             }
+          console.log('All items with options:', allItems.filter(i => i.option_groups && i.option_groups.length > 0));
           setMenuItems(allItems);
         } else {
           console.error('Unexpected menu data structure:', menuData);
@@ -167,11 +188,12 @@ export default function POSPage() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        setLoadingError('Failed to load POS data. Please try again.');
       }
     };
 
     fetchData();
-  }, [getAccessTokenSilently]);
+  }, [user, getAccessTokenSilently]);
 
   // Prevent hydration issues
   useEffect(() => {
@@ -188,13 +210,16 @@ export default function POSPage() {
   });
 
   const handleMenuItemClick = async (item: MenuItem) => {
+    console.log('Menu item clicked:', item.title, 'option_groups:', item.option_groups);
     // Check if item has option groups
     if (item.option_groups && item.option_groups.length > 0) {
       // Item has options - show modal
+      console.log('Opening modal for item with options');
       setSelectedMenuItem(item);
       setSelectedOptions({});
     } else {
       // No options - add directly to cart
+      console.log('Adding item directly to cart (no options)');
       addDirectlyToCart(item);
     }
   };
@@ -342,8 +367,14 @@ export default function POSPage() {
       if (token.startsWith('dev-merchant-')) {
         merchantId = token.replace('dev-merchant-', '');
       } else {
-        const merchantData = await api.get('/api/merchants/me');
-        merchantId = merchantData.id;
+        // Try Auth0 user's merchant_ids
+        const merchantIds = user?.['https://fesi.app/merchant_ids'];
+        if (merchantIds && merchantIds.length > 0) {
+          merchantId = merchantIds[0];
+        } else {
+          const merchantData = await api.get('/api/merchants/me');
+          merchantId = merchantData.id;
+        }
       }
       
       // Use POS-specific endpoint with lenient validation
@@ -394,8 +425,14 @@ export default function POSPage() {
       if (token.startsWith('dev-merchant-')) {
         merchantId = token.replace('dev-merchant-', '');
       } else {
-        const merchantData = await api.get('/api/merchants/me');
-        merchantId = merchantData.id;
+        // Try Auth0 user's merchant_ids
+        const merchantIds = user?.['https://fesi.app/merchant_ids'];
+        if (merchantIds && merchantIds.length > 0) {
+          merchantId = merchantIds[0];
+        } else {
+          const merchantData = await api.get('/api/merchants/me');
+          merchantId = merchantData.id;
+        }
       }
       
       // Create order with payment_status = 'pending'
@@ -424,13 +461,27 @@ export default function POSPage() {
       setPendingOrderId(order.id);
       
       // Create Stripe Checkout Session
-      const checkoutResult = await api.post('/api/pos-payments/create-checkout', {
-        order_id: order.id,
-        merchant_id: merchantId
-      });
-      
-      setCheckoutUrl(checkoutResult.checkout_url);
-      setShowPaymentQR(true);
+      try {
+        const checkoutResult = await api.post('/api/pos-payments/create-checkout', {
+          order_id: order.id,
+          merchant_id: merchantId
+        });
+        
+        setCheckoutUrl(checkoutResult.checkout_url);
+        setShowPaymentQR(true);
+      } catch (checkoutError) {
+        // Stripe checkout failed - mark order as cancelled
+        console.error('Stripe checkout failed, cancelling order:', checkoutError);
+        try {
+          await api.put(`/api/orders/${order.id}/status`, {
+            status: 'cancelled',
+            notes: 'Payment session creation failed'
+          });
+        } catch (cancelError) {
+          console.error('Failed to cancel order after Stripe error:', cancelError);
+        }
+        throw new Error('Failed to create payment session. Please try again.');
+      }
       
     } catch (error) {
       console.error('Error creating card payment:', error);
@@ -455,6 +506,35 @@ export default function POSPage() {
           title="POS Login"
           subtitle="Enter your PIN to access point of sale"
         />
+      </ProtectedRoute>
+    );
+  }
+
+  // Show error state if there's a loading error
+  if (loadingError) {
+    return (
+      <ProtectedRoute requireRole={['merchant']}>
+        <div className={styles.pos}>
+          <div className={styles.pos__header}>
+            <Link href="/merchant/admin" className={styles.pos__backLink}>
+              ← Back to Dashboard
+            </Link>
+            <Typography variant="heading-2">Point of Sale</Typography>
+          </div>
+          <div className={styles.pos__errorContainer}>
+            <Typography variant="heading-3" style={{ marginBottom: '1rem' }}>
+              Unable to Load POS
+            </Typography>
+            <Typography variant="body" style={{ marginBottom: '1.5rem', color: 'var(--color-text-secondary)' }}>
+              {loadingError}
+            </Typography>
+            {noEventsError && (
+              <Link href="/merchant/admin/events">
+                <Button>Manage Events</Button>
+              </Link>
+            )}
+          </div>
+        </div>
       </ProtectedRoute>
     );
   }

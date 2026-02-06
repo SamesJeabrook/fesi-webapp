@@ -79,7 +79,7 @@ export const RefireAnalytics: React.FC<RefireAnalyticsProps> = ({
   return (
     <div className={classNames(styles.refireAnalytics, className)}>
       <div className={styles.refireAnalytics__header}>
-        <Typography variant="heading-2" className={styles.refireAnalytics__title}>
+        <Typography variant="heading-2" as="h2" className={styles.refireAnalytics__title}>
           <span className={styles.refireAnalytics__fireIcon}>🔥</span>
           Refire Analytics
         </Typography>
@@ -107,7 +107,7 @@ export const RefireAnalytics: React.FC<RefireAnalyticsProps> = ({
       {/* Top Refired Items */}
       {topItems.length > 0 && (
         <div className={styles.refireAnalytics__section}>
-          <Typography variant="heading-3" className={styles.refireAnalytics__sectionTitle}>
+          <Typography variant="heading-3" as="h3" className={styles.refireAnalytics__sectionTitle}>
             Most Frequently Refired Items
           </Typography>
           <div className={styles.refireAnalytics__table}>
@@ -143,7 +143,7 @@ export const RefireAnalytics: React.FC<RefireAnalyticsProps> = ({
       {/* Hourly Breakdown */}
       {hourlyData.length > 0 && (
         <div className={styles.refireAnalytics__section}>
-          <Typography variant="heading-3" className={styles.refireAnalytics__sectionTitle}>
+          <Typography variant="heading-3" as="h3" className={styles.refireAnalytics__sectionTitle}>
             Refire Times (by Hour)
           </Typography>
           <div className={styles.refireAnalytics__hourlyGrid}>
@@ -159,7 +159,7 @@ export const RefireAnalytics: React.FC<RefireAnalyticsProps> = ({
               </div>
             ))}
           </div>
-          <Typography variant="caption" style={{ marginTop: '1rem', display: 'block', color: 'var(--color-text-secondary)' }}>
+          <Typography variant="caption" className={styles.refireAnalytics__caption}>
             Highlighted hours indicate peak refire times
           </Typography>
         </div>
@@ -168,7 +168,7 @@ export const RefireAnalytics: React.FC<RefireAnalyticsProps> = ({
       {/* Event Breakdown */}
       {eventData.length > 0 && (
         <div className={styles.refireAnalytics__section}>
-          <Typography variant="heading-3" className={styles.refireAnalytics__sectionTitle}>
+          <Typography variant="heading-3" as="h3" className={styles.refireAnalytics__sectionTitle}>
             Refire Breakdown by Event
           </Typography>
           <div className={styles.refireAnalytics__table}>

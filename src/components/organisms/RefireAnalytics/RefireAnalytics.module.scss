@@ -3,14 +3,14 @@
   width: 100%;
 
   &__header {
-    margin-bottom: 2rem;
+    margin-bottom: var(--spacing-8);
   }
 
   &__title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-2);
   }
 
   &__fireIcon {
@@ -24,21 +24,21 @@
   &__overview {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+    gap: var(--spacing-6);
+    margin-bottom: var(--spacing-8);
   }
 
   &__statCard {
     background: var(--color-background-card);
-    padding: 1.5rem;
-    border-radius: 8px;
+    padding: var(--spacing-6);
+    border-radius: var(--border-radius-lg);
     border: 1px solid var(--color-border);
 
     h3 {
       font-size: 0.875rem;
       font-weight: 500;
       color: var(--color-text-secondary);
-      margin-bottom: 0.5rem;
+      margin-bottom: var(--spacing-2);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -56,19 +56,25 @@
   }
 
   &__section {
-    margin-bottom: 3rem;
+    margin-bottom: var(--spacing-12);
   }
 
   &__sectionTitle {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-6);
     font-size: 1.25rem;
     font-weight: 600;
+  }
+
+  &__caption {
+    margin-top: var(--spacing-4);
+    display: block;
+    color: var(--color-text-secondary);
   }
 
   &__table {
     width: 100%;
     background: var(--color-background-card);
-    border-radius: 8px;
+    border-radius: var(--border-radius-lg);
     overflow: hidden;
     border: 1px solid var(--color-border);
 
@@ -79,7 +85,7 @@
 
     th {
       background: var(--color-background-hover);
-      padding: 1rem;
+      padding: var(--spacing-4);
       text-align: left;
       font-weight: 600;
       color: var(--color-text-secondary);
@@ -89,7 +95,7 @@
     }
 
     td {
-      padding: 1rem;
+      padding: var(--spacing-4);
       border-top: 1px solid var(--color-border);
     }
 

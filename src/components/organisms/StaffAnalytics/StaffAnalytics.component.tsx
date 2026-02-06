@@ -5,7 +5,7 @@ import api from '@/utils/api';
 import type { StaffAnalyticsProps, StaffAnalyticsData } from './StaffAnalytics.types';
 import styles from './StaffAnalytics.module.scss';
 
-export const StaffAnalytics: React.FC<StaffAnalyticsProps> = ({ merchantId, className }) => {
+export const StaffAnalytics: React.FC<StaffAnalyticsProps> = ({ merchantId, operatingMode = 'event_based', className }) => {
   const [data, setData] = useState<StaffAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,8 +60,8 @@ export const StaffAnalytics: React.FC<StaffAnalyticsProps> = ({ merchantId, clas
   return (
     <div className={`${styles.container} ${className || ''}`}>
       <div className={styles.header}>
-        <Typography variant="heading-3">👥 Staff Performance</Typography>
-        <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+        <Typography variant="heading-3" as="h3">👥 Staff Performance</Typography>
+        <Typography variant="body-medium" className={styles.subtitle}>
           Track your team's performance and sales
         </Typography>
       </div>
@@ -100,7 +100,7 @@ export const StaffAnalytics: React.FC<StaffAnalyticsProps> = ({ merchantId, clas
       {/* Top Performers */}
       {topPerformers.length > 0 && (
         <div className={styles.section}>
-          <Typography variant="heading-4" style={{ marginBottom: 'var(--spacing-md)' }}>
+          <Typography variant="heading-4" as="h4" className={styles.sectionTitle}>
             🏆 Top Performers
           </Typography>
           <div className={styles.topPerformers}>
@@ -139,7 +139,7 @@ export const StaffAnalytics: React.FC<StaffAnalyticsProps> = ({ merchantId, clas
 
       {/* All Staff Performance Table */}
       <div className={styles.section}>
-        <Typography variant="heading-4" style={{ marginBottom: 'var(--spacing-md)' }}>
+        <Typography variant="heading-4" as="h4" className={styles.sectionTitle}>
           All Staff Performance
         </Typography>
         <div className={styles.tableContainer}>
@@ -152,7 +152,7 @@ export const StaffAnalytics: React.FC<StaffAnalyticsProps> = ({ merchantId, clas
                 <th>Orders</th>
                 <th>Revenue</th>
                 <th>Avg Order</th>
-                <th>Tables Served</th>
+                {operatingMode === 'static' && <th>Tables Served</th>}
                 <th>Days Worked</th>
               </tr>
             </thead>
@@ -185,9 +185,11 @@ export const StaffAnalytics: React.FC<StaffAnalyticsProps> = ({ merchantId, clas
                       {parseInt(staff.total_orders) > 0 ? formatCurrency(staff.average_order_value) : '-'}
                     </Typography>
                   </td>
-                  <td>
-                    <Typography variant="body-small">{staff.tables_served}</Typography>
-                  </td>
+                  {operatingMode === 'static' && (
+                    <td>
+                      <Typography variant="body-small">{staff.tables_served}</Typography>
+                    </td>
+                  )}
                   <td>
                     <Typography variant="body-small">{staff.days_worked}</Typography>
                   </td>

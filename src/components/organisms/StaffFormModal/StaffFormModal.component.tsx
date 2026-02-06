@@ -14,10 +14,15 @@ export interface StaffFormData {
   hire_date: string;
 }
 
+export interface StaffFormErrors {
+  pin?: string;
+}
+
 interface StaffFormModalProps {
   isVisible: boolean;
   isEditing: boolean;
   formData: StaffFormData;
+  errors?: StaffFormErrors;
   roleLabels: Record<string, string>;
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -28,6 +33,7 @@ export const StaffFormModal: React.FC<StaffFormModalProps> = ({
   isVisible,
   isEditing,
   formData,
+  errors = {},
   roleLabels,
   onClose,
   onSubmit,
@@ -99,6 +105,7 @@ export const StaffFormModal: React.FC<StaffFormModalProps> = ({
               onChange={(e) => onChange('pin', e.target.value)}
               pattern="\d{4,6}"
               placeholder="1234"
+              errorMessage={errors.pin}
               fullWidth
             />
           </div>

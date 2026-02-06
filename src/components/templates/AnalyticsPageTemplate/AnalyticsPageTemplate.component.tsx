@@ -14,6 +14,7 @@ import styles from './AnalyticsPageTemplate.module.scss';
 export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
   merchantId,
   merchantName,
+  operatingMode = 'event_based',
   overviewStats,
   recentEvents,
   monthlyBreakdowns,
@@ -59,7 +60,7 @@ export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
             ← Back
           </Link>
         )}
-        <Typography variant="heading-1" className={styles.analyticsPageTemplate__title}>
+        <Typography variant="heading-1" as="h1" className={styles.analyticsPageTemplate__title}>
           📊 Analytics & Reports
         </Typography>
         <Typography variant="body-large" className={styles.analyticsPageTemplate__subtitle}>
@@ -81,7 +82,7 @@ export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
 
       {/* Overview Stats */}
       <div className={styles.analyticsPageTemplate__section}>
-        <Typography variant="heading-2" className={styles.analyticsPageTemplate__sectionTitle}>
+        <Typography variant="heading-2" as="h2" className={styles.analyticsPageTemplate__sectionTitle}>
           Overview
         </Typography>
         <div className={styles.analyticsPageTemplate__statsGrid}>
@@ -115,7 +116,7 @@ export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
       {/* Top Items */}
       {topItemsAcrossAllEvents.length > 0 && (
         <div className={styles.analyticsPageTemplate__section}>
-          <Typography variant="heading-2" className={styles.analyticsPageTemplate__sectionTitle}>
+          <Typography variant="heading-2" as="h2" className={styles.analyticsPageTemplate__sectionTitle}>
             🔥 Best Selling Items
           </Typography>
           <TopItemsTable items={topItemsAcrossAllEvents} maxItems={10} showRevenue={true} />
@@ -125,7 +126,7 @@ export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
       {/* Recent Events */}
       {recentEvents.length > 0 && (
         <div className={styles.analyticsPageTemplate__section}>
-          <Typography variant="heading-2" className={styles.analyticsPageTemplate__sectionTitle}>
+          <Typography variant="heading-2" as="h2" className={styles.analyticsPageTemplate__sectionTitle}>
             Recent Events
           </Typography>
           <div className={styles.analyticsPageTemplate__eventsGrid}>
@@ -147,7 +148,7 @@ export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
 
       {/* All Events Table */}
       <div className={styles.analyticsPageTemplate__section}>
-        <Typography variant="heading-2" className={styles.analyticsPageTemplate__sectionTitle}>
+        <Typography variant="heading-2" as="h2" className={styles.analyticsPageTemplate__sectionTitle}>
           All Events
         </Typography>
         <EventReportsTable
@@ -158,10 +159,12 @@ export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
         />
       </div>
 
-      {/* Staff Performance Analytics */}
-      <div className={styles.analyticsPageTemplate__section}>
-        <StaffAnalytics merchantId={merchantId} />
-      </div>
+      {/* Staff Performance Analytics - Only for premium tiers */}
+      {subscriptionTier !== 'free' && (
+        <div className={styles.analyticsPageTemplate__section}>
+          <StaffAnalytics merchantId={merchantId} operatingMode={operatingMode} />
+        </div>
+      )}
 
       {/* Refire Analytics */}
       <div className={styles.analyticsPageTemplate__section}>
@@ -171,14 +174,14 @@ export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
       {/* Monthly Breakdown */}
       {monthlyBreakdowns.length > 0 && (
         <div className={styles.analyticsPageTemplate__section}>
-          <Typography variant="heading-2" className={styles.analyticsPageTemplate__sectionTitle}>
+          <Typography variant="heading-2" as="h2" className={styles.analyticsPageTemplate__sectionTitle}>
             📅 Monthly Breakdown
           </Typography>
           <div className={styles.analyticsPageTemplate__monthlyBreakdowns}>
             {monthlyBreakdowns.map((month, index) => (
               <div key={index} className={styles.analyticsPageTemplate__monthCard}>
                 <div className={styles.analyticsPageTemplate__monthHeader}>
-                  <Typography variant="heading-3" className={styles.analyticsPageTemplate__monthTitle}>
+                  <Typography variant="heading-3" as="h3" className={styles.analyticsPageTemplate__monthTitle}>
                     {month.month}
                   </Typography>
                   <div className={styles.analyticsPageTemplate__monthStats}>

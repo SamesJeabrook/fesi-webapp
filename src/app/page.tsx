@@ -13,6 +13,14 @@ export default function HomePage() {
     if (postLogoutRedirect) {
       sessionStorage.removeItem('postLogoutRedirect');
       router.push(postLogoutRedirect);
+      return;
+    }
+
+    // Check if user just logged in and should be redirected (e.g., after merchant onboarding)
+    const postLoginRedirect = sessionStorage.getItem('postLoginRedirect');
+    if (postLoginRedirect) {
+      sessionStorage.removeItem('postLoginRedirect');
+      router.push(postLoginRedirect);
     }
   }, [router]);
 

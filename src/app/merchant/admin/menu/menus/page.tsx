@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Typography } from '@/components/atoms';
+import { Typography, Button } from '@/components/atoms';
 import { MenuList, MenuEditor } from '@/components/organisms';
 import { ConfirmationModal } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -45,15 +45,20 @@ export default function MenusPage() {
         const devMerchantId = getMerchantIdFromDevToken();
         
         if (devMerchantId) {
+          console.log('Using dev merchant ID:', devMerchantId);
           setMerchantId(devMerchantId);
         } else {
           // Get from /me endpoint
-          const data = await api.get('/api/merchants/me');
-          setMerchantId(data.id);
+          console.log('Fetching merchant ID from /api/merchants/me...');
+          const response = await api.get('/api/merchants/me');
+          console.log('Merchant response received:', response);
+          // API returns { success: true, data: { id, ... } }
+          const merchantData = response.data || response;
+          setMerchantId(merchantData.id);
         }
       } catch (error) {
         console.error('Error fetching merchant ID:', error);
-        alert('Failed to get merchant information');
+        alert('Failed to get merchant information. Please ensure you have completed merchant onboarding.');
       }
     };
 
@@ -173,10 +178,18 @@ export default function MenusPage() {
     <ProtectedRoute>
       <div className={styles.page}>
         <div className={styles.page__header}>
-          <Typography variant="heading-2">Menu Management</Typography>
-          <Typography variant="body" color="secondary">
-            Create and manage different menus for your events
-          </Typography>
+          <div>
+            <Typography variant="heading-2">Menu Management</Typography>
+            <Typography variant="body" color="secondary">
+              Create and manage different menus for your events
+            </Typography>
+          </div>
+          <Button
+            variant="secondary"
+            onClick={() => router.push('/merchant/admin')}
+          >
+            ← Back to Dashboard
+          </Button>
         </div>
 
         <div className={styles.page__content}>

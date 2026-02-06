@@ -50,6 +50,7 @@ interface Company {
   username: string;
   categories?: Category[];
   currency?: string;
+  require_staff_login?: boolean;
   created_at?: string;
   updated_at?: string;
   version?: number;
@@ -78,6 +79,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
       name: "",
       description: "",
       username: "",
+      require_staff_login: false,
       // Add more fields as needed
     });
 
@@ -101,6 +103,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
           name: company.name || "",
           description: company.description || "",
           username: company.username || "",
+          require_staff_login: company.require_staff_login || false,
         });
       }
     }, [company]);
@@ -325,6 +328,34 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
                 onChange={e => handleChange(e)}
                 rows={3}
               />
+            </div>
+          </GridItem>
+
+          {/* POS Settings Section */}
+          <GridItem sm={16} md={8}>
+            <div className={styles.section}>
+              <Typography variant="heading-4" as="h3">🖥️ POS Settings</Typography>
+              <Typography variant="body-medium" className={styles.sectionDescription}>
+                Configure point of sale and staff tracking options
+              </Typography>
+
+              <div className={styles.toggleContainer}>
+                <label className={styles.toggleLabel}>
+                  <input
+                    type="checkbox"
+                    checked={form.require_staff_login}
+                    onChange={(e) => setForm({ ...form, require_staff_login: e.target.checked })}
+                    className={styles.toggleInput}
+                  />
+                  <span className={styles.toggleSwitch}></span>
+                  <div className={styles.toggleText}>
+                    <Typography variant="body-medium">Require Staff Login</Typography>
+                    <Typography variant="body-small" className={styles.toggleDescription}>
+                      When enabled, staff must enter their PIN to access the POS system. This enables order tracking per staff member.
+                    </Typography>
+                  </div>
+                </label>
+              </div>
             </div>
           </GridItem>
 

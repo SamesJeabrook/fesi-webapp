@@ -178,10 +178,10 @@ export default function MerchantAdminPage() {
         return;
       }
 
-      // Otherwise, try Auth0 user's merchant_id
-      const userMerchantId = user?.['https://fesi.app/merchant_id'];
-      if (userMerchantId) {
-        setMerchantId(userMerchantId);
+      // Otherwise, try Auth0 user's merchant_ids
+      const merchantIds = user?.['https://fesi.app/merchant_ids'];
+      if (merchantIds && merchantIds.length > 0) {
+        setMerchantId(merchantIds[0]);
         return;
       }
 

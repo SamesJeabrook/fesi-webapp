@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import api from '@/utils/api';
 import { Button } from '@/components/atoms/Button';
 import { Typography } from '@/components/atoms/Typography';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useMerchant } from '@/hooks/useMerchant';
 import { StaffCard, StaffMember } from '@/components/organisms/StaffCard';
-import { StaffFormModal, StaffFormData } from '@/components/organisms/StaffFormModal';
+import { StaffFormModal, StaffFormData, StaffFormErrors } from '@/components/organisms/StaffFormModal';
 import styles from './staff.module.scss';
 
 const ROLE_LABELS = {
@@ -32,6 +33,7 @@ export default function StaffManagementPage() {
     pin: '',
     hire_date: ''
   });
+  const [formErrors, setFormErrors] = useState<StaffFormErrors>({});
 
   useEffect(() => {
     if (merchantId) {
@@ -63,6 +65,7 @@ export default function StaffManagementPage() {
       pin: '',
       hire_date: ''
     });
+    setFormErrors({});
     setShowModal(true);
   };
 
@@ -76,7 +79,16 @@ export default function StaffManagementPage() {
       pin: '', // Don't show existing PIN
       hire_date: staffMember.hire_date || ''
     });
+    setFormErrors({});
     setShowModal(true);
+  };
+
+  const handleChange = (field: keyof StaffFormData, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    // Clear error for this field when user types
+    if (formErrors[field as keyof StaffFormErrors]) {
+      setFormErrors({ ...formErrors, [field]: undefined });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,10 +111,18 @@ export default function StaffManagementPage() {
       }
 
       setShowModal(false);
+      setFormErrors({});
       loadStaff();
     } catch (error: any) {
       console.error('Error saving staff:', error);
-      alert(error.response?.data?.error || 'Failed to save staff member');
+      const errorMessage = error.message || error.response?.data?.error || 'Failed to save staff member';
+      
+      // Handle duplicate PIN error
+      if (errorMessage.includes('PIN already in use')) {
+        setFormErrors({ pin: errorMessage });
+      } else {
+        alert(errorMessage);
+      }
     }
   };
 
@@ -154,6 +174,9 @@ export default function StaffManagementPage() {
       <div className={styles.staffPage}>
         <div className={styles.header}>
           <div className={styles.titleSection}>
+            <Link href="/merchant/admin" className={styles.backLink}>
+              ← Back to Dashboard
+            </Link>
             <Typography variant="heading-1">Staff Management</Typography>
             <Typography variant="body-md" color="secondary" className={styles.subtitle}>
               Manage your restaurant staff and track their performance
@@ -193,10 +216,11 @@ export default function StaffManagementPage() {
           isVisible={showModal}
           isEditing={!!editingStaff}
           formData={formData}
+          errors={formErrors}
           roleLabels={ROLE_LABELS}
           onClose={() => setShowModal(false)}
           onSubmit={handleSubmit}
-          onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+          onChange={handleChange}
         />
       </div>
     </ProtectedRoute>

@@ -23,6 +23,8 @@ export interface OrderCardProps {
     notes?: string;
     refired_at?: string;
     refired_item_ids?: string[];
+    payment_status?: 'pending' | 'completed' | 'failed' | 'refunded';
+    table_number?: string;
   };
   /** Whether the card is draggable */
   isDraggable?: boolean;

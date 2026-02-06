@@ -158,3 +158,75 @@
 }
 
 /* TagGroup and Tag styling for template context */
+
+.sectionDescription {
+  color: var(--color-text-secondary, #666);
+  margin-bottom: var(--spacing-3);
+  font-size: 0.875rem;
+}
+
+/* Toggle Switch Styles */
+.toggleContainer {
+  margin: var(--spacing-4) 0;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  user-select: none;
+  gap: var(--spacing-3);
+}
+
+.toggleInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+
+  &:checked + .toggleSwitch {
+    background-color: var(--color-primary-main, #3b82f6);
+
+    &::before {
+      transform: translateX(24px);
+    }
+  }
+
+  &:focus + .toggleSwitch {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+}
+
+.toggleSwitch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+  background-color: var(--color-neutral-300, #ccc);
+  border-radius: 24px;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 2px;
+    top: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+  }
+}
+
+.toggleText {
+  flex: 1;
+}
+
+.toggleDescription {
+  color: var(--color-text-secondary, #666);
+  margin-top: var(--spacing-1);
+  line-height: 1.4;
+}

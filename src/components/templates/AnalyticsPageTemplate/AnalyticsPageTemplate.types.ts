@@ -19,6 +19,7 @@ export interface MonthlyBreakdown {
 export interface AnalyticsPageTemplateProps {
   merchantId: string;
   merchantName: string;
+  operatingMode?: 'event_based' | 'static';
   overviewStats: OverviewStats;
   recentEvents: EventReport[];
   monthlyBreakdowns: MonthlyBreakdown[];

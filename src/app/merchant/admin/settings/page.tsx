@@ -29,20 +29,27 @@ interface Company {
 }
 
 export default function MerchantSettingsPage() {
-  const { getAccessTokenSilently } = useAuth0();
+  const { user, getAccessTokenSilently } = useAuth0();
   const [merchantId, setMerchantId] = useState<string | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
   const [availableTags, setAvailableTags] = useState<Category[]>([]);
   const [loadingTags, setLoadingTags] = useState(true);
 
-  // Get merchant ID from dev token or API
+  // Get merchant ID from dev token, Auth0 token, or API
   useEffect(() => {
     const getMerchantId = async () => {
       // Check for dev token first
       const devMerchantId = getMerchantIdFromDevToken();
       if (devMerchantId) {
         setMerchantId(devMerchantId);
+        return;
+      }
+
+      // Try Auth0 user's merchant_ids
+      const merchantIds = user?.['https://fesi.app/merchant_ids'];
+      if (merchantIds && merchantIds.length > 0) {
+        setMerchantId(merchantIds[0]);
         return;
       }
 
@@ -56,7 +63,7 @@ export default function MerchantSettingsPage() {
     };
 
     getMerchantId();
-  }, [getAccessTokenSilently]);
+  }, [user, getAccessTokenSilently]);
 
   useEffect(() => {
     const fetchMerchantData = async () => {

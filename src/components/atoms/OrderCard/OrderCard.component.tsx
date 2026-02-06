@@ -20,6 +20,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       [styles.dragging]: isDragging,
       [styles.clickable]: onClick,
       [styles.refired]: order.refired_at && order.status === 'preparing',
+      [styles.paymentPending]: order.payment_status === 'pending',
     },
     className
   );

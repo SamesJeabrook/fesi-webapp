@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 import { Typography } from '@/components/atoms';
 import { getDevToken } from '@/utils/devAuth';
+import { useDevAuth } from '@/components/providers/AuthProvider';
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -23,6 +24,7 @@ export function AuthGuard({
   loginPath 
 }: AuthGuardProps) {
   const { isAuthenticated, isLoading, user, loginWithRedirect } = useAuth0();
+  const devAuth = useDevAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
@@ -38,7 +40,7 @@ export function AuthGuard({
       console.log('AuthGuard - Dev token detected, skipping auth check');
       return;
     }
-
+    
     // Only run auth check after loading is complete and component is mounted
     if (!isLoading && isMounted) {
       console.log('AuthGuard - Running auth check', {
@@ -69,7 +71,7 @@ export function AuthGuard({
         // The login page will use Auth0 Lock for embedded authentication
         router.push(`${redirectPath}?returnTo=${encodeURIComponent(returnTo)}`);
       } else if (requireRole && user) {
-        // Check if user has the required role
+        // Check if user has the required role from JWT token
         const userRoles = user['https://fesi.app/roles'] || [];
         
         console.log('AuthGuard - User:', user);
