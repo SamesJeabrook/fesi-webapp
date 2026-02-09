@@ -58,6 +58,13 @@ const dashboardSections: DashboardSection[] = [
         color: 'primary'
       },
       {
+        title: 'Customer Display',
+        description: 'Full-screen menu and order status display for customers',
+        icon: '📺',
+        href: '/display/[merchantId]',
+        color: 'success'
+      },
+      {
         title: 'Staff Management',
         description: 'Manage your team members and assign roles',
         icon: '👥',
@@ -313,26 +320,31 @@ export default function MerchantAdminDashboard() {
               </div>
 
               <div className={styles.dashboard__grid}>
-                {visibleItems.map((item) => (
-                  <Link key={item.href} href={item.href} className={styles.dashboard__link}>
-                    <Card className={`${styles.dashboard__card} ${styles[`dashboard__card--${item.color}`]}`}>
-                      <div className={styles.dashboard__cardIcon}>
-                        {item.icon}
-                      </div>
-                      <div className={styles.dashboard__cardContent}>
-                        <Typography variant="heading-5" className={styles.dashboard__cardTitle}>
-                          {item.title}
-                        </Typography>
-                        <Typography variant="body-medium" className={styles.dashboard__cardDescription}>
-                          {item.description}
-                        </Typography>
-                      </div>
-                      <div className={styles.dashboard__cardArrow}>
-                        →
-                      </div>
-                    </Card>
-                  </Link>
-                ))}
+                {visibleItems.map((item) => {
+                  // Replace [merchantId] with actual merchantId
+                  const href = item.href.replace('[merchantId]', merchantId || '');
+                  
+                  return (
+                    <Link key={item.href} href={href} className={styles.dashboard__link}>
+                      <Card className={`${styles.dashboard__card} ${styles[`dashboard__card--${item.color}`]}`}>
+                        <div className={styles.dashboard__cardIcon}>
+                          {item.icon}
+                        </div>
+                        <div className={styles.dashboard__cardContent}>
+                          <Typography variant="heading-5" className={styles.dashboard__cardTitle}>
+                            {item.title}
+                          </Typography>
+                          <Typography variant="body-medium" className={styles.dashboard__cardDescription}>
+                            {item.description}
+                          </Typography>
+                        </div>
+                        <div className={styles.dashboard__cardArrow}>
+                          →
+                        </div>
+                      </Card>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           );

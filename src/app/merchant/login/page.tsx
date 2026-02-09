@@ -8,15 +8,28 @@ import { Auth0LockWidget } from '@/components/auth/Auth0LockWidget';
 import styles from './login.module.scss';
 
 export default function MerchantLoginPage() {
-  const { isAuthenticated, isLoading, user } = useAuth0();
+  const { isAuthenticated, isLoading, user, logout } = useAuth0();
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnTo = searchParams?.get('returnTo') || '/merchant/admin';
+  const errorParam = searchParams?.get('error');
   const [showLock, setShowLock] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Check for error parameter and set error message
+  useEffect(() => {
+    if (errorParam === 'unauthorized') {
+      setErrorMessage('You do not have merchant access. Please log in with a merchant account or contact support.');
+      // Log out the current user so they can log in with correct account
+      if (isAuthenticated) {
+        logout({ logoutParams: { returnTo: window.location.origin + '/merchant/login' } });
+      }
+    }
+  }, [errorParam, isAuthenticated, logout]);
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && !errorParam) {
       console.log('MerchantLoginPage - User authenticated:', user);
       const userRoles = user['https://fesi.app/roles'] || [];
       console.log('MerchantLoginPage - User roles:', userRoles);
@@ -26,10 +39,11 @@ export default function MerchantLoginPage() {
         router.push(returnTo);
       } else {
         console.log('MerchantLoginPage - User does not have merchant access');
-        router.push('/?error=no-merchant-access');
+        setErrorMessage('You do not have merchant access. Please log out and log in with a merchant account.');
+        // Don't redirect, stay on login page
       }
     }
-  }, [isAuthenticated, user, router, returnTo]);
+  }, [isAuthenticated, user, router, returnTo, errorParam]);
 
   // Show lock after initial load to avoid SSR issues
   useEffect(() => {
@@ -76,6 +90,19 @@ export default function MerchantLoginPage() {
             </div>
 
             <div className={styles.loginContent}>
+              {errorMessage && (
+                <div style={{
+                  padding: 'var(--spacing-4)',
+                  marginBottom: 'var(--spacing-4)',
+                  backgroundColor: 'var(--color-error-50)',
+                  border: '1px solid var(--color-error-200)',
+                  borderRadius: 'var(--border-radius-md)',
+                }}>
+                  <Typography variant="body-medium" style={{ color: 'var(--color-error-700)' }}>
+                    {errorMessage}
+                  </Typography>
+                </div>
+              )}
               {showLock ? (
                 <div className={styles.lockContainer}>
                   <Auth0LockWidget

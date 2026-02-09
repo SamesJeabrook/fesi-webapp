@@ -82,8 +82,15 @@ export function AuthGuard({
           console.warn('AuthGuard - User does not have required role. Redirecting to unauthorized.');
           console.warn('AuthGuard - Available roles:', userRoles);
           console.warn('AuthGuard - Required role:', requireRole);
-          // User doesn't have required role, redirect to unauthorized page
-          router.push(`/?error=unauthorized&required=${requireRole}`);
+          
+          // Redirect to appropriate login page based on required role
+          let unauthorizedRedirect = '/customer/login';
+          if (requireRole === 'merchant' || requireRole === 'admin') {
+            unauthorizedRedirect = '/merchant/login';
+          }
+          
+          // User doesn't have required role, redirect to login page
+          router.push(`${unauthorizedRedirect}?error=unauthorized&required=${requireRole}`);
         }
       }
     }
