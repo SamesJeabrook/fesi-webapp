@@ -4,6 +4,7 @@ import AuthProvider from '@/components/providers/AuthProvider';
 import { AdminProvider } from '@/components/providers/AdminProvider';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import CsrfInit from '@/components/providers/CsrfProvider';
+import CookieBanner from '@/components/molecules/CookieBanner';
 import '@/styles/globals.scss';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
@@ -34,6 +35,7 @@ export default function RootLayout({
               <div id="root">
                 {children}
               </div>
+              <CookieBanner />
             </NotificationProvider>
           </AdminProvider>
         </AuthProvider>

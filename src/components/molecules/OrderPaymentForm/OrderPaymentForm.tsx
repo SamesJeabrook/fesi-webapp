@@ -38,6 +38,7 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   const [restoredCostBreakdown, setRestoredCostBreakdown] = useState<any | null>(null);
   const [customerProfile, setCustomerProfile] = useState<any>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   // Guest info state
   const [guestInfo, setGuestInfo] = useState({
     email: '',
@@ -365,7 +366,20 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
           </div>
         )}
         <CardElement options={{ style: { base: { fontSize: '18px' } } }} />
-        <button type="submit" className={styles.payBtn} disabled={loading}>
+        
+        <div className={styles.termsCheckbox}>
+          <input
+            id="acceptCustomerTerms"
+            type="checkbox"
+            checked={acceptedTerms}
+            onChange={(e) => setAcceptedTerms(e.target.checked)}
+          />
+          <label htmlFor="acceptCustomerTerms">
+            I accept the <a href="/terms" target="_blank" rel="noopener noreferrer"><strong>Fesi Customer Terms and Conditions</strong></a>
+          </label>
+        </div>
+        
+        <button type="submit" className={styles.payBtn} disabled={loading || !acceptedTerms}>
           {loading ? 'Processing...' : 'Pay Now'}
         </button>
       </form>

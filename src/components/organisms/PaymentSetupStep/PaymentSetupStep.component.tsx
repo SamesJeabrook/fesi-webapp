@@ -262,7 +262,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
               disabled={loading}
             />
             <label htmlFor="acceptTerms">
-              I accept the <strong>Fesi Merchant Terms and Conditions</strong> and agree to comply with all platform policies including refund handling, food safety standards, and customer service requirements.
+              I accept the <a href="/merchant/terms" target="_blank" rel="noopener noreferrer"><strong>Fesi Merchant Terms and Conditions</strong></a> and agree to comply with all platform policies including refund handling, food safety standards, and customer service requirements.
             </label>
           </div>
           {errors.acceptedTerms && (
