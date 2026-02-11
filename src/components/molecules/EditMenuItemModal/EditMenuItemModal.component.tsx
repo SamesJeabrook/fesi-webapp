@@ -35,6 +35,11 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
     category_id: item.category_id,
     display_order: item.display_order.toString(),
     image_url: item.image_url || '',
+    is_age_restricted: item.is_age_restricted || false,
+    minimum_age: item.minimum_age || 18,
+    restriction_type: item.restriction_type || 'alcohol',
+    restriction_warning: item.restriction_warning || '',
+    requires_id_verification: item.requires_id_verification || false,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -76,6 +81,11 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
       category_id: item.category_id,
       display_order: item.display_order.toString(),
       image_url: item.image_url || '',
+      is_age_restricted: item.is_age_restricted || false,
+      minimum_age: item.minimum_age || 18,
+      restriction_type: item.restriction_type || 'alcohol',
+      restriction_warning: item.restriction_warning || '',
+      requires_id_verification: item.requires_id_verification || false,
     });
     setImagePreview(item.image_url || '');
     setImageFile(null);
@@ -213,6 +223,11 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
         category_id: formData.category_id || undefined,
         display_order: parseInt(formData.display_order) || 0,
         image_url: imageUrl || undefined,
+        is_age_restricted: formData.is_age_restricted,
+        minimum_age: formData.is_age_restricted ? formData.minimum_age : undefined,
+        restriction_type: formData.is_age_restricted ? formData.restriction_type : undefined,
+        restriction_warning: formData.is_age_restricted && formData.restriction_warning ? formData.restriction_warning : undefined,
+        requires_id_verification: formData.is_age_restricted ? formData.requires_id_verification : undefined,
       };
 
       await onSave(updatedData);
@@ -234,6 +249,11 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
       category_id: item.category_id,
       display_order: item.display_order.toString(),
       image_url: item.image_url || '',
+      is_age_restricted: item.is_age_restricted || false,
+      minimum_age: item.minimum_age || 18,
+      restriction_type: item.restriction_type || 'alcohol',
+      restriction_warning: item.restriction_warning || '',
+      requires_id_verification: item.requires_id_verification || false,
     });
     setImageFile(null);
     setImagePreview(item.image_url || '');
@@ -358,6 +378,98 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
               loading={isLoadingOptionGroups}
               error={optionGroupsError}
             />
+          </div>
+        </Grid.Item>
+
+        <Grid.Item lg={12}>
+          <div style={{ 
+            borderTop: '1px solid var(--color-border-primary, #e5e7eb)', 
+            paddingTop: '16px',
+            marginTop: '8px'
+          }}>
+            <label className={styles.editMenuItemModal__optionGroupsLabel} style={{ marginBottom: '12px', display: 'block' }}>
+              Age & Legal Restrictions
+            </label>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={formData.is_age_restricted}
+                  onChange={(e) => setFormData(prev => ({ ...prev, is_age_restricted: e.target.checked }))}
+                  disabled={isSaving || isUploadingImage}
+                />
+                <span style={{ fontSize: '0.875rem' }}>
+                  This item is age-restricted (e.g., alcohol, tobacco)
+                </span>
+              </label>
+            </div>
+            
+            {formData.is_age_restricted && (
+              <div style={{ 
+                paddingLeft: '24px', 
+                borderLeft: '3px solid var(--color-warning-500, #ffc107)',
+                marginLeft: '8px',
+                paddingTop: '8px'
+              }}>
+                <Grid.Container gap="md">
+                  <Grid.Item sm={12} md={6}>
+                    <FormSelect
+                      label="Restriction Type"
+                      value={formData.restriction_type}
+                      onChange={(e) => setFormData(prev => ({ ...prev, restriction_type: e.target.value }))}
+                      options={[
+                        { value: 'alcohol', label: 'Alcohol' },
+                        { value: 'tobacco', label: 'Tobacco' },
+                        { value: 'adult_content', label: 'Adult Content' },
+                        { value: 'prescription', label: 'Prescription Required' },
+                        { value: 'custom', label: 'Custom Restriction' },
+                      ]}
+                      required
+                    />
+                  </Grid.Item>
+                  
+                  <Grid.Item sm={12} md={6}>
+                    <FormInput
+                      label="Minimum Age"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.minimum_age.toString()}
+                      onChange={(e) => setFormData(prev => ({ ...prev, minimum_age: parseInt(e.target.value) || 18 }))}
+                      placeholder="18"
+                      required
+                    />
+                  </Grid.Item>
+                  
+                  <Grid.Item lg={12}>
+                    <FormTextArea
+                      label="Custom Warning Message (Optional)"
+                      value={formData.restriction_warning}
+                      onChange={(e) => setFormData(prev => ({ ...prev, restriction_warning: e.target.value }))}
+                      placeholder="e.g., Challenge 25 policy applies. Valid ID required."
+                      rows={2}
+                    />
+                    <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                      Leave blank to use default warning based on age and restriction type
+                    </p>
+                  </Grid.Item>
+                  
+                  <Grid.Item lg={12}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={formData.requires_id_verification}
+                        onChange={(e) => setFormData(prev => ({ ...prev, requires_id_verification: e.target.checked }))}
+                        disabled={isSaving || isUploadingImage}
+                      />
+                      <span style={{ fontSize: '0.875rem' }}>
+                        Requires ID verification at point of sale/delivery
+                      </span>
+                    </label>
+                  </Grid.Item>
+                </Grid.Container>
+              </div>
+            )}
           </div>
         </Grid.Item>
       </Grid.Container>

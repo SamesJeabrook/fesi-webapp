@@ -17,6 +17,11 @@ export interface MenuItem {
   created_at: string;
   updated_at: string;
   option_groups?: SubItemGroup[];
+  is_age_restricted?: boolean;
+  minimum_age?: number;
+  restriction_type?: string;
+  restriction_warning?: string;
+  requires_id_verification?: boolean;
 }
 
 export interface MenuCategory {

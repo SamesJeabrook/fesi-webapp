@@ -18,6 +18,11 @@ export interface CreateMenuItemFormProps {
     category_id: string;
     image_url?: string;
     optionGroupIds?: number[];
+    is_age_restricted?: boolean;
+    minimum_age?: number;
+    restriction_type?: string;
+    restriction_warning?: string;
+    requires_id_verification?: boolean;
   }) => Promise<void>;
   onCancel: () => void;
   isSubmitting?: boolean;
@@ -41,6 +46,11 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
     price: '',
     category_id: '',
     image_url: '',
+    is_age_restricted: false,
+    minimum_age: 18,
+    restriction_type: 'alcohol',
+    restriction_warning: '',
+    requires_id_verification: false,
   });
 
   const [errors, setErrors] = useState({
@@ -207,7 +217,12 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
       await onSubmit({ 
         ...formData, 
         image_url: imageUrl,
-        optionGroupIds: selectedOptionGroupIds.length > 0 ? selectedOptionGroupIds : undefined
+        optionGroupIds: selectedOptionGroupIds.length > 0 ? selectedOptionGroupIds : undefined,
+        is_age_restricted: formData.is_age_restricted,
+        minimum_age: formData.is_age_restricted ? formData.minimum_age : undefined,
+        restriction_type: formData.is_age_restricted ? formData.restriction_type : undefined,
+        restriction_warning: formData.is_age_restricted && formData.restriction_warning ? formData.restriction_warning : undefined,
+        requires_id_verification: formData.is_age_restricted ? formData.requires_id_verification : undefined,
       });
       
       // Reset form on success
@@ -217,6 +232,11 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
         price: '',
         category_id: '',
         image_url: '',
+        is_age_restricted: false,
+        minimum_age: 18,
+        restriction_type: 'alcohol',
+        restriction_warning: '',
+        requires_id_verification: false,
       });
       setErrors({
         name: '',
@@ -340,6 +360,104 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
             <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
               Max size: 10MB. Supported formats: JPG, PNG, WebP
             </Typography>
+          </div>
+        </Grid.Item>
+
+        <Grid.Item sm={16}>
+          <div style={{ 
+            borderTop: '1px solid var(--color-border-primary, #e5e7eb)', 
+            paddingTop: '16px',
+            marginTop: '8px'
+          }}>
+            <Typography variant="body-medium" style={{ marginBottom: '12px' }}>
+              Age & Legal Restrictions
+            </Typography>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={formData.is_age_restricted}
+                  onChange={(e) => setFormData(prev => ({ ...prev, is_age_restricted: e.target.checked }))}
+                  disabled={isSubmitting || isUploadingImage}
+                />
+                <Typography variant="body-medium">
+                  This item is age-restricted (e.g., alcohol, tobacco)
+                </Typography>
+              </label>
+            </div>
+            
+            {formData.is_age_restricted && (
+              <div style={{ 
+                paddingLeft: '24px', 
+                borderLeft: '3px solid var(--color-warning-500, #ffc107)',
+                marginLeft: '8px',
+                paddingTop: '8px'
+              }}>
+                <Grid.Container gap="md">
+                  <Grid.Item sm={16} md={8}>
+                    <FormSelect
+                      id="restrictionType"
+                      label="Restriction Type"
+                      value={formData.restriction_type}
+                      onChange={(e) => setFormData(prev => ({ ...prev, restriction_type: e.target.value }))}
+                      options={[
+                        { value: 'alcohol', label: 'Alcohol' },
+                        { value: 'tobacco', label: 'Tobacco' },
+                        { value: 'adult_content', label: 'Adult Content' },
+                        { value: 'prescription', label: 'Prescription Required' },
+                        { value: 'custom', label: 'Custom Restriction' },
+                      ]}
+                      disabled={isSubmitting || isUploadingImage}
+                      required
+                    />
+                  </Grid.Item>
+                  
+                  <Grid.Item sm={16} md={8}>
+                    <FormInput
+                      id="minimumAge"
+                      label="Minimum Age"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.minimum_age.toString()}
+                      onChange={(e) => setFormData(prev => ({ ...prev, minimum_age: parseInt(e.target.value) || 18 }))}
+                      placeholder="18"
+                      disabled={isSubmitting || isUploadingImage}
+                      required
+                    />
+                  </Grid.Item>
+                  
+                  <Grid.Item sm={16}>
+                    <FormTextArea
+                      id="restrictionWarning"
+                      label="Custom Warning Message (Optional)"
+                      value={formData.restriction_warning}
+                      onChange={(e) => setFormData(prev => ({ ...prev, restriction_warning: e.target.value }))}
+                      placeholder="e.g., Challenge 25 policy applies. Valid ID required."
+                      rows={2}
+                      isDisabled={isSubmitting || isUploadingImage}
+                    />
+                    <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                      Leave blank to use default warning based on age and restriction type
+                    </Typography>
+                  </Grid.Item>
+                  
+                  <Grid.Item sm={16}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={formData.requires_id_verification}
+                        onChange={(e) => setFormData(prev => ({ ...prev, requires_id_verification: e.target.checked }))}
+                        disabled={isSubmitting || isUploadingImage}
+                      />
+                      <Typography variant="body-small">
+                        Requires ID verification at point of sale/delivery
+                      </Typography>
+                    </label>
+                  </Grid.Item>
+                </Grid.Container>
+              </div>
+            )}
           </div>
         </Grid.Item>
 

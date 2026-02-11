@@ -96,6 +96,12 @@ export interface MenuItem extends BaseEntity {
   dietaryInfo?: ('vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free' | 'nut-free')[];
   option?: MenuItemOption[];
   displayOrder: number;
+  // Age & Legal Restrictions
+  isAgeRestricted?: boolean;
+  minimumAge?: number;
+  restrictionType?: string;
+  restrictionWarning?: string;
+  requiresIdVerification?: boolean;
 }
 
 export interface MenuItemOption extends BaseEntity {

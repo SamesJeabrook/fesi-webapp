@@ -64,3 +64,42 @@
     }
   }
 }
+
+.restrictionWarning {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  
+  .warningHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    
+    .warningIcon {
+      font-size: 1.5rem;
+    }
+  }
+  
+  .restrictedItemsList {
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+    
+    li {
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      
+      strong {
+        font-weight: 600;
+        color: #856404;
+      }
+      
+      span {
+        color: #856404;
+      }
+    }
+  }
+}

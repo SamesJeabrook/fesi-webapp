@@ -25,6 +25,11 @@ interface MenuItem {
   created_at: string;
   updated_at: string;
   option_groups?: SubItemGroup[];
+  is_age_restricted?: boolean;
+  minimum_age?: number;
+  restriction_type?: string;
+  restriction_warning?: string;
+  requires_id_verification?: boolean;
 }
 
 interface MenuCategory {
@@ -114,7 +119,12 @@ export default function MenuItemsPage() {
               display_order: item.display_order || 0,
               image_url: item.image_url,
               created_at: item.created_at || new Date().toISOString(),
-              updated_at: item.updated_at || new Date().toISOString()
+              updated_at: item.updated_at || new Date().toISOString(),
+              is_age_restricted: item.is_age_restricted,
+              minimum_age: item.minimum_age,
+              restriction_type: item.restriction_type,
+              restriction_warning: item.restriction_warning,
+              requires_id_verification: item.requires_id_verification
             });
           });
         }
@@ -181,20 +191,33 @@ export default function MenuItemsPage() {
 
   const handleEditItem = async (item: MenuItem) => {
     console.log('handleEditItem called with item:', item);
-    // Fetch the full item with option groups
+    // Fetch the full item with option groups and restriction fields
     try {
       const data = await api.get(`/api/menu/${item.id}`);
       console.log('API Response:', data);
-      console.log('data.data:', data.data);
-      console.log('data.option_groups:', data.option_groups);
       
       // The API might return data directly or wrapped in a data property
       const itemData = data.data || data;
-      console.log('itemData.option_groups:', itemData.option_groups);
       
-      const updatedItem = {
-        ...item,
-        option_groups: itemData.option_groups || []
+      // Use all fields from API response, including restriction fields
+      const updatedItem: MenuItem = {
+        id: itemData.id,
+        title: itemData.title,
+        description: itemData.description,
+        base_price: itemData.base_price,
+        category_id: itemData.category_id,
+        category_name: item.category_name, // Keep from original item
+        is_active: itemData.is_active,
+        display_order: itemData.display_order,
+        image_url: itemData.image_url,
+        created_at: itemData.created_at,
+        updated_at: itemData.updated_at,
+        option_groups: itemData.option_groups || [],
+        is_age_restricted: itemData.is_age_restricted,
+        minimum_age: itemData.minimum_age,
+        restriction_type: itemData.restriction_type,
+        restriction_warning: itemData.restriction_warning,
+        requires_id_verification: itemData.requires_id_verification
       };
       console.log('Setting editingItem to:', updatedItem);
       
@@ -343,7 +366,12 @@ export default function MenuItemsPage() {
               image_url: editingItem.image_url,
               created_at: editingItem.created_at,
               updated_at: editingItem.updated_at,
-              option_groups: editingItem.option_groups
+              option_groups: editingItem.option_groups,
+              is_age_restricted: editingItem.is_age_restricted,
+              minimum_age: editingItem.minimum_age,
+              restriction_type: editingItem.restriction_type,
+              restriction_warning: editingItem.restriction_warning,
+              requires_id_verification: editingItem.requires_id_verification
             }}
             categories={categories}
             isOpen={!!editingItem}

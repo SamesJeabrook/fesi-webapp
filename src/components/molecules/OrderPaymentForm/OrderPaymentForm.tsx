@@ -39,6 +39,7 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   const [customerProfile, setCustomerProfile] = useState<any>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acknowledgedRestrictions, setAcknowledgedRestrictions] = useState(false);
   // Guest info state
   const [guestInfo, setGuestInfo] = useState({
     email: '',
@@ -48,6 +49,10 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   });
   const event_id = costBreakdown.event_id || '';
   const notes = '';
+
+  // Check if order contains any age-restricted items
+  const restrictedItems = basketItems.filter((item: any) => item.is_age_restricted === true);
+  const hasRestrictedItems = restrictedItems.length > 0;
 
   useEffect(() => {
     const savedOrderId = localStorage.getItem('orderId');
@@ -367,6 +372,48 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
         )}
         <CardElement options={{ style: { base: { fontSize: '18px' } } }} />
         
+        {/* Age restriction warning if order contains restricted items */}
+        {hasRestrictedItems && (
+          <div className={styles.restrictionWarning}>
+            <div className={styles.warningHeader}>
+              <span className={styles.warningIcon}>⚠️</span>
+              <Typography variant="body-medium"><strong>Age-Restricted Items in Order</strong></Typography>
+            </div>
+            <Typography variant="body-small">
+              Your order contains the following age-restricted items:
+            </Typography>
+            <ul className={styles.restrictedItemsList}>
+              {restrictedItems.map((item: any, index: number) => (
+                <li key={index}>
+                  <strong>{item.title}</strong>
+                  {item.restriction_warning && <span> - {item.restriction_warning}</span>}
+                  {!item.restriction_warning && item.minimum_age && (
+                    <span> - Restricted to ages {item.minimum_age}+</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <Typography variant="body-small">
+              <strong>You must be of legal age to purchase these items. Valid ID may be required at pickup or delivery. Orders may be refused if age verification cannot be completed.</strong>
+            </Typography>
+          </div>
+        )}
+        
+        {/* Restricted items acknowledgment checkbox */}
+        {hasRestrictedItems && (
+          <div className={styles.termsCheckbox}>
+            <input
+              id="acknowledgeRestrictions"
+              type="checkbox"
+              checked={acknowledgedRestrictions}
+              onChange={(e) => setAcknowledgedRestrictions(e.target.checked)}
+            />
+            <label htmlFor="acknowledgeRestrictions">
+              <strong>I confirm that I am of legal age to purchase age-restricted items and understand that valid ID may be required. I acknowledge that my order may be refused if age verification cannot be completed.</strong>
+            </label>
+          </div>
+        )}
+        
         <div className={styles.termsCheckbox}>
           <input
             id="acceptCustomerTerms"
@@ -379,7 +426,7 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
           </label>
         </div>
         
-        <button type="submit" className={styles.payBtn} disabled={loading || !acceptedTerms}>
+        <button type="submit" className={styles.payBtn} disabled={loading || !acceptedTerms || (hasRestrictedItems && !acknowledgedRestrictions)}>
           {loading ? 'Processing...' : 'Pay Now'}
         </button>
       </form>

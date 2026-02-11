@@ -124,6 +124,14 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
           </div>
         )}
 
+        {/* Age Restriction Badge - positioned at top-right of card */}
+        {menuItem.isAgeRestricted && (
+          <div className={styles.restrictionBadge} title={menuItem.restrictionWarning || `Age restricted - ${menuItem.minimumAge || 18}+`}>
+            <span className={styles.restrictionIcon}>⚠️</span>
+            <span className={styles.restrictionLabel}>{menuItem.minimumAge || 18}+</span>
+          </div>
+        )}
+
         {/* Add Button - only show if item is available */}
         {menuItem.isAvailable && (
           <span

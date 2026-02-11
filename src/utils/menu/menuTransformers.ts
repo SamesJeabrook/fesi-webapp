@@ -19,6 +19,12 @@ export interface APIMenuItem {
   category_name: string;
   category_order: number;
   has_options?: boolean;
+  // Age & Legal Restrictions
+  is_age_restricted?: boolean;
+  minimum_age?: number;
+  restriction_type?: string;
+  restriction_warning?: string;
+  requires_id_verification?: boolean;
 }
 
 /**
@@ -89,6 +95,12 @@ export const transformMenuItem = (apiItem: APIMenuItem, currency: string = 'GBP'
   allergens: undefined,
   dietaryInfo: undefined,
   options: undefined,
+  // Restriction fields
+  isAgeRestricted: apiItem.is_age_restricted,
+  minimumAge: apiItem.minimum_age,
+  restrictionType: apiItem.restriction_type,
+  restrictionWarning: apiItem.restriction_warning,
+  requiresIdVerification: apiItem.requires_id_verification,
 });
 
 /**

@@ -69,6 +69,10 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   const [selectedOptions, setSelectedOptions] = useState<Record<string, SelectedOptionDetail[]>>({});
   const [checkoutDisplay, setCheckoutDisplay] = useState(false);
   const [activeCheckoutTab, setActiveCheckoutTab] = useState('summary');
+  const [restrictionWarning, setRestrictionWarning] = useState<{
+    show: boolean;
+    item: MenuItem | null;
+  }>({ show: false, item: null });
 
   // Restore basket and cost breakdown from localStorage on mount
   useEffect(() => {
@@ -198,6 +202,12 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
       displayOrder: item.display_order || item.displayOrder,
       createdAt: item.created_at || item.createdAt || '',
       updatedAt: item.updated_at || item.updatedAt || '',
+      // Restriction fields
+      isAgeRestricted: item.is_age_restricted,
+      minimumAge: item.minimum_age,
+      restrictionType: item.restriction_type,
+      restrictionWarning: item.restriction_warning,
+      requiresIdVerification: item.requires_id_verification,
     };
   };
 
@@ -411,10 +421,27 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
       const itemData = await VendorService.getMenuSubGroups(menuItem.id);
       // Transform the service data to MenuItem type
       const transformedItem = transformMenuItem(itemData);
-      setSelectedMenuItem(transformedItem as any);
+      
+      // Check if item has age restrictions
+      if (transformedItem.isAgeRestricted) {
+        setRestrictionWarning({ show: true, item: transformedItem as any });
+      } else {
+        setSelectedMenuItem(transformedItem as any);
+      }
     } catch (error) {
       console.error('Failed to fetch sub-groups:', error);
     }
+  };
+
+  const handleRestrictionAcknowledged = () => {
+    if (restrictionWarning.item) {
+      setSelectedMenuItem(restrictionWarning.item);
+    }
+    setRestrictionWarning({ show: false, item: null });
+  };
+
+  const handleRestrictionCancelled = () => {
+    setRestrictionWarning({ show: false, item: null });
   };
 
   return (
@@ -448,6 +475,82 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
           </CheckoutButtonWrapper>
         </>
       )}
+      {/* Age Restriction Warning Dialog */}
+      <FullscreenTransition
+        open={restrictionWarning.show}
+        onClose={handleRestrictionCancelled}
+      >
+        {restrictionWarning.item && (
+          <div style={{
+            padding: '2rem',
+            maxWidth: '500px',
+            margin: '0 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.5rem',
+            minHeight: '100vh',
+            justifyContent: 'center',
+          }}>
+            <div style={{
+              background: 'var(--color-warning-lightest, #fff3cd)',
+              border: '2px solid var(--color-warning, #ffc107)',
+              borderRadius: 'var(--border-radius-lg, 12px)',
+              padding: '2rem',
+              textAlign: 'center',
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚠️</div>
+              <h2 style={{ 
+                margin: '0 0 1rem', 
+                fontSize: '1.5rem',
+                color: 'var(--color-warning-dark, #856404)',
+              }}>
+                Age Restricted Item
+              </h2>
+              <p style={{ 
+                fontSize: '1rem', 
+                lineHeight: '1.5',
+                marginBottom: '1.5rem',
+                color: 'var(--color-text-primary)',
+              }}>
+                {restrictionWarning.item.restrictionWarning || 
+                  `This item is restricted to customers aged ${restrictionWarning.item.minimumAge || 18} and over.`}
+              </p>
+              {restrictionWarning.item.requiresIdVerification && (
+                <p style={{ 
+                  fontSize: '0.875rem',
+                  color: 'var(--color-text-secondary)',
+                  marginBottom: '1.5rem',
+                  fontStyle: 'italic',
+                }}>
+                  ⓘ ID verification may be required upon collection or delivery.
+                </p>
+              )}
+              <div style={{
+                display: 'flex',
+                gap: '1rem',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+              }}>
+                <Button 
+                  variant="secondary" 
+                  onClick={handleRestrictionCancelled}
+                  style={{ minWidth: '120px' }}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="primary" 
+                  onClick={handleRestrictionAcknowledged}
+                  style={{ minWidth: '120px' }}
+                >
+                  I Understand
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </FullscreenTransition>
+      {/* Menu Item Details Modal */}
       <FullscreenTransition
         open={!!selectedMenuItem}
         onClose={() => { setSelectedMenuItem(null); setSelectedOptions({}); }}
