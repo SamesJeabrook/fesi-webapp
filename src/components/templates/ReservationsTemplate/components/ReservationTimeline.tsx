@@ -107,7 +107,7 @@ export function ReservationTimeline({
 
       <div className={styles.timelineBody}>
         <div className={styles.tablesColumn}>
-          {tables.sort((a, b) => a.table_number - b.table_number).map(table => (
+          {tables.sort((a, b) => (a.table_number as number) - (b.table_number as number)).map(table => (
             <div key={table.id} className={styles.tableRow} style={{ height: ROW_HEIGHT }}>
               <div className={styles.tableLabel}>
                 <Typography variant="body-medium">Table {table.table_number}</Typography>
@@ -122,7 +122,7 @@ export function ReservationTimeline({
         <div className={styles.gridScroll} ref={bodyScrollRef}>
           <div className={styles.gridContainer} style={{ width: hours.length * HOUR_WIDTH }}>
             {/* Grid lines */}
-            {tables.sort((a, b) => a.table_number - b.table_number).map((table, rowIndex) => (
+            {tables.sort((a, b) => (a.table_number as number) - (b.table_number as number)).map((table, rowIndex) => (
               <div key={table.id} className={styles.gridRow} style={{ height: ROW_HEIGHT }}>
                 {hours.map((hour) => (
                   <div

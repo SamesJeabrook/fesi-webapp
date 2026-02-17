@@ -5,7 +5,8 @@ export interface MerchantCardProps {
     name: string;
     username: string;
     phone: string;
-    overall_status: string;
+    status?: string;
+    overall_status?: string;
     created_at: string;
   };
   /** Whether this merchant is currently selected */

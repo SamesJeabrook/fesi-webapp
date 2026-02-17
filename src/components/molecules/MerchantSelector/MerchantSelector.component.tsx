@@ -15,7 +15,8 @@ interface Merchant {
   name: string;
   username: string;
   phone: string;
-  status: string;
+  status?: string;
+  overall_status?: string;
   created_at: string;
 }
 

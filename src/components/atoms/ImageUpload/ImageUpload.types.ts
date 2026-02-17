@@ -42,7 +42,7 @@ export interface ImageUploadProps {
    * Button variant
    * @default 'secondary'
    */
-  buttonVariant?: 'primary' | 'secondary' | 'tertiary';
+  buttonVariant?: 'primary' | 'secondary' | 'outline';
   
   /**
    * Additional CSS class for the preview image

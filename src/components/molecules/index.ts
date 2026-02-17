@@ -26,6 +26,7 @@ export * from './LocationPicker';
 export * from './POSMenuItemCard';
 export * from './POSCartItem';
 export * from './POSCategoryFilter';
+export * from './POSPaymentQR';
 export * from './CategoryCard';
 export * from './EditCategoryModal';
 export * from './MenuCard';

@@ -20,6 +20,7 @@ export interface OrderDetailsModalProps {
     total_amount?: number;
     payment_status?: string;
     payment_method_type?: string; // 'cash' | 'card' | 'stripe' etc
+    refired_item_ids?: string[];
     delivery_address?: {
       line1: string;
       line2?: string;

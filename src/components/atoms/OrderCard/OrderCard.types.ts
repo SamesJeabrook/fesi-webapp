@@ -4,12 +4,13 @@ export interface OrderCardProps {
     id: string;
     order_number: string;
     customer_name: string;
-    first_name: string;
-    last_name: string;
+    first_name?: string;
+    last_name?: string;
     customer_email?: string;
     items: Array<{
       id?: string;
-      menu_item_title: string;
+      menu_item_title?: string;
+      menu_item_name?: string;
       quantity: number;
       customizations?: Array<{
         sub_item_name: string;

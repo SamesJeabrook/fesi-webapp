@@ -83,7 +83,7 @@ export const RefireAnalytics: React.FC<RefireAnalyticsProps> = ({
           <span className={styles.refireAnalytics__fireIcon}>🔥</span>
           Refire Analytics
         </Typography>
-        <Typography variant="body" className={styles.refireAnalytics__subtitle}>
+        <Typography variant="body-medium" className={styles.refireAnalytics__subtitle}>
           Track which items need to be remade and identify kitchen improvement opportunities
         </Typography>
       </div>

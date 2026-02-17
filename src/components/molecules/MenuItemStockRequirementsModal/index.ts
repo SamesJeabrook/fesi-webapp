@@ -4,6 +4,5 @@ export { StockRequirementList } from './StockRequirementList.component';
 export type { 
   MenuItemStockRequirementsModalProps, 
   StockRequirementListProps, 
-  AddStockRequirementFormProps,
-  StockRequirementFormData 
+  AddStockRequirementFormProps
 } from './MenuItemStockRequirementsModal.types';

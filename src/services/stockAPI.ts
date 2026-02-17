@@ -24,9 +24,7 @@ const stockAPI = {
       success: boolean;
       stockItems: StockItem[];
       count: number;
-    }>(`/api/stock/merchant/${merchantId}`, {
-      params: { includeInactive }
-    });
+    }>(`/api/stock/merchant/${merchantId}?includeInactive=${includeInactive}`);
     return response.stockItems;
   },
 
@@ -77,9 +75,7 @@ const stockAPI = {
       success: boolean;
       transactions: StockTransaction[];
       count: number;
-    }>(`/api/stock/${stockItemId}/transactions`, {
-      params: { limit }
-    });
+    }>(`/api/stock/${stockItemId}/transactions?limit=${limit}`);
     return response.transactions;
   },
 
@@ -143,9 +139,7 @@ const stockAPI = {
       success: boolean;
       alerts: StockAlert[];
       count: number;
-    }>(`/api/stock/merchant/${merchantId}/alerts`, {
-      params: { includeAcknowledged }
-    });
+    }>(`/api/stock/merchant/${merchantId}/alerts?includeAcknowledged=${includeAcknowledged}`);
     return response.alerts;
   },
 

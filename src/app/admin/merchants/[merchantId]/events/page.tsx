@@ -16,7 +16,7 @@ interface Merchant {
 export default function AdminMerchantEventsPage() {
   const params = useParams();
   const { getAccessTokenSilently } = useAuth0();
-  const merchantId = params.merchantId as string;
+  const merchantId = params?.merchantId as string;
   const [merchant, setMerchant] = useState<Merchant | null>(null);
 
   useEffect(() => {

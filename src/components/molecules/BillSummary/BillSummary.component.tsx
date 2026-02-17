@@ -31,8 +31,8 @@ export const BillSummary: React.FC<BillSummaryProps> = ({
   return (
     <div className={`${styles.billSummary} ${className}`}>
       <div className={styles.lineItem}>
-        <Typography variant="body">Subtotal</Typography>
-        <Typography variant="body">{formatCurrency(subtotal)}</Typography>
+        <Typography variant="body-medium">Subtotal</Typography>
+        <Typography variant="body-medium">{formatCurrency(subtotal)}</Typography>
       </div>
 
       {taxRate > 0 && (
@@ -89,10 +89,10 @@ export const BillSummary: React.FC<BillSummaryProps> = ({
           </div>
 
           <div className={styles.lineItem}>
-            <Typography variant="body" className={styles.remaining}>
+            <Typography variant="body-medium" className={styles.remaining}>
               Remaining
             </Typography>
-            <Typography variant="body" className={styles.remaining}>
+            <Typography variant="body-medium" className={styles.remaining}>
               {formatCurrency(remaining)}
             </Typography>
           </div>
@@ -103,7 +103,7 @@ export const BillSummary: React.FC<BillSummaryProps> = ({
         <>
           <div className={styles.divider} />
           <div className={styles.splitSection}>
-            <Typography variant="body" className={styles.splitLabel}>
+            <Typography variant="body-medium" className={styles.splitLabel}>
               Split Bill Evenly
             </Typography>
             <div className={styles.splitControls}>
@@ -114,7 +114,7 @@ export const BillSummary: React.FC<BillSummaryProps> = ({
               >
                 -
               </Button>
-              <Typography variant="body" className={styles.splitCount}>
+              <Typography variant="body-medium" className={styles.splitCount}>
                 {splitCount} people
               </Typography>
               <Button

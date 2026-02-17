@@ -55,7 +55,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       orderNumber: order.order_number,
       refired_at: order.refired_at,
       refired_item_ids: order.refired_item_ids,
-      items: order.items.map(i => ({ id: i.id, title: i.menu_item_title }))
+      items: order.items.map(i => ({ id: i.id, title: i.menu_item_title || i.menu_item_name }))
     });
   }
 
@@ -107,7 +107,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
               console.log('OrderCard item check:', {
                 orderId: order.id,
                 itemId: item.id,
-                itemTitle: item.menu_item_title,
+                itemTitle: item.menu_item_title || item.menu_item_name,
                 refired_item_ids: order.refired_item_ids,
                 isRefired,
                 refiredItemIdsType: typeof order.refired_item_ids,
@@ -121,7 +121,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
               })}>
                 <Typography variant="body-small">
                   {isRefired && <span className={styles.fireIcon}>🔥 </span>}
-                  {item.quantity}x {item.menu_item_title}
+                  {item.quantity}x {item.menu_item_title || item.menu_item_name}
                 </Typography>
                 {item.customizations && item.customizations.length > 0 && (
                   <div className={styles.customizations}>

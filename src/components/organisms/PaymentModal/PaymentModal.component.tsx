@@ -73,13 +73,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
   const footer = (
     <div className={styles.modalFooter}>
-      <Button variant="outline" onClick={handleClose} disabled={processing}>
+      <Button variant="outline" onClick={handleClose} isDisabled={processing}>
         Cancel
       </Button>
       <Button 
         variant="primary" 
         onClick={handlePayment}
-        disabled={processing || (isPartialPayment && !customAmount)}
+        isDisabled={processing || (isPartialPayment && !customAmount)}
       >
         {processing ? 'Processing...' : `Pay ${formatCurrency(isPartialPayment ? parseFloat(customAmount || '0') : remainingAmount)}`}
       </Button>
@@ -98,7 +98,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       <div className={`${styles.paymentModal} ${className}`}>
         {error && (
           <div className={styles.error}>
-            <Typography variant="body" className={styles.errorText}>
+            <Typography variant="body-medium" className={styles.errorText}>
               ⚠️ {error}
             </Typography>
           </div>
@@ -128,7 +128,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               disabled={processing}
             >
               <span className={styles.methodIcon}>💳</span>
-              <Typography variant="body">Card Reader</Typography>
+              <Typography variant="body-medium">Card Reader</Typography>
             </button>
 
             <button
@@ -138,7 +138,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               disabled={processing}
             >
               <span className={styles.methodIcon}>💵</span>
-              <Typography variant="body">Cash</Typography>
+              <Typography variant="body-medium">Cash</Typography>
             </button>
 
             <button
@@ -148,7 +148,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               disabled={processing}
             >
               <span className={styles.methodIcon}>🌐</span>
-              <Typography variant="body">Online</Typography>
+              <Typography variant="body-medium">Online</Typography>
             </button>
           </div>
         </div>
@@ -170,7 +170,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               }}
               disabled={processing}
             >
-              <Typography variant="body">Full Amount</Typography>
+              <Typography variant="body-medium">Full Amount</Typography>
               <Typography variant="heading-6" className={styles.amount}>
                 {formatCurrency(remainingAmount)}
               </Typography>
@@ -182,7 +182,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               onClick={() => setIsPartialPayment(true)}
               disabled={processing}
             >
-              <Typography variant="body">Partial Payment</Typography>
+              <Typography variant="body-medium">Partial Payment</Typography>
             </button>
           </div>
 

@@ -37,7 +37,7 @@ export const StaffCard: React.FC<StaffCardProps> = ({
       <div className={styles.staffCard__header}>
         <div className={styles.staffCard__info}>
           <Typography variant="heading-4">{staff.name}</Typography>
-          <Typography variant="body-small" color="secondary">
+          <Typography variant="body-small">
             {roleLabel}
           </Typography>
         </div>
@@ -61,17 +61,17 @@ export const StaffCard: React.FC<StaffCardProps> = ({
 
       <div className={styles.staffCard__details}>
         {staff.email && (
-          <Typography variant="body-small" color="secondary">
+          <Typography variant="body-small">
             📧 {staff.email}
           </Typography>
         )}
         {staff.phone && (
-          <Typography variant="body-small" color="secondary">
+          <Typography variant="body-small">
             📱 {staff.phone}
           </Typography>
         )}
         {staff.has_pin && (
-          <Typography variant="body-small" color="secondary">
+          <Typography variant="body-small">
             🔐 PIN Configured
           </Typography>
         )}

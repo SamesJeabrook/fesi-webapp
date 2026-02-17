@@ -5,7 +5,8 @@ export interface MerchantSelectorProps {
     name: string;
     username: string;
     phone: string;
-    status: string;
+    status?: string;
+    overall_status?: string;
     created_at: string;
   }) => void;
   /** Currently selected merchant */
@@ -14,7 +15,8 @@ export interface MerchantSelectorProps {
     name: string;
     username: string;
     phone: string;
-    status: string;
+    status?: string;
+    overall_status?: string;
     created_at: string;
   } | null;
   /** View mode for merchant display */

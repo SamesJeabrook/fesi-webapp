@@ -55,9 +55,9 @@ export const MerchantCard: React.FC<MerchantCardProps> = ({
             @{merchant.username}
           </Typography>
         </div>
-        <div className={`${styles.merchantCard__status} ${styles[getStatusVariant(merchant.overall_status)]}`}>
+        <div className={`${styles.merchantCard__status} ${styles[getStatusVariant(merchant.overall_status || merchant.status || '')]}`}>
           <Typography variant="body-small">
-            {merchant.overall_status}
+            {merchant.overall_status || merchant.status}
           </Typography>
         </div>
       </div>

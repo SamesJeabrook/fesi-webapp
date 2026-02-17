@@ -14,7 +14,7 @@ interface Merchant {
 
 export default function AdminMerchantSubItemsPage() {
   const params = useParams();
-  const merchantId = params.merchantId as string;
+  const merchantId = params?.merchantId as string;
   const [merchant, setMerchant] = useState<Merchant | null>(null);
 
   // Create admin API instance with merchant ID

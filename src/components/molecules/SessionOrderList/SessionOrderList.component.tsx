@@ -22,7 +22,7 @@ export const SessionOrderList: React.FC<SessionOrderListProps> = ({
   if (orders.length === 0) {
     return (
       <div className={styles.emptyState}>
-        <Typography variant="body">
+        <Typography variant="body-medium">
           No orders yet for this session.
         </Typography>
       </div>
@@ -46,7 +46,7 @@ export const SessionOrderList: React.FC<SessionOrderListProps> = ({
             {order.items.map((item) => (
               <div key={item.id} className={styles.item}>
                 <div className={styles.itemInfo}>
-                  <Typography variant="body">
+                  <Typography variant="body-medium">
                     {item.quantity}x {item.menu_item_title}
                   </Typography>
                   {item.options && item.options.length > 0 && (
@@ -59,7 +59,7 @@ export const SessionOrderList: React.FC<SessionOrderListProps> = ({
                     </div>
                   )}
                 </div>
-                <Typography variant="body" className={styles.itemPrice}>
+                <Typography variant="body-medium" className={styles.itemPrice}>
                   {formatCurrency(item.total_price)}
                 </Typography>
               </div>
@@ -67,10 +67,10 @@ export const SessionOrderList: React.FC<SessionOrderListProps> = ({
           </div>
 
           <div className={styles.orderTotal}>
-            <Typography variant="body" className={styles.totalLabel}>
+            <Typography variant="body-medium" className={styles.totalLabel}>
               Order Total:
             </Typography>
-            <Typography variant="body" className={styles.totalAmount}>
+            <Typography variant="body-medium" className={styles.totalAmount}>
               {formatCurrency(order.total_amount)}
             </Typography>
           </div>

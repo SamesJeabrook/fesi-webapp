@@ -27,7 +27,7 @@ export default function TableQrCodesPage() {
         </Link>
         <TableQrCodes 
           merchantId={merchant.id} 
-          merchantUsername={merchant.username}
+          merchantUsername={merchant.username || merchant.id}
         />
       </div>
     </ProtectedRoute>

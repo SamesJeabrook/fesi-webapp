@@ -51,19 +51,21 @@ export const StaffFormModal: React.FC<StaffFormModalProps> = ({
 
         <form onSubmit={onSubmit} className={styles.form}>
           <div className={styles.form__field}>
-            <label className={styles.form__label}>Name *</label>
+            <label htmlFor="staff-name" className={styles.form__label}>Name *</label>
             <Input
+              id="staff-name"
               type="text"
               value={formData.name}
               onChange={(e) => onChange('name', e.target.value)}
-              required
+              isRequired
               fullWidth
             />
           </div>
 
           <div className={styles.form__field}>
-            <label className={styles.form__label}>Email</label>
+            <label htmlFor="staff-email" className={styles.form__label}>Email</label>
             <Input
+              id="staff-email"
               type="email"
               value={formData.email}
               onChange={(e) => onChange('email', e.target.value)}
@@ -72,8 +74,9 @@ export const StaffFormModal: React.FC<StaffFormModalProps> = ({
           </div>
 
           <div className={styles.form__field}>
-            <label className={styles.form__label}>Phone</label>
+            <label htmlFor="staff-phone" className={styles.form__label}>Phone</label>
             <Input
+              id="staff-phone"
               type="tel"
               value={formData.phone}
               onChange={(e) => onChange('phone', e.target.value)}
@@ -82,8 +85,9 @@ export const StaffFormModal: React.FC<StaffFormModalProps> = ({
           </div>
 
           <div className={styles.form__field}>
-            <label className={styles.form__label}>Role *</label>
+            <label htmlFor="staff-role" className={styles.form__label}>Role *</label>
             <select
+              id="staff-role"
               value={formData.role}
               onChange={(e) => onChange('role', e.target.value)}
               className={styles.form__select}
@@ -96,10 +100,11 @@ export const StaffFormModal: React.FC<StaffFormModalProps> = ({
           </div>
 
           <div className={styles.form__field}>
-            <label className={styles.form__label}>
+            <label htmlFor="staff-pin" className={styles.form__label}>
               PIN (4-6 digits) {isEditing && '(leave blank to keep current)'}
             </label>
             <Input
+              id="staff-pin"
               type="text"
               value={formData.pin}
               onChange={(e) => onChange('pin', e.target.value)}
@@ -111,8 +116,9 @@ export const StaffFormModal: React.FC<StaffFormModalProps> = ({
           </div>
 
           <div className={styles.form__field}>
-            <label className={styles.form__label}>Hire Date</label>
+            <label htmlFor="staff-hire-date" className={styles.form__label}>Hire Date</label>
             <Input
+              id="staff-hire-date"
               type="date"
               value={formData.hire_date}
               onChange={(e) => onChange('hire_date', e.target.value)}

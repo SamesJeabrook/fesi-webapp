@@ -37,7 +37,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   const variantMap = {
     danger: 'danger',
-    warning: 'warning',
+    warning: 'outline',
     primary: 'primary',
   } as const;
 

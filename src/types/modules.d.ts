@@ -13,3 +13,8 @@ declare module '*.module.sass' {
   const classes: { readonly [key: string]: string };
   export default classes;
 }
+
+// CSS and other asset imports
+declare module '*.css';
+declare module '*.scss';
+declare module 'mapbox-gl/dist/mapbox-gl.css';

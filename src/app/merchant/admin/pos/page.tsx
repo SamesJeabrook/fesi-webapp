@@ -15,13 +15,13 @@ import {
   MenuItemOptionsModal,
   POSOrderSummary,
   StaffPinLogin,
-  type StaffMember,
   type MenuItem as ModalMenuItem,
   type OptionGroup,
   type SubItem,
   type CartItem as OrderSummaryCartItem,
   type Event as OrderSummaryEvent
 } from '@/components/organisms';
+import { type StaffMember } from '@/components/organisms/StaffPinLogin/StaffPinLogin.component';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getAuthToken } from '@/utils/devAuth';
 import styles from './pos.module.scss';
@@ -525,7 +525,7 @@ export default function POSPage() {
             <Typography variant="heading-3" style={{ marginBottom: '1rem' }}>
               Unable to Load POS
             </Typography>
-            <Typography variant="body" style={{ marginBottom: '1.5rem', color: 'var(--color-text-secondary)' }}>
+            <Typography variant="body-medium" style={{ marginBottom: '1.5rem', color: 'var(--color-text-secondary)' }}>
               {loadingError}
             </Typography>
             {noEventsError && (
@@ -555,12 +555,12 @@ export default function POSPage() {
           
           {currentStaff && (
             <div className={styles.pos__staffInfo}>
-              <Typography variant="body-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
                 Logged in as: <strong>{currentStaff.name}</strong> ({currentStaff.role})
               </Typography>
               <Button
                 variant="outline"
-                size="small"
+                size="sm"
                 onClick={handleStaffLogout}
               >
                 Switch Staff

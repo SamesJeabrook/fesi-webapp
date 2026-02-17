@@ -1,7 +1,7 @@
 // Push Notification Service - Frontend
 // Handles push notification subscription and management
 
-import api from './api';
+import api from '@/utils/api';
 
 interface PushSubscription {
   endpoint: string;
@@ -111,9 +111,10 @@ class PushNotificationService {
 
       if (!subscription) {
         // Create new subscription
+        const applicationServerKey = this.urlBase64ToUint8Array(this.vapidPublicKey);
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: this.urlBase64ToUint8Array(this.vapidPublicKey)
+          applicationServerKey: applicationServerKey as BufferSource
         });
       }
 
@@ -232,7 +233,7 @@ class PushNotificationService {
       outputArray[i] = rawData.charCodeAt(i);
     }
 
-    return outputArray;
+    return outputArray as Uint8Array;
   }
 }
 

@@ -35,7 +35,7 @@ export const MenuList: React.FC<MenuListProps> = ({
   if (isLoading) {
     return (
       <div className={styles.loading}>
-        <Typography variant="body">Loading menus...</Typography>
+        <Typography variant="body-medium">Loading menus...</Typography>
       </div>
     );
   }
@@ -51,7 +51,7 @@ export const MenuList: React.FC<MenuListProps> = ({
 
       {menus.length === 0 ? (
         <div className={styles.empty}>
-          <Typography variant="body" color="secondary">
+          <Typography variant="body-medium">
             No menus created yet. Create your first menu to get started.
           </Typography>
           <Button variant="primary" onClick={onCreateMenu}>

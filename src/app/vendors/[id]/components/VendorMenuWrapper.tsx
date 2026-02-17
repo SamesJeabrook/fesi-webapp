@@ -18,6 +18,7 @@ import OrderSummary from '@/components/organisms/OrderSummary/OrderSummary';
 import { paymentConfig } from '@/config/paymentConfig';
 import Tabs, { Tab } from '@/components/molecules/Tabs/Tabs';
 import api from '@/utils/api';
+import styles from './VendorMenuWrapper.module.scss';
 
 interface VendorMenuWrapperProps {
   activeEvent: Boolean;
@@ -45,8 +46,8 @@ interface OrderSelection {
 
 export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData }: VendorMenuWrapperProps) {
   const searchParams = useSearchParams();
-  const tableNumber = searchParams.get('table');
-  const tableId = searchParams.get('table_id');
+  const tableNumber = searchParams?.get('table');
+  const tableId = searchParams?.get('table_id');
   
   // Track all completed/accepted orders
   const [orders, setOrders] = useState<OrderListItem[]>(() => {
@@ -534,14 +535,14 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
                 <Button 
                   variant="secondary" 
                   onClick={handleRestrictionCancelled}
-                  style={{ minWidth: '120px' }}
+                  className={styles.button}
                 >
                   Cancel
                 </Button>
                 <Button 
                   variant="primary" 
                   onClick={handleRestrictionAcknowledged}
-                  style={{ minWidth: '120px' }}
+                  className={styles.button}
                 >
                   I Understand
                 </Button>

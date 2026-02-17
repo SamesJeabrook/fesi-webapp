@@ -94,7 +94,7 @@ export const transformMenuItem = (apiItem: APIMenuItem, currency: string = 'GBP'
   calories: undefined,
   allergens: undefined,
   dietaryInfo: undefined,
-  options: undefined,
+  option: undefined,
   // Restriction fields
   isAgeRestricted: apiItem.is_age_restricted,
   minimumAge: apiItem.minimum_age,

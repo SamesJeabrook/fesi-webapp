@@ -54,6 +54,7 @@ export default function AdminMenuItemsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [authToken, setAuthToken] = useState<string>('');
 
   const merchantId = params?.merchantId as string;
 
@@ -216,6 +217,18 @@ export default function AdminMenuItemsPage() {
     : items.filter(item => item.category_id === selectedCategory);
 
   useEffect(() => {
+    const getToken = async () => {
+      try {
+        const token = await getAccessTokenSilently();
+        setAuthToken(token);
+      } catch (error) {
+        console.error('Error getting auth token:', error);
+      }
+    };
+    getToken();
+  }, [getAccessTokenSilently]);
+
+  useEffect(() => {
     if (merchantId) {
       fetchData();
     }
@@ -295,6 +308,7 @@ export default function AdminMenuItemsPage() {
                     onCancel={() => setIsCreating(false)}
                     isSubmitting={isSubmitting}
                     merchantId={merchantId}
+                    authToken={authToken}
                   />
                 </Grid.Item>
               </Grid.Container>

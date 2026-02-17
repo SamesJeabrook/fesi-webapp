@@ -112,16 +112,16 @@ export const DisplayMenuSection: React.FC<DisplayMenuSectionProps> = ({
               {category.items.map((item) => (
                 <div key={item.id} className={styles.menuItem}>
                   <div className={styles.itemDetails}>
-                    <Typography variant="body-large" weight="bold">
+                    <Typography variant="body-large">
                       {item.name}
                     </Typography>
                     {item.description && (
-                      <Typography variant="body-small" color="secondary">
+                      <Typography variant="body-small">
                         {item.description}
                       </Typography>
                     )}
                   </div>
-                  <Typography variant="body-large" weight="bold" className={styles.price}>
+                  <Typography variant="body-large" className={styles.price}>
                     {formatPrice(item.base_price)}
                   </Typography>
                 </div>

@@ -25,7 +25,7 @@ export interface Reservation {
 
 export interface Table {
   id: string;
-  table_number: string;
+  table_number: string | number;
   capacity: number;
   status: string;
 }

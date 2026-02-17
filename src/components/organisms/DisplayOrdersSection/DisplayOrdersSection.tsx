@@ -118,7 +118,7 @@ export const DisplayOrdersSection: React.FC<DisplayOrdersSectionProps> = ({
     <div className={styles.ordersSection}>
       <div className={styles.ordersHeader}>
         <Typography variant="heading-2">Order Status</Typography>
-        <Typography variant="body-large" color="secondary">
+        <Typography variant="body-large">
           {orders.length} active {orders.length === 1 ? 'order' : 'orders'}
         </Typography>
       </div>
@@ -128,14 +128,14 @@ export const DisplayOrdersSection: React.FC<DisplayOrdersSectionProps> = ({
         <div className={styles.orderColumn}>
           <div className={styles.columnHeader}>
             <Typography variant="heading-3">Preparing</Typography>
-            <Typography variant="body-medium" color="secondary">
+            <Typography variant="body-medium">
               {preparingOrders.length}
             </Typography>
           </div>
           <div className={styles.columnContent}>
             {preparingOrders.length === 0 ? (
               <div className={styles.emptyColumn}>
-                <Typography variant="body-medium" color="secondary">
+                <Typography variant="body-medium">
                   No orders preparing
                 </Typography>
               </div>
@@ -151,14 +151,14 @@ export const DisplayOrdersSection: React.FC<DisplayOrdersSectionProps> = ({
         <div className={styles.orderColumn}>
           <div className={styles.columnHeader}>
             <Typography variant="heading-3">Ready for Collection</Typography>
-            <Typography variant="body-medium" color="secondary">
+            <Typography variant="body-medium">
               {readyOrders.length}
             </Typography>
           </div>
           <div className={styles.columnContent}>
             {readyOrders.length === 0 ? (
               <div className={styles.emptyColumn}>
-                <Typography variant="body-medium" color="secondary">
+                <Typography variant="body-medium">
                   No orders ready
                 </Typography>
               </div>

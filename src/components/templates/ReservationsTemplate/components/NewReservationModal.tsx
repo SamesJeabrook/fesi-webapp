@@ -192,7 +192,7 @@ export function NewReservationModal({
             <label>Table Selection</label>
             <div className={styles.tableSelectionGroup}>
               {tables
-                .sort((a, b) => a.table_number - b.table_number)
+                .sort((a, b) => (a.table_number as number) - (b.table_number as number))
                 .map((table) => {
                   const isUnavailable = unavailableTables.includes(table.id);
                   const selectedCapacity = formData.tableIds

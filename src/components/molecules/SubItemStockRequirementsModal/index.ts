@@ -1,2 +1,2 @@
 export { SubItemStockRequirementsModal } from './SubItemStockRequirementsModal.component';
-export type { SubItemStockRequirementsModalProps, StockRequirementFormData } from './SubItemStockRequirementsModal.types';
+export type { SubItemStockRequirementsModalProps } from './SubItemStockRequirementsModal.types';

@@ -7,7 +7,8 @@ import { Button } from '@/components/atoms/Button';
 import { Typography } from '@/components/atoms/Typography';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useMerchant } from '@/hooks/useMerchant';
-import { StaffCard, StaffMember } from '@/components/organisms/StaffCard';
+import { StaffCard } from '@/components/organisms/StaffCard';
+import type { StaffMember } from '@/components/organisms/StaffCard/StaffCard.component';
 import { StaffFormModal, StaffFormData, StaffFormErrors } from '@/components/organisms/StaffFormModal';
 import styles from './staff.module.scss';
 
@@ -153,7 +154,7 @@ export default function StaffManagementPage() {
     return (
       <ProtectedRoute requireRole={['merchant']}>
         <div className={styles.loading}>
-          <Typography variant="body-lg">Loading...</Typography>
+          <Typography variant="body-large">Loading...</Typography>
         </div>
       </ProtectedRoute>
     );
@@ -163,7 +164,7 @@ export default function StaffManagementPage() {
     return (
       <ProtectedRoute requireRole={['merchant']}>
         <div className={styles.loading}>
-          <Typography variant="body-lg">No merchant found</Typography>
+          <Typography variant="body-large">No merchant found</Typography>
         </div>
       </ProtectedRoute>
     );
@@ -178,7 +179,7 @@ export default function StaffManagementPage() {
               ← Back to Dashboard
             </Link>
             <Typography variant="heading-1">Staff Management</Typography>
-            <Typography variant="body-md" color="secondary" className={styles.subtitle}>
+            <Typography variant="body-medium" className={styles.subtitle}>
               Manage your restaurant staff and track their performance
             </Typography>
           </div>
@@ -203,10 +204,10 @@ export default function StaffManagementPage() {
         {staff.length === 0 && (
           <div className={styles.emptyState}>
             <div className={styles.emptyState__icon}>👥</div>
-            <Typography variant="heading-4" color="secondary">
+            <Typography variant="heading-4">
               No staff members yet
             </Typography>
-            <Typography variant="body-md" color="secondary" className={styles.emptyState__subtitle}>
+            <Typography variant="body-medium"className={styles.emptyState__subtitle}>
               Add your first staff member to start tracking orders
             </Typography>
           </div>

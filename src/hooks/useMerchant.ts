@@ -6,6 +6,7 @@ import api from '@/utils/api';
 interface Merchant {
   id: string;
   business_name: string;
+  username?: string;
   operating_mode?: 'event_based' | 'static';
   is_currently_open?: boolean;
   has_table_service?: boolean;

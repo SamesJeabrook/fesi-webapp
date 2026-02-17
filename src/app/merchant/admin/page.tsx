@@ -263,7 +263,7 @@ export default function MerchantAdminDashboard() {
             <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
               {merchant.operating_mode === 'static' && (
                 <Button 
-                  variant={merchant.is_currently_open ? 'success' : 'secondary'}
+                  variant={merchant.is_currently_open ? 'primary' : 'secondary'}
                   size="lg"
                   onClick={toggleOpenStatus}
                   isDisabled={isTogglingOpen}

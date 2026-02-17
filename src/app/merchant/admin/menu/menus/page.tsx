@@ -13,15 +13,31 @@ import styles from './menus.module.scss';
 
 interface MenuItem {
   id: string;
+  merchant_id: string;
+  category_id: string;
   title: string;
-  category_name?: string;
+  description: string;
+  image_url: string;
   base_price: number;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  category_name: string;
+  category_order: number;
+  has_options: boolean;
+}
+
+interface Category {
+  name: string;
+  display_order: number;
+  items: MenuItem[];
 }
 
 export default function MenusPage() {
   const router = useRouter();
   const [menus, setMenus] = useState<Menu[]>([]);
-  const [availableItems, setAvailableItems] = useState<MenuItem[]>([]);
+  const [availableItems, setAvailableItems] = useState<Category[]>([]);
   const [merchantId, setMerchantId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -180,7 +196,7 @@ export default function MenusPage() {
         <div className={styles.page__header}>
           <div>
             <Typography variant="heading-2">Menu Management</Typography>
-            <Typography variant="body" color="secondary">
+            <Typography variant="body-medium">
               Create and manage different menus for your events
             </Typography>
           </div>
@@ -218,10 +234,10 @@ export default function MenusPage() {
           isOpen={deleteConfirm.show}
           title="Delete Menu"
           message={`Are you sure you want to delete "${deleteConfirm.menuName}"? This action cannot be undone.`}
-          confirmLabel="Delete"
-          cancelLabel="Cancel"
+          confirmText="Delete"
+          cancelText="Cancel"
           onConfirm={confirmDelete}
-          onCancel={() => setDeleteConfirm({ show: false, menuId: null, menuName: '' })}
+          onClose={() => setDeleteConfirm({ show: false, menuId: null, menuName: '' })}
           variant="danger"
         />
       </div>

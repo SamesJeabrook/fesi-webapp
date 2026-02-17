@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useMerchant } from '@/hooks/useMerchant';
 import { TableServiceTemplate } from '@/components/templates';
-import { StaffPinLogin, StaffMember } from '@/components/organisms';
+import { StaffPinLogin } from '@/components/organisms';
+import { type StaffMember } from '@/components/organisms/StaffPinLogin/StaffPinLogin.component';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export default function TableServicePage() {

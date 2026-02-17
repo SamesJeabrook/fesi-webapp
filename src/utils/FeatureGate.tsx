@@ -17,7 +17,7 @@ import UpgradePrompt from '../components/molecules/UpgradePrompt/UpgradePrompt';
  */
 
 interface FeatureGateProps {
-  feature: keyof ReturnType<typeof useSubscription>['subscription']['features'];
+  feature: string;
   featureName: string;
   children: React.ReactNode;
   fallback?: React.ReactNode;

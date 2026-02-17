@@ -5,7 +5,8 @@ export interface MerchantGridProps {
     name: string;
     username: string;
     phone: string;
-    status: string;
+    status?: string;
+    overall_status?: string;
     created_at: string;
   }>;
   /** Currently selected merchant ID */

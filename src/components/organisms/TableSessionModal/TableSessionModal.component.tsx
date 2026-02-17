@@ -76,7 +76,7 @@ export const TableSessionModal: React.FC<TableSessionModalProps> = ({
         </Button>
       )}
       {session.payment_status === 'complete' && (
-        <Button variant="success" onClick={handleCompleteSession}>
+        <Button variant="primary" onClick={handleCompleteSession}>
           Complete Session
         </Button>
       )}
@@ -94,13 +94,13 @@ export const TableSessionModal: React.FC<TableSessionModalProps> = ({
       <div className={`${styles.tableSessionModal} ${className}`}>
         {loading && (
           <div className={styles.loading}>
-            <Typography variant="body">Loading session...</Typography>
+            <Typography variant="body-medium">Loading session...</Typography>
           </div>
         )}
 
         {error && (
           <div className={styles.error}>
-            <Typography variant="body" className={styles.errorText}>
+            <Typography variant="body-medium" className={styles.errorText}>
               {error}
             </Typography>
           </div>
@@ -110,18 +110,18 @@ export const TableSessionModal: React.FC<TableSessionModalProps> = ({
           <>
             <div className={styles.sessionInfo}>
               <div className={styles.infoRow}>
-                <Typography variant="body">
+                <Typography variant="body-medium">
                   <strong>Guests:</strong> {session.guest_count}
                 </Typography>
                 <SessionTimer startTime={session.seated_at} />
               </div>
               {session.server_name && (
-                <Typography variant="body">
+                <Typography variant="body-medium">
                   <strong>Server:</strong> {session.server_name}
                 </Typography>
               )}
               <div className={styles.paymentStatus}>
-                <Typography variant="body">
+                <Typography variant="body-medium">
                   <strong>Payment Status:</strong>
                 </Typography>
                 <span className={`${styles.badge} ${styles[session.payment_status]}`}>
@@ -165,7 +165,7 @@ export const TableSessionModal: React.FC<TableSessionModalProps> = ({
 
         {!session && !loading && !error && (
           <div className={styles.emptyState}>
-            <Typography variant="body">
+            <Typography variant="body-medium">
               No active session for this table.
             </Typography>
           </div>

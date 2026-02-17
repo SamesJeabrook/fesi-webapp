@@ -1,7 +1,7 @@
 export interface InputProps {
   id: string;
   name?: string;
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search';
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'date';
   value?: string;
   defaultValue?: string;
   placeholder?: string;

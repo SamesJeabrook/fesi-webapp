@@ -51,7 +51,7 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onTabChange, children, cla
         {React.Children.map(children, child => {
           if (!React.isValidElement(child)) return null;
           // Only render Tab components with matching tabKey
-          if (child.type === Tab && child.props.tabKey === activeTab) {
+          if (child.type === Tab && (child.props as any).tabKey === activeTab) {
             return child;
           }
           return null;

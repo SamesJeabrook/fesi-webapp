@@ -132,7 +132,7 @@
   }
 }
 
-@media (min-width: $breakpoint-md) {
+@include breakpoint(md) {
   .confirmation {
     &__actions {
       flex-direction: row;

@@ -11,6 +11,7 @@ const statusConfig = {
   ready: { label: 'Ready', color: 'success', icon: '🔔' },
   delivered: { label: 'Completed', color: 'success', icon: '✨' },
   cancelled: { label: 'Cancelled', color: 'error', icon: '❌' },
+  confirmed: { label: 'Confirmed', color: 'info', icon: '✅' },
 };
 
 export const PublicOrderCard: React.FC<PublicOrderCardProps> = ({

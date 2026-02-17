@@ -139,7 +139,7 @@ export const POSPaymentQR: React.FC<POSPaymentQRProps> = ({
 
       {timeRemaining === 0 && (
         <div className={styles.expired}>
-          <Typography variant="body-medium" color="error">
+          <Typography variant="body-medium">
             QR code expired. Please generate a new payment link.
           </Typography>
         </div>

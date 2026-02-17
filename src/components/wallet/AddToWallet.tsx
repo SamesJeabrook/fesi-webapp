@@ -4,7 +4,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import api from '@/services/api';
+import api from '@/utils/api';
 
 interface AddToWalletProps {
   orderId: string;
@@ -42,12 +42,14 @@ export const AddToWallet: React.FC<AddToWalletProps> = ({
     setError(null);
 
     try {
-      const response = await api.get(`/api/wallet/order/${orderId}/apple`, {
-        responseType: 'blob'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/wallet/order/${orderId}/apple`, {
+        credentials: 'include'
       });
-
-      // Create download link
-      const blob = new Blob([response.data], { type: 'application/vnd.apple.pkpass' });
+      
+      if (!response.ok) throw new Error('Failed to download pass');
+      
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -69,8 +71,8 @@ export const AddToWallet: React.FC<AddToWalletProps> = ({
     setError(null);
 
     try {
-      const response = await api.get(`/api/wallet/order/${orderId}/google`);
-      const { saveUrl } = response.data;
+      const response = await api.get<{ saveUrl: string }>(`/api/wallet/order/${orderId}/google`);
+      const { saveUrl } = response;
 
       // Open Google Pay save URL
       window.open(saveUrl, '_blank', 'noopener,noreferrer');

@@ -109,6 +109,7 @@ export default function AdminMerchantAnalyticsPage() {
 
   return (
     <AnalyticsPageTemplate
+      merchantId={merchantId}
       merchantName={merchantName}
       overviewStats={overviewStats}
       recentEvents={events}
