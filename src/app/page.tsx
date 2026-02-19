@@ -2,7 +2,11 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Typography } from '@/components/atoms/Typography';
+import { Button } from '@/components/atoms/Button';
+import { Card } from '@/components/atoms/Card';
+import styles from './page.module.scss';
 
 export default function HomePage() {
   const router = useRouter();
@@ -25,103 +29,171 @@ export default function HomePage() {
   }, [router]);
 
   return (
-    <main className="min-h-screen bg-neutral-50">
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-12">
-          <Typography as="h1" variant="heading-1" className="mb-4 text-neutral-900">
-            Welcome to Fesi
+    <main className={styles.homepage}>
+      {/* Hero Section */}
+      <section className={styles.hero}>
+        <div className={styles.hero__content}>
+          <Typography as="h1" variant="heading-1" className={styles.hero__title}>
+            Fesi
           </Typography>
-          <Typography variant="body-large" className="text-neutral-600 max-w-2xl mx-auto">
-            Your favorite local restaurants, delivered to your door. 
-            Browse menus, customize your order, and track delivery in real-time.
+          <Typography variant="heading-3" className={styles.hero__subtitle}>
+            Empowering Food & Beverage Merchants
           </Typography>
-        </header>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🍕</span>
-            </div>
-            <Typography as="h3" variant="heading-5" className="mb-2 text-neutral-900">
-              Browse Restaurants
-            </Typography>
-            <Typography variant="body-medium" className="text-neutral-600">
-              Discover local restaurants and explore their menus
-            </Typography>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🛒</span>
-            </div>
-            <Typography as="h3" variant="heading-5" className="mb-2 text-neutral-900">
-              Customize Orders
-            </Typography>
-            <Typography variant="body-medium" className="text-neutral-600">
-              Add items to cart and customize to your preferences
-            </Typography>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">🚚</span>
-            </div>
-            <Typography as="h3" variant="heading-5" className="mb-2 text-neutral-900">
-              Fast Delivery
-            </Typography>
-            <Typography variant="body-medium" className="text-neutral-600">
-              Track your order in real-time until it reaches your door
-            </Typography>
-          </div>
-        </div>
-
-        <div className="text-center mt-12">
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-            <a 
-              href="/customer/signup"
-              className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg hover:bg-primary-700 transition-colors font-medium"
-            >
-              Sign Up as Customer
-            </a>
-            <a 
-              href="/vendors"
-              className="inline-block bg-white border-2 border-primary-600 text-primary-600 px-8 py-3 rounded-lg hover:bg-primary-50 transition-colors font-medium"
-            >
-              Browse Vendors
-            </a>
-            <a 
-              href="/customer/login"
-              className="inline-block text-primary-600 px-8 py-3 rounded-lg hover:bg-primary-50 transition-colors font-medium"
-            >
-              Log In
-            </a>
-          </div>
-
-          <div className="mb-8">
-            <Typography variant="body-medium" className="text-neutral-600 mb-3">
-              Are you a restaurant or vendor?
-            </Typography>
-            <a 
-              href="/merchant/onboarding"
-              className="inline-block bg-secondary-600 text-white px-8 py-3 rounded-lg hover:bg-secondary-700 transition-colors font-medium"
-            >
-              Become a Merchant
-            </a>
-          </div>
+          <Typography variant="body-large" className={styles.hero__description}>
+            Complete point-of-sale and order management platform designed for restaurants, 
+            cafes, food trucks, and event vendors. Accept online orders with real-time tracking, 
+            streamline operations, and deliver exceptional customer experiences. Free to get started.
+          </Typography>
           
-          <Typography variant="body-medium" className="text-neutral-500 mb-4">
-            Components available in Storybook for development
-          </Typography>
-          <a 
-            href="http://localhost:6006" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="inline-block bg-neutral-200 text-neutral-700 px-6 py-2 rounded-lg hover:bg-neutral-300 transition-colors text-sm"
-          >
-            View Storybook Components
-          </a>
+          <div className={styles.hero__actions}>
+            <Link href="/merchant/onboarding">
+              <Button variant="primary" size="lg">
+                Get Started Free
+              </Button>
+            </Link>
+            <Link href="/merchant/login">
+              <Button variant="outline" size="lg">
+                Merchant Login
+              </Button>
+            </Link>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Features Section */}
+      <section className={styles.features}>
+        <div className={styles.features__container}>
+          <Typography as="h2" variant="heading-2" className={styles.features__heading}>
+            Everything You Need to Run Your Business
+          </Typography>
+          
+          <div className={styles.features__grid}>
+            <Card variant="elevated" padding="lg" className={styles.featureCard}>
+              <div className={styles.featureCard__icon}>💳</div>
+              <Typography as="h3" variant="heading-4" className={styles.featureCard__title}>
+                Point of Sale
+              </Typography>
+              <Typography variant="body-medium" className={styles.featureCard__description}>
+                Fast, intuitive POS system with table service, quick orders, and split payments. 
+                Perfect for busy service environments.
+              </Typography>
+            </Card>
+
+            <Card variant="elevated" padding="lg" className={styles.featureCard}>
+              <div className={styles.featureCard__icon}>📊</div>
+              <Typography as="h3" variant="heading-4" className={styles.featureCard__title}>
+                Real-Time Analytics
+              </Typography>
+              <Typography variant="body-medium" className={styles.featureCard__description}>
+                Track sales, popular items, and customer preferences. Make data-driven decisions 
+                to grow your business.
+              </Typography>
+            </Card>
+
+            <Card variant="elevated" padding="lg" className={styles.featureCard}>
+              <div className={styles.featureCard__icon}>📱</div>
+              <Typography as="h3" variant="heading-4" className={styles.featureCard__title}>
+                Multi-Platform Orders
+              </Typography>
+              <Typography variant="body-medium" className={styles.featureCard__description}>
+                Accept orders from customers in-person, via QR codes, or through your digital menu. 
+                All in one seamless system.
+              </Typography>
+            </Card>
+
+            <Card variant="elevated" padding="lg" className={styles.featureCard}>
+              <div className={styles.featureCard__icon}>🎫</div>
+              <Typography as="h3" variant="heading-4" className={styles.featureCard__title}>
+                Event Management
+              </Typography>
+              <Typography variant="body-medium" className={styles.featureCard__description}>
+                Perfect for festivals, markets, and events. Manage multiple locations and track 
+                performance across venues.
+              </Typography>
+            </Card>
+
+            <Card variant="elevated" padding="lg" className={styles.featureCard}>
+              <div className={styles.featureCard__icon}>📦</div>
+              <Typography as="h3" variant="heading-4" className={styles.featureCard__title}>
+                Inventory Control
+              </Typography>
+              <Typography variant="body-medium" className={styles.featureCard__description}>
+                Real-time stock tracking, low stock alerts, and automated menu updates. 
+                Never oversell out-of-stock items.
+              </Typography>
+            </Card>
+
+            <Card variant="elevated" padding="lg" className={styles.featureCard}>
+              <div className={styles.featureCard__icon}>💰</div>
+              <Typography as="h3" variant="heading-4" className={styles.featureCard__title}>
+                Integrated Payments
+              </Typography>
+              <Typography variant="body-medium" className={styles.featureCard__description}>
+                Secure payment processing with Stripe. Accept cards, contactless, and digital wallets 
+                with competitive rates.
+              </Typography>
+            </Card>
+
+            <Card variant="elevated" padding="lg" className={styles.featureCard}>
+              <div className={styles.featureCard__icon}>👥</div>
+              <Typography as="h3" variant="heading-4" className={styles.featureCard__title}>
+                Staff Management
+              </Typography>
+              <Typography variant="body-medium" className={styles.featureCard__description}>
+                Create staff accounts with custom permissions and PIN login. Track performance 
+                and manage your team efficiently.
+              </Typography>
+            </Card>
+
+            <Card variant="elevated" padding="lg" className={styles.featureCard}>
+              <div className={styles.featureCard__icon}>📅</div>
+              <Typography as="h3" variant="heading-4" className={styles.featureCard__title}>
+                Table Reservations
+              </Typography>
+              <Typography variant="body-medium" className={styles.featureCard__description}>
+                Manage bookings with an integrated reservation system. Track table availability, 
+                customer details, and reduce no-shows.
+              </Typography>
+            </Card>
+
+            <Card variant="elevated" padding="lg" className={styles.featureCard}>
+              <div className={styles.featureCard__icon}>🍽️</div>
+              <Typography as="h3" variant="heading-4" className={styles.featureCard__title}>
+                Flexible Menu System
+              </Typography>
+              <Typography variant="body-medium" className={styles.featureCard__description}>
+                Digital menus with unlimited customization options, modifiers, and variants. 
+                Update pricing and availability instantly.
+              </Typography>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className={styles.cta}>
+        <div className={styles.cta__content}>
+          <Typography as="h2" variant="heading-2" className={styles.cta__title}>
+            Ready to Transform Your Business?
+          </Typography>
+          <Typography variant="body-large" className={styles.cta__description}>
+            Take control with Fesi. 
+            Accept online orders, track sales in real-time, and grow your revenue. Start for free today.
+          </Typography>
+          <div className={styles.cta__actions}>
+            <Link href="/merchant/onboarding">
+              <Button variant="primary" size="lg">
+                Get started for free
+              </Button>
+            </Link>
+            <Link href="/merchant/login">
+              <Button variant="ghost" size="lg">
+                Sign In
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
