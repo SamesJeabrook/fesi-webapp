@@ -13,6 +13,26 @@ export const metadata: Metadata = {
   description: 'Order food from your favorite local restaurants',
   keywords: ['food delivery', 'restaurant', 'ordering', 'takeaway'],
   authors: [{ name: 'James Seabrook' }],
+  openGraph: {
+    title: 'Fesi - Food Ordering Platform',
+    description: 'Order food from your favorite local restaurants',
+    images: [
+      {
+        url: '/images/Fesi-logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Fesi Logo',
+      },
+    ],
+    siteName: 'Fesi',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Fesi - Food Ordering Platform',
+    description: 'Order food from your favorite local restaurants',
+    images: ['/images/Fesi-logo.png'],
+  },
 };
 
 export const viewport: Viewport = {
