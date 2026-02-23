@@ -34,8 +34,8 @@ export const AddSubItemModal: React.FC<AddSubItemModalProps> = ({
     }
     
     const price = parseFloat(formData.additional_price);
-    if (isNaN(price) || price < 0) {
-      newErrors.additional_price = 'Price must be a valid positive number';
+    if (isNaN(price)) {
+      newErrors.additional_price = 'Price must be a valid number';
     }
     
     setErrors(newErrors);
@@ -108,11 +108,10 @@ export const AddSubItemModal: React.FC<AddSubItemModalProps> = ({
             label="Additional Price (£)"
             type="number"
             step="0.01"
-            min="0"
             value={formData.additional_price}
             onChange={(e) => setFormData({ ...formData, additional_price: e.target.value })}
             error={errors.additional_price}
-            helpText="Enter 0.00 for no additional charge"
+            helpText="Enter 0.00 for no change, negative values for discounts (e.g., -2.00)"
           />
         </div>
 

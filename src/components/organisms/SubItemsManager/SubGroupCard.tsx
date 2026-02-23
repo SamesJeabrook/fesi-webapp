@@ -132,7 +132,7 @@ const ItemEditForm: React.FC<{
           step="0.01"
           value={formData.additional_price}
           onChange={(e) => setFormData({ ...formData, additional_price: e.target.value })}
-          helpText="Enter 0 for no additional charge"
+          helpText="Enter 0 for no change, negative values for discounts (e.g., -2.00)"
           size="md"
         />
       </div>
@@ -281,7 +281,13 @@ export const SubGroupCard: React.FC<SubGroupCardProps> = ({
                     ) : (
                       <EditableListItem
                         title={item.name}
-                        subtitle={item.additional_price > 0 ? `+£${(item.additional_price / 100).toFixed(2)}` : 'No additional charge'}
+                        subtitle={
+                          item.additional_price === 0 
+                            ? 'No additional charge' 
+                            : item.additional_price > 0 
+                              ? `+£${(item.additional_price / 100).toFixed(2)}` 
+                              : `-£${Math.abs(item.additional_price / 100).toFixed(2)}`
+                        }
                         badges={[
                           {
                             text: item.is_active ? 'Active' : 'Inactive',
