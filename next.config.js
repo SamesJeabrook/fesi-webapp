@@ -10,7 +10,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.API_URL || 'http://localhost:3001'}/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/:path*`,
       },
     ];
   },
@@ -55,15 +55,14 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://*.auth0.com https://api.stripe.com https://api.mapbox.com https://events.mapbox.com " + (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'),
+              "connect-src 'self' https://*.auth0.com https://api.stripe.com https://api.mapbox.com https://events.mapbox.com wss://*.railway.app https://*.railway.app " + (process.env.NEXT_PUBLIC_API_URL || ''),
               "frame-src 'self' https://*.auth0.com https://js.stripe.com https://hooks.stripe.com",
               "worker-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
-              "frame-ancestors 'none'",
-              "upgrade-insecure-requests"
-            ].join('; ')
+              "frame-ancestors 'none'"
+            ].filter(Boolean).join('; ')
           }
         ],
       },
