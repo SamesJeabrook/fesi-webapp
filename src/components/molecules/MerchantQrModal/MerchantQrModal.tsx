@@ -37,7 +37,7 @@ export const MerchantQrModal: React.FC<MerchantQrModalProps> = ({ merchant, open
   useEffect(() => {
     if (!merchant) return;
     let objectUrl: string | null = null;
-    const qrValue = `${process.env.NEXT_PUBLIC_WEBAPP_URL || 'http://localhost:3000'}/menu/${merchant.id}`;
+    const qrValue = `${process.env.NEXT_PUBLIC_WEBAPP_URL || 'http://localhost:3000'}/vendors/${merchant.id}`;
     const qrCode = new QRCodeStyling({
       width: QR_SIZE,
       height: QR_SIZE,

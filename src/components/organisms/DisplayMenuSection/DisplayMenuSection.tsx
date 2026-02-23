@@ -49,8 +49,8 @@ export const DisplayMenuSection: React.FC<DisplayMenuSectionProps> = ({
     const orderUrl = `${window.location.origin}/merchant/${merchantId}/order`;
     
     const qrCode = new QRCodeStyling({
-      width: 150,
-      height: 150,
+      width: 120,
+      height: 120,
       data: orderUrl,
       image: '/images/Fesi-logo.png',
       imageOptions: {
