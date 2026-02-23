@@ -52,7 +52,7 @@ export const DisplayMenuSection: React.FC<DisplayMenuSectionProps> = ({
       width: 150,
       height: 150,
       data: orderUrl,
-      image: '/images/fesi-logo.png',
+      image: '/images/Fesi-logo.png',
       imageOptions: {
         crossOrigin: 'anonymous',
         imageSize: 0.4,

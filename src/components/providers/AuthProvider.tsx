@@ -95,12 +95,24 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     authorizationParams.audience = audience;
   }
 
+  // Handle Auth0 redirect callback - preserve the returnTo URL
+  const onRedirectCallback = (appState?: any) => {
+    console.log('Auth0 redirect callback - appState:', appState);
+    if (appState?.returnTo) {
+      console.log('Setting postLoginRedirect to:', appState.returnTo);
+      sessionStorage.setItem('postLoginRedirect', appState.returnTo);
+    }
+    // Navigate to the returnTo path or homepage
+    window.history.replaceState({}, document.title, window.location.pathname);
+  };
+
   return (
     <Auth0Provider
       domain={domain}
       clientId={clientId}
       authorizationParams={authorizationParams}
       cacheLocation="localstorage"
+      onRedirectCallback={onRedirectCallback}
     >
       <DevAuthWrapper>
         {children}

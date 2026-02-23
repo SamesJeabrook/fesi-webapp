@@ -54,7 +54,7 @@ export function TableQrCodes({ merchantId, merchantUsername }: TableQrCodesProps
         width: QR_SIZE,
         height: QR_SIZE,
         data: qrValue,
-        image: '/images/fesi-logo.png',
+        image: '/images/Fesi-logo.png',
         imageOptions: {
           crossOrigin: 'anonymous',
           imageSize: 0.4,

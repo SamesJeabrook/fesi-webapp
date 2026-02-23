@@ -34,7 +34,7 @@ export const POSPaymentQR: React.FC<POSPaymentQRProps> = ({
       width: QR_SIZE,
       height: QR_SIZE,
       data: checkoutUrl,
-      image: '/images/fesi-logo.png',
+      image: '/images/Fesi-logo.png',
       imageOptions: {
         crossOrigin: 'anonymous',
         imageSize: 0.4,
