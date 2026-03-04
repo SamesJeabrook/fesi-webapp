@@ -20,6 +20,7 @@ interface DashboardItem {
   color: string;
   showWhen?: (merchant: any) => boolean;
   requireFeature?: string;
+  dataTour?: string;
 }
 
 interface DashboardSection {
@@ -39,7 +40,8 @@ const dashboardSections: DashboardSection[] = [
         icon: '💳',
         href: '/merchant/admin/pos',
         color: 'primary',
-        requireFeature: 'pos_system'
+        requireFeature: 'pos_system',
+        dataTour: 'pos-card'
       },
       {
         title: 'Table Service',
@@ -55,7 +57,8 @@ const dashboardSections: DashboardSection[] = [
         description: 'View and manage incoming orders',
         icon: '📋',
         href: '/merchant/admin/orders',
-        color: 'primary'
+        color: 'primary',
+        dataTour: 'orders-card'
       },
       {
         title: 'Customer Display',
@@ -105,7 +108,8 @@ const dashboardSections: DashboardSection[] = [
         icon: '🎉',
         href: '/merchant/admin/events',
         color: 'secondary',
-        showWhen: (merchant: any) => merchant?.operating_mode !== 'static'
+        showWhen: (merchant: any) => merchant?.operating_mode !== 'static',
+        dataTour: 'events-card'
       },
     ]
   },
@@ -139,28 +143,32 @@ const dashboardSections: DashboardSection[] = [
         description: 'Add, edit and organize menu categories',
         icon: '📁',
         href: '/merchant/admin/menu/categories',
-        color: 'success'
+        color: 'success',
+        dataTour: 'menu-categories-card'
       },
       {
         title: 'Menu Items',
         description: 'Manage your menu items and pricing',
         icon: '🍽️',
         href: '/merchant/admin/menu/items',
-        color: 'warning'
+        color: 'warning',
+        dataTour: 'menu-items-card'
       },
       {
         title: 'Menus',
         description: 'Create and manage menus for your events',
         icon: '📋',
         href: '/merchant/admin/menu/menus',
-        color: 'primary'
+        color: 'primary',
+        dataTour: 'menus-card'
       },
       {
         title: 'Sub-Items & Options',
         description: 'Configure customizations and add-ons',
         icon: '🔧',
         href: '/merchant/admin/menu/sub-items',
-        color: 'info'
+        color: 'info',
+        dataTour: 'sub-items-card'
       },
       {
         title: 'Subscription & Billing',
@@ -251,7 +259,7 @@ export default function MerchantAdminDashboard() {
 
   return (
     <ProtectedRoute requireRole={['merchant']}>
-      <div className={styles.dashboard}>
+      <div className={styles.dashboard} data-tour="dashboard">
         <div className={styles.dashboard__header}>
           <Typography variant="heading-2">
             Merchant Dashboard
@@ -326,7 +334,10 @@ export default function MerchantAdminDashboard() {
                   
                   return (
                     <Link key={item.href} href={href} className={styles.dashboard__link}>
-                      <Card className={`${styles.dashboard__card} ${styles[`dashboard__card--${item.color}`]}`}>
+                      <Card 
+                        className={`${styles.dashboard__card} ${styles[`dashboard__card--${item.color}`]}`}
+                        data-tour={item.dataTour}
+                      >
                         <div className={styles.dashboard__cardIcon}>
                           {item.icon}
                         </div>
@@ -349,6 +360,22 @@ export default function MerchantAdminDashboard() {
             </div>
           );
         })}
+
+        <div className={styles.dashboard__section} data-tour="mobile-app-info">
+          <Card className={styles.dashboard__infoCard}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ fontSize: '3rem' }}>📱</div>
+              <div>
+                <Typography variant="heading-5" style={{ marginBottom: '0.5rem' }}>
+                  Download the Fesi POS Mobile App
+                </Typography>
+                <Typography variant="body-medium" style={{ color: 'var(--color-neutral-600)' }}>
+                  Accept contactless payments directly on your phone using Stripe Tap to Pay. Available for iOS and Android.
+                </Typography>
+              </div>
+            </div>
+          </Card>
+        </div>
 
         <div className={styles.dashboard__footer}>
           <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>

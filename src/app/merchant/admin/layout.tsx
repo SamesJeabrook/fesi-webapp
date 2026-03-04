@@ -2,6 +2,8 @@
 
 import { AdminHeader, Navigation } from '@/components/molecules';
 import { AuthGuard } from '@/components/auth/AuthGuard';
+import { TourProvider } from '@/contexts/TourContext';
+import { HelpButton } from '@/components/atoms';
 
 export default function MerchantAdminLayout({
   children,
@@ -10,9 +12,12 @@ export default function MerchantAdminLayout({
 }) {
   return (
     <AuthGuard requireRole="merchant" loginPath="/merchant/login">
-      <Navigation />
-      <AdminHeader />
-      {children}
+      <TourProvider>
+        <Navigation />
+        <AdminHeader />
+        {children}
+        <HelpButton />
+      </TourProvider>
     </AuthGuard>
   );
 }
