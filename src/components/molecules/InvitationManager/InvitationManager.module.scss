@@ -1,0 +1,134 @@
+.invitationManager {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+}
+
+.header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.label {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.textarea {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  }
+
+  &:disabled {
+    background: var(--color-background);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.inputError {
+  border-color: var(--color-danger);
+
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+}
+
+.helpText {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  margin-top: var(--spacing-xs);
+
+  &:has(+ *) {
+    margin-bottom: var(--spacing-xs);
+  }
+}
+
+.errorText {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  margin-top: var(--spacing-xs);
+}
+
+.errorBanner {
+  background: var(--color-danger-light);
+  border-left: 3px solid var(--color-danger);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+
+  p {
+    margin: 0;
+    color: var(--color-danger-dark);
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.infoBox {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-info-light);
+  border-left: 3px solid var(--color-info);
+  border-radius: var(--border-radius-sm);
+
+  p {
+    margin: 0 0 var(--spacing-sm);
+    color: var(--color-info-dark);
+    font-size: 0.875rem;
+  }
+}
+
+.infoList {
+  margin: var(--spacing-sm) 0;
+  padding-left: var(--spacing-lg);
+  color: var(--color-info-dark);
+  font-size: 0.875rem;
+
+  li {
+    margin-bottom: var(--spacing-xs);
+  }
+}
+
+@media (max-width: 768px) {
+  .invitationManager {
+    padding: var(--spacing-md);
+  }
+
+  .actions {
+    button {
+      width: 100%;
+    }
+  }
+}

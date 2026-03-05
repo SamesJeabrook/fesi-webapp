@@ -54,6 +54,13 @@ const dashboardSections: DashboardSection[] = [
     description: 'Platform-wide operations and analytics',
     items: [
       {
+        title: 'Group Events',
+        description: 'Organize collaborative events with multiple merchants',
+        icon: '🤝',
+        href: '/admin/group-events',
+        color: 'primary'
+      },
+      {
         title: 'Global Events',
         description: 'View and manage events across all merchants',
         icon: '🎉',
@@ -107,14 +114,14 @@ const dashboardSections: DashboardSection[] = [
 
 export default function AdminDashboard() {
   return (
-    <ProtectedRoute requireRole={['admin']}>
+    <ProtectedRoute requireRole={['admin', 'organization']}>
       <div className={styles.dashboard}>
         <div className={styles.dashboard__header}>
           <Typography variant="heading-2">
-            Admin Dashboard
+            Organization Dashboard
           </Typography>
           <Typography variant="body-large" style={{ color: 'var(--color-text-secondary)' }}>
-            Manage your platform, merchants, and system configuration
+            Organize group events and collaborate with merchants
           </Typography>
         </div>
 

@@ -6,6 +6,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button } from '@/components/atoms';
 import { Card } from '@/components/atoms/Card';
 import { MerchantQrModal } from '@/components/molecules/MerchantQrModal/MerchantQrModal';
+import { MyInvitations } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getMerchantIdFromDevToken, getAuthToken } from '@/utils/devAuth';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -110,6 +111,26 @@ const dashboardSections: DashboardSection[] = [
         color: 'secondary',
         showWhen: (merchant: any) => merchant?.operating_mode !== 'static',
         dataTour: 'events-card'
+      },
+    ]
+  },
+  {
+    title: 'Collaboration',
+    description: 'Partner with other merchants',
+    items: [
+      {
+        title: 'My Invitations',
+        description: 'View and respond to group event invitations',
+        icon: '✉️',
+        href: '/merchant/admin/invitations',
+        color: 'info'
+      },
+      {
+        title: 'Group Events',
+        description: 'Organize events with other merchants',
+        icon: '🤝',
+        href: '/merchant/admin/group-events',
+        color: 'primary'
       },
     ]
   },
@@ -297,6 +318,9 @@ export default function MerchantAdminDashboard() {
             </div>
           )}
         </div>
+
+        {/* My Invitations Widget */}
+        <MyInvitations maxDisplay={2} />
 
         {dashboardSections.map((section) => {
           const visibleItems = section.items.filter((item) => {

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth0 } from '@auth0/auth0-react';
 import Link from 'next/link';
 import { Typography } from '@/components/atoms/Typography';
 import { Button } from '@/components/atoms/Button';
@@ -10,6 +11,7 @@ import styles from './page.module.scss';
 
 export default function HomePage() {
   const router = useRouter();
+  const { isAuthenticated, user, isLoading } = useAuth0();
 
   // Check if user just logged out and should be redirected
   useEffect(() => {
@@ -20,13 +22,30 @@ export default function HomePage() {
       return;
     }
 
-    // Check if user just logged in and should be redirected (e.g., after merchant onboarding)
+    // Check if user just logged in and should be redirected
     const postLoginRedirect = sessionStorage.getItem('postLoginRedirect');
     if (postLoginRedirect) {
       sessionStorage.removeItem('postLoginRedirect');
       router.push(postLoginRedirect);
+      return;
     }
-  }, [router]);
+
+    // Auto-redirect authenticated users to their dashboard
+    if (isAuthenticated && user && !isLoading) {
+      const userRoles = user['https://fesi.app/roles'] || [];
+      console.log('Homepage - User authenticated with roles:', userRoles);
+      
+      // Redirect based on role
+      if (userRoles.includes('merchant')) {
+        console.log('Redirecting merchant to dashboard');
+        router.push('/merchant/admin');
+      } else if (userRoles.includes('organization') || userRoles.includes('admin')) {
+        console.log('Redirecting organization/admin to dashboard');
+        router.push('/admin');
+      }
+      // If no recognized role, stay on homepage
+    }
+  }, [router, isAuthenticated, user, isLoading]);
 
   return (
     <main className={styles.homepage}>

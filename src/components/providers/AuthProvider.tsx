@@ -95,15 +95,26 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     authorizationParams.audience = audience;
   }
 
-  // Handle Auth0 redirect callback - preserve the returnTo URL
+  // Handle Auth0 redirect callback - immediately redirect to target path
   const onRedirectCallback = (appState?: any) => {
     console.log('Auth0 redirect callback - appState:', appState);
+    
     if (appState?.returnTo) {
-      console.log('Setting postLoginRedirect to:', appState.returnTo);
-      sessionStorage.setItem('postLoginRedirect', appState.returnTo);
+      console.log('Redirecting to:', appState.returnTo);
+      // Immediately redirect to the target path
+      window.location.href = appState.returnTo;
+    } else {
+      // Check if there's a stored redirect in sessionStorage
+      const storedRedirect = sessionStorage.getItem('postLoginRedirect');
+      if (storedRedirect) {
+        console.log('Redirecting to stored path:', storedRedirect);
+        sessionStorage.removeItem('postLoginRedirect');
+        window.location.href = storedRedirect;
+      } else {
+        // Default: redirect based on user role
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
-    // Navigate to the returnTo path or homepage
-    window.history.replaceState({}, document.title, window.location.pathname);
   };
 
   return (
