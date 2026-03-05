@@ -1,12 +1,15 @@
 import { Metadata } from 'next';
 
 interface Props {
-  params: {
+  params: Promise<{
     merchantId: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // Await params in Next.js 15
+  const { merchantId } = await params;
+  
   // You could fetch merchant data here for dynamic metadata
   // For now, using static metadata with Fesi logo
   
