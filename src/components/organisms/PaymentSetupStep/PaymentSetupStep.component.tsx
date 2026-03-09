@@ -49,39 +49,48 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
     setIsConnecting(true);
 
     try {
-      // TODO: Replace with actual Stripe Connect API call
-      // const response = await fetch('/api/stripe/connect', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ merchantId })
-      // });
-      // const data = await response.json();
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Mock response - replace with actual API integration
-      const mockAccountId = `acct_${Date.now()}`;
-      const mockStatus: 'active' | 'pending' = 'active';
-
-      setFormData(prev => ({
-        ...prev,
-        stripeAccountId: mockAccountId,
-        accountStatus: mockStatus,
-        bankAccountLast4: '4242' // Mock data
-      }));
-
-      if (errors.stripe) {
-        setErrors(prev => ({ ...prev, stripe: undefined }));
+      if (!merchantId) {
+        throw new Error('Merchant ID is required');
       }
 
-      // In production, redirect to Stripe Connect onboarding
-      // window.location.href = data.accountLink;
+      // Call the real Stripe onboarding API
+      const response = await fetch(`/api/payments/merchant/${merchantId}/stripe-onboarding`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}` // Adjust based on your auth implementation
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create Stripe account');
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.accountLinkUrl) {
+        // Store the account ID temporarily
+        setFormData(prev => ({
+          ...prev,
+          stripeAccountId: data.accountId,
+          accountStatus: 'pending'
+        }));
+
+        if (errors.stripe) {
+          setErrors(prev => ({ ...prev, stripe: undefined }));
+        }
+
+        // Redirect to Stripe Connect onboarding
+        window.location.href = data.accountLinkUrl;
+      } else {
+        throw new Error('Invalid response from server');
+      }
     } catch (error) {
       console.error('Stripe Connect error:', error);
       setErrors(prev => ({ 
         ...prev, 
-        stripe: 'Failed to connect to Stripe. Please try again.' 
+        stripe: error instanceof Error ? error.message : 'Failed to connect to Stripe. Please try again.' 
       }));
     } finally {
       setIsConnecting(false);
