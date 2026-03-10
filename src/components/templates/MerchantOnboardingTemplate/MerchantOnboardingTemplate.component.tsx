@@ -72,11 +72,11 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
           address: updatedFormData.businessDetails?.address,
           categories: updatedFormData.businessDetails?.categories,
           
-          hygieneRating: data.hygieneRating,
-          hygieneRatingDate: data.hygieneRatingDate,
-          foodSafetyCertificate: data.foodSafetyCertificate,
-          publicLiabilityInsurance: data.publicLiabilityInsurance,
-          allergenTrainingCertificate: data.allergenTrainingCertificate,
+          hygieneRating: data?.hygieneRating,
+          hygieneRatingDate: data?.hygieneRatingDate,
+          foodSafetyCertificate: data?.foodSafetyCertificate,
+          publicLiabilityInsurance: data?.publicLiabilityInsurance,
+          allergenTrainingCertificate: data?.allergenTrainingCertificate,
           
           // Mark as incomplete onboarding - will be updated after payment setup
           acceptedTerms: false,
@@ -142,9 +142,9 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
           publicLiabilityInsurance: completeData.compliance?.publicLiabilityInsurance,
           allergenTrainingCertificate: completeData.compliance?.allergenTrainingCertificate,
           
-          stripeAccountId: data.stripeAccountId,
-          acceptedTerms: data.acceptedTerms,
-          agreedToPaymentProcessing: data.agreedToPaymentProcessing,
+          stripeAccountId: data?.stripeAccountId,
+          acceptedTerms: data?.acceptedTerms,
+          agreedToPaymentProcessing: data?.agreedToPaymentProcessing,
         };
         
         const response = await fetch(`${apiUrl}/api/merchants/onboard`, {
