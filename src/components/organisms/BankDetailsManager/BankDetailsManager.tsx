@@ -44,12 +44,15 @@ export const BankDetailsManager: React.FC<BankDetailsManagerProps> = ({
 }) => {
   const { getAccessTokenSilently } = useAuth0();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [accountStatus, setAccountStatus] = useState<StripeAccountStatus | null>(null);
   const [isCreatingOnboardingLink, setIsCreatingOnboardingLink] = useState(false);
 
   const loadAccountStatus = async () => {
     try {
       setLoading(true);
+      console.log('📊 Loading account status for merchant:', merchantId);
+      
       const { getAuthToken } = await import('@/utils/devAuth');
       const token = await getAuthToken(getAccessTokenSilently);
 
@@ -61,6 +64,8 @@ export const BankDetailsManager: React.FC<BankDetailsManagerProps> = ({
         url.searchParams.append('merchantId', merchantId);
       }
 
+      console.log('🌐 Fetching from:', url.toString());
+
       const response = await fetch(url.toString(), {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -68,18 +73,27 @@ export const BankDetailsManager: React.FC<BankDetailsManagerProps> = ({
         },
       });
 
+      console.log('📥 Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to load bank account status');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('❌ API Error:', errorData);
+        throw new Error(errorData.error || 'Failed to load bank account status');
       }
 
       const data = await response.json();
+      console.log('✅ Account status loaded:', data);
       setAccountStatus(data.success ? data : null);
+      setError(null); // Clear any previous errors
     } catch (error) {
-      console.error('Failed to load account status:', error);
+      console.error('❌ Failed to load account status:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load bank details';
+      setError(errorMessage);
       if (onError) {
-        onError(error instanceof Error ? error.message : 'Failed to load bank details');
+        onError(errorMessage);
       }
     } finally {
+      console.log('🏁 Finished loading account status');
       setLoading(false);
     }
   };
@@ -156,6 +170,33 @@ export const BankDetailsManager: React.FC<BankDetailsManagerProps> = ({
     return (
       <div className={styles.loading}>
         <Typography variant="body-medium">Loading bank details...</Typography>
+        <Typography variant="body-small" className={styles.loadingSubtext}>
+          Merchant ID: {merchantId || 'Not provided'}
+        </Typography>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.error}>
+        <Typography variant="heading-4" as="h3">Bank Account Details</Typography>
+        <Card className={styles.errorCard}>
+          <Typography variant="body-medium" style={{ color: 'var(--color-danger, #ef4444)' }}>
+            ⚠️ Error loading bank details
+          </Typography>
+          <Typography variant="body-small" style={{ marginTop: '0.5rem' }}>
+            {error}
+          </Typography>
+          <div style={{ marginTop: '1rem' }}>
+            <Button 
+              variant="primary" 
+              onClick={loadAccountStatus}
+            >
+              Try Again
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }

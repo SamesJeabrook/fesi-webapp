@@ -48,6 +48,72 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
     setCurrentStep('compliance');
   };
 
+  const uploadComplianceDocuments = async (merchantIdToUse: string, token: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const compliance = formData.compliance;
+    
+    if (!compliance) return;
+
+    const documentsToUpload = [
+      { doc: compliance.foodSafetyCertificate, type: 'food_safety_certificate' },
+      { doc: compliance.publicLiabilityInsurance, type: 'insurance_certificate' },
+      { doc: compliance.allergenTrainingCertificate, type: 'allergen_information' },
+    ];
+
+    for (const { doc, type } of documentsToUpload) {
+      if (doc?.file) {
+        try {
+          console.log(`Uploading ${doc.name} for merchant ${merchantIdToUse}...`);
+          
+          // Upload to Cloudinary
+          const formData = new FormData();
+          formData.append('document', doc.file);
+          formData.append('merchantId', merchantIdToUse);
+          formData.append('documentType', type);
+
+          const uploadResponse = await fetch(`${apiUrl}/api/upload/compliance`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+            body: formData,
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Failed to upload ${doc.name}`);
+          }
+
+          const uploadResult = await uploadResponse.json();
+          console.log(`Uploaded ${doc.name} successfully:`, uploadResult);
+
+          // Save document record to database
+          const docResponse = await fetch(`${apiUrl}/api/merchants/${merchantIdToUse}/documents`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              document_type: type,
+              document_name: doc.name,
+              document_url: uploadResult.document?.cloudinaryUrl || uploadResult.document?.url,
+              expiry_date: doc.expiryDate ? doc.expiryDate.toISOString() : null,
+            }),
+          });
+
+          if (!docResponse.ok) {
+            console.error(`Failed to save document record for ${doc.name}`);
+          } else {
+            console.log(`Saved document record for ${doc.name}`);
+          }
+        } catch (error) {
+          console.error(`Error uploading ${doc.name}:`, error);
+          // Continue with other documents even if one fails
+        }
+      }
+    }
+  };
+
   const handleComplianceComplete = async (data: MerchantOnboardingData['compliance']) => {
     const updatedFormData = { ...formData, compliance: data };
     setFormData(updatedFormData);
@@ -74,9 +140,6 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
           
           hygieneRating: data?.hygieneRating,
           hygieneRatingDate: data?.hygieneRatingDate,
-          foodSafetyCertificate: data?.foodSafetyCertificate,
-          publicLiabilityInsurance: data?.publicLiabilityInsurance,
-          allergenTrainingCertificate: data?.allergenTrainingCertificate,
           
           // Mark as incomplete onboarding - will be updated after payment setup
           acceptedTerms: false,
@@ -98,7 +161,13 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
         }
         
         const result = await response.json();
-        setMerchantId(result.merchantId);
+        const createdMerchantId = result.merchantId;
+        setMerchantId(createdMerchantId);
+        
+        // Upload compliance documents now that we have merchantId
+        console.log('Uploading compliance documents...');
+        await uploadComplianceDocuments(createdMerchantId, token);
+        console.log('Compliance documents uploaded successfully');
         
         // Now move to payment step
         setCurrentStep('payment');

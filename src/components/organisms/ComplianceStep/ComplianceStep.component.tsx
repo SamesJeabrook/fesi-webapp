@@ -87,6 +87,7 @@ export const ComplianceStep: React.FC<ComplianceStepProps> = ({
       type: file.type,
       size: file.size,
       uploadedAt: new Date(),
+      file: file, // Store the actual File object for upload after merchant creation
     };
 
     if (field === 'additional') {

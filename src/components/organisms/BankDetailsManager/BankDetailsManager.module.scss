@@ -18,6 +18,24 @@
   color: var(--color-neutral-500);
 }
 
+.loadingSubtext {
+  margin-top: var(--spacing-2);
+  color: var(--color-neutral-400);
+  font-size: var(--font-size-xs);
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.errorCard {
+  padding: var(--spacing-6);
+  border: 2px solid var(--color-danger, #ef4444);
+  background: var(--color-danger-lightest, #fef2f2);
+}
+
 .statusCard {
   padding: var(--spacing-6);
 }

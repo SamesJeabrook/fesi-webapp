@@ -5,6 +5,7 @@ export interface ComplianceDocument {
   size: number;
   uploadedAt: Date;
   expiryDate?: Date;
+  file?: File; // Store actual File object for upload after merchant creation
 }
 
 export interface ComplianceData {
