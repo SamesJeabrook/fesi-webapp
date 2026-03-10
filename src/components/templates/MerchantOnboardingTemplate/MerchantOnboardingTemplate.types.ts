@@ -15,7 +15,7 @@ export type OnboardingStep = 'account' | 'business' | 'compliance' | 'payment';
 export interface MerchantOnboardingTemplateProps {
   initialData?: MerchantOnboardingData;
   initialStep?: OnboardingStep;
-  onComplete: (data: MerchantOnboardingData) => void;
+  onComplete: (data: MerchantOnboardingData, merchantId?: string) => void;
   loading?: boolean;
   className?: string;
 }

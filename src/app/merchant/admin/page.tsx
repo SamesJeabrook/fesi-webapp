@@ -6,7 +6,6 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button } from '@/components/atoms';
 import { Card } from '@/components/atoms/Card';
 import { MerchantQrModal } from '@/components/molecules/MerchantQrModal/MerchantQrModal';
-import { MyInvitations } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { getMerchantIdFromDevToken, getAuthToken } from '@/utils/devAuth';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -217,6 +216,7 @@ export default function MerchantAdminDashboard() {
   const [qrOpen, setQrOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isTogglingOpen, setIsTogglingOpen] = useState(false);
+  const [pendingInvitationsCount, setPendingInvitationsCount] = useState<number>(0);
 
   // Get merchant ID and data
   useEffect(() => {
@@ -251,6 +251,24 @@ export default function MerchantAdminDashboard() {
 
     fetchMerchantData();
   }, []);
+
+  // Fetch pending invitations count
+  useEffect(() => {
+    const fetchPendingInvitations = async () => {
+      try {
+        const response = await api.get('/api/invitations/me');
+        const invitations = response.data || [];
+        const pendingCount = invitations.filter((inv: any) => inv.status === 'pending').length;
+        setPendingInvitationsCount(pendingCount);
+      } catch (error) {
+        console.error('Error fetching invitations count:', error);
+      }
+    };
+
+    if (merchantId) {
+      fetchPendingInvitations();
+    }
+  }, [merchantId]);
 
   const toggleOpenStatus = async () => {
     if (!merchantId) return;
@@ -319,9 +337,6 @@ export default function MerchantAdminDashboard() {
           )}
         </div>
 
-        {/* My Invitations Widget */}
-        <MyInvitations maxDisplay={2} />
-
         {dashboardSections.map((section) => {
           const visibleItems = section.items.filter((item) => {
             // Check operating mode condition
@@ -356,6 +371,9 @@ export default function MerchantAdminDashboard() {
                   // Replace [merchantId] with actual merchantId
                   const href = item.href.replace('[merchantId]', merchantId || '');
                   
+                  // Check if this is the My Invitations item and has pending invitations
+                  const showBadge = item.title === 'My Invitations' && pendingInvitationsCount > 0;
+                  
                   return (
                     <Link key={item.href} href={href} className={styles.dashboard__link}>
                       <Card 
@@ -364,6 +382,11 @@ export default function MerchantAdminDashboard() {
                       >
                         <div className={styles.dashboard__cardIcon}>
                           {item.icon}
+                          {showBadge && (
+                            <span className={styles.dashboard__badge}>
+                              {pendingInvitationsCount}
+                            </span>
+                          )}
                         </div>
                         <div className={styles.dashboard__cardContent}>
                           <Typography variant="heading-5" className={styles.dashboard__cardTitle}>

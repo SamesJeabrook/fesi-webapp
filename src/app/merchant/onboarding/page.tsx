@@ -21,79 +21,27 @@ export default function MerchantOnboardingPage() {
     });
   };
 
-  const handleOnboardingComplete = async (data: MerchantOnboardingData) => {
+  const handleOnboardingComplete = async (data: MerchantOnboardingData, merchantId?: string) => {
     setLoading(true);
 
     try {
-      // Get Auth0 token
+      // The merchant is already created and updated by the template
+      // We just need to handle the redirect and re-auth logic
+      
+      if (!merchantId) {
+        throw new Error('Merchant ID not available');
+      }
+
+      // Get Auth0 token to check if reauth is needed
       const token = await getAccessTokenSilently();
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-      console.log('Submitting onboarding to:', `${apiUrl}/api/merchants/onboard`);
-      console.log('Auth0 User:', user);
+      // Check if Auth0 roles need to be updated by making a simple check
+      // The merchant creation should have updated roles, but we need to refresh the token
+      console.log('Onboarding complete - checking if reauth is required...');
       
-      const payload = {
-        // Account Setup (pre-filled from Auth0)
-        username: data.accountSetup?.username,
-        email: user?.email || data.accountSetup?.email,
-        name: user?.name || data.accountSetup?.name,
-        auth0Id: user?.sub, // Link to Auth0 account
-        
-        // Business Details
-        businessName: data.businessDetails?.businessName,
-        description: data.businessDetails?.description,
-        phoneNumber: data.businessDetails?.phoneNumber,
-        address: data.businessDetails?.address,
-        categories: data.businessDetails?.categories,
-        
-        // Compliance
-        hygieneRating: data.compliance?.hygieneRating,
-        hygieneRatingDate: data.compliance?.hygieneRatingDate,
-        foodSafetyCertificate: data.compliance?.foodSafetyCertificate,
-        publicLiabilityInsurance: data.compliance?.publicLiabilityInsurance,
-        allergenTrainingCertificate: data.compliance?.allergenTrainingCertificate,
-        
-        // Payment Setup
-        stripeAccountId: data.paymentSetup?.stripeAccountId,
-        acceptedTerms: data.paymentSetup?.acceptedTerms,
-        agreedToPaymentProcessing: data.paymentSetup?.agreedToPaymentProcessing,
-      };
-      
-      console.log('Payload:', payload);
-      
-      const response = await fetch(`${apiUrl}/api/merchants/onboard`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Include Auth0 token
-        },
-        body: JSON.stringify(payload),
-      });
-
-      console.log('Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error response:', errorData);
-        throw new Error(errorData.error || 'Failed to complete onboarding');
-      }
-
-      const result = await response.json();
-      console.log('Success:', result);
-      const merchantId = result.merchantId;
-
-      // If Auth0 roles were updated, we need to refresh the token
-      if (result.requiresReauth) {
-        console.log('Onboarding complete - refreshing authentication...');
-        // Store the destination for after re-login
-        sessionStorage.setItem('postLoginRedirect', `/merchant/admin?merchantId=${merchantId}&onboarding=complete`);
-        // Log out and redirect to reauth page which will trigger login
-        await logout({ logoutParams: { returnTo: `${window.location.origin}/reauth` } });
-        return;
-      }
-
-      // Redirect to merchant admin dashboard
-      router.push(`/merchant/admin?merchantId=${merchantId}&onboarding=complete`);
+      // For now, always do a reauth to pick up the new merchant role
+      sessionStorage.setItem('postLoginRedirect', `/merchant/admin?merchantId=${merchantId}&onboarding=complete`);
+      await logout({ logoutParams: { returnTo: `${window.location.origin}/reauth` } });
     } catch (error) {
       console.error('Onboarding error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to complete onboarding. Please try again.';

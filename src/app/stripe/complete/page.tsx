@@ -19,8 +19,8 @@ export default function StripeCompletePage() {
         // Still here? Show the message
       }, 1000);
     } else {
-      // Desktop - redirect to merchant dashboard
-      router.push('/merchant/dashboard');
+      // Desktop - redirect to merchant admin
+      router.push('/merchant/admin');
     }
   }, [router]);
 

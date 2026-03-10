@@ -31,7 +31,7 @@ export const MyInvitations: React.FC<MyInvitationsProps> = ({
       setError(null);
       
       // Fetch invitations for the current merchant
-      const response = await api.get('/api/invitations/my-invitations');
+      const response = await api.get('/api/invitations/me');
       
       // Filter and sort: pending first, then by invited_at desc
       const allInvitations = response.data || [];

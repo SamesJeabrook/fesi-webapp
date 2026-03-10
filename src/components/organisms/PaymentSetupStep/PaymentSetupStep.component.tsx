@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { Typography } from '@/components/atoms/Typography';
 import { PaymentSetupStepProps, PaymentSetupData } from './PaymentSetupStep.types';
 import styles from './PaymentSetupStep.module.scss';
@@ -11,6 +12,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
   className,
   merchantId,
 }) => {
+  const { getAccessTokenSilently } = useAuth0();
   const [formData, setFormData] = useState<PaymentSetupData>({
     stripeAccountId: initialData?.stripeAccountId,
     accountStatus: initialData?.accountStatus,
@@ -53,17 +55,33 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
         throw new Error('Merchant ID is required');
       }
 
+      // Get Auth0 token
+      const token = await getAccessTokenSilently();
+      
+      // Use the API base URL
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
       // Call the real Stripe onboarding API
-      const response = await fetch(`/api/payments/merchant/${merchantId}/stripe-onboarding`, {
+      const response = await fetch(`${apiUrl}/api/payments/merchant/${merchantId}/stripe-onboarding`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}` // Adjust based on your auth implementation
+          'Authorization': `Bearer ${token}`
         },
       });
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Handle Stripe Connect not enabled error specifically
+        if (errorData.errorType === 'connect_not_enabled') {
+          throw new Error(
+            'Stripe Connect is not yet enabled for this application. ' +
+            'The platform administrator needs to enable it in the Stripe Dashboard. ' +
+            'Please contact support for assistance.'
+          );
+        }
+        
         throw new Error(errorData.error || 'Failed to create Stripe account');
       }
 
