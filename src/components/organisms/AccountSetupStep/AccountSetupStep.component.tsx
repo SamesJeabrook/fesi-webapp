@@ -12,10 +12,20 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
   className,
 }) => {
   const { user } = useAuth0();
+  
+  // Helper to check if a string looks like an email
+  const looksLikeEmail = (str: string): boolean => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
+  };
+  
+  // Don't use user.name as default if it's actually an email address
+  const defaultName = initialData?.name || 
+    (user?.name && !looksLikeEmail(user.name) ? user.name : '');
+  
   const [formData, setFormData] = useState<AccountSetupData>({
     username: initialData?.username || '',
     email: initialData?.email || user?.email || '',
-    name: initialData?.name || user?.name || '',
+    name: defaultName,
   });
   const [errors, setErrors] = useState<Partial<Record<keyof AccountSetupData, string>>>({});
   const [isValidating, setIsValidating] = useState(false);
