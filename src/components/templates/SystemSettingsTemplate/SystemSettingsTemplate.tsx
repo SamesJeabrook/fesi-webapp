@@ -80,6 +80,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
       description: "",
       username: "",
       require_staff_login: false,
+      version: 0,
       // Add more fields as needed
     });
 
@@ -104,6 +105,7 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
           description: company.description || "",
           username: company.username || "",
           require_staff_login: company.require_staff_login || false,
+          version: company.version || 0,
         });
       }
     }, [company]);
@@ -276,13 +278,34 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
         const payload = {
           ...form,
           categoryIds: selectedTags.map(tag => tag.id),
-          version: company?.version,
         };
+        
+        console.log('Saving merchant settings:', { merchantId: company?.id, payload });
+        
         // API endpoint (assume company.id is available)
-        await api.put(`/api/merchants/${company?.id}`, payload);
+        const response = await api.put(`/api/merchants/${company?.id}`, payload);
+        
+        // Update company state with new version after successful save
+        if (response?.version) {
+          setForm(prev => ({ ...prev, version: response.version }));
+        }
+        
         setIsModalOpen(false);
+        
+        // Show success message
+        alert('Settings saved successfully!');
+        
+        // Optionally reload the page to refresh all data
+        window.location.reload();
       } catch (err: any) {
-        setSaveError(err.message || 'Unknown error');
+        console.error('Save error:', err);
+        
+        // Handle 409 conflict error specifically
+        if (err.response?.status === 409 || err.message?.includes('409') || err.message?.includes('modified by another user')) {
+          setSaveError('Settings were modified by another user or in another tab. Please refresh the page and try again.');
+        } else {
+          setSaveError(err.message || 'Failed to save settings. Please try again.');
+        }
       } finally {
         setIsSaving(false);
       }

@@ -24,8 +24,10 @@ interface Company {
   username: string;
   categories?: Category[];
   currency?: string;
+  require_staff_login?: boolean;
   created_at?: string;
   updated_at?: string;
+  version?: number;
 }
 
 export default function MerchantSettingsPage() {
