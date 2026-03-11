@@ -74,6 +74,8 @@ export default function MerchantSettingsPage() {
       try {
         // Fetch merchant data by ID
         const merchantData = await api.get(`/api/merchants/${merchantId}`);
+        console.log('🔍 Fetched merchant data:', merchantData);
+        console.log('🔢 Merchant version from API:', merchantData.data?.version);
         setCompany(merchantData.data);
       } catch (error) {
         console.error('Failed to fetch merchant:', error);

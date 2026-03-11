@@ -100,6 +100,8 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
         setSelectedTags(company.categories.map((cat: Category) => ({ id: cat.id, label: cat.name })));
       }
       if (company) {
+        console.log('🏢 Loading company into form state:', company);
+        console.log('🔢 Company version:', company.version);
         setForm({
           name: company.name || "",
           description: company.description || "",
