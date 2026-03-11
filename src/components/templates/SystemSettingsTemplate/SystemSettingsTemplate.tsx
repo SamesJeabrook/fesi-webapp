@@ -264,28 +264,50 @@ export const SystemSettingsTemplate: React.FC<SystemSettingsTemplateProps> = ({
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
+      console.log('📝 Form submitted, opening modal. Current form version:', form.version);
       setIsModalOpen(true);
     };
 
     const handleModalConfirm = async () => {
+      // Prevent double submissions
+      if (isSaving) {
+        console.log('⚠️ Save already in progress, ignoring duplicate request');
+        return;
+      }
+      
       setIsSaving(true);
       setSaveError(null);
+      
       try {
         const token = await getAccessTokenSilently({
           authorizationParams: {
             audience: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
           },
         });
-        // Compose payload
+        
+        // Refetch merchant to get latest version (in case another tab/window updated it)
+        console.log('🔄 Refetching merchant to get latest version before save...');
+        const latestMerchant = await api.get(`/api/merchants/${company?.id}`);
+        const latestVersion = latestMerchant.data?.version;
+        console.log('📍 Latest version from server:', latestVersion, 'Current form version:', form.version);
+        
+        // Compose payload with latest version
         const payload = {
           ...form,
+          version: latestVersion, // Use the latest version from server
           categoryIds: selectedTags.map(tag => tag.id),
         };
         
-        console.log('Saving merchant settings:', { merchantId: company?.id, payload });
+        console.log('Saving merchant settings:', { 
+          merchantId: company?.id, 
+          version: payload.version,
+          payload 
+        });
         
         // API endpoint (assume company.id is available)
         const response = await api.put(`/api/merchants/${company?.id}`, payload);
+        
+        console.log('✅ Save successful, new version:', response?.version);
         
         // Update company state with new version after successful save
         if (response?.version) {
