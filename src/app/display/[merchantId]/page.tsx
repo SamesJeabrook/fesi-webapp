@@ -20,7 +20,7 @@ interface MerchantData {
     display_order: number;
     items: Array<{
       id: string;
-      name: string;
+      title: string; // Changed from 'name' to 'title' to match DisplayMenuSection
       description: string;
       base_price: number;
       category_name: string;
@@ -83,7 +83,18 @@ export default function CustomerDisplayPage() {
     try {
       const response = await api.get(`/api/menu/merchant/${merchantId}`);
       if (response.success && response.data) {
-        setMerchantData(response.data);
+        // Transform API response to match component interface (name -> title)
+        const transformedData = {
+          ...response.data,
+          menu: response.data.menu.map((category: any) => ({
+            ...category,
+            items: category.items.map((item: any) => ({
+              ...item,
+              title: item.name, // Map 'name' from API to 'title' for component
+            }))
+          }))
+        };
+        setMerchantData(transformedData);
       }
     } catch (error) {
       console.error('Failed to load merchant data:', error);
