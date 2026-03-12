@@ -95,9 +95,9 @@ export const DisplayOrdersSection: React.FC<DisplayOrdersSectionProps> = ({
       const response = await api.get(`/api/orders/merchant/${merchantId}/active`);
       const ordersData = response.data || response;
       const ordersArray = Array.isArray(ordersData) ? ordersData : [];
-      // Filter to only show preparing and ready orders
+      // Filter to show accepted, preparing and ready orders
       const activeOrders = ordersArray.filter((order: Order) => 
-        order.status === 'preparing' || order.status === 'ready'
+        order.status === 'accepted' || order.status === 'preparing' || order.status === 'ready'
       );
       setOrders(activeOrders);
     } catch (error: any) {
@@ -113,6 +113,7 @@ export const DisplayOrdersSection: React.FC<DisplayOrdersSectionProps> = ({
 
   const preparingOrders = orders.filter(o => o.status === 'preparing');
   const readyOrders = orders.filter(o => o.status === 'ready');
+  const acceptedOrders = orders.filter(o => o.status === 'accepted');
 
   return (
     <div className={styles.ordersSection}>
@@ -124,6 +125,29 @@ export const DisplayOrdersSection: React.FC<DisplayOrdersSectionProps> = ({
       </div>
 
       <div className={styles.ordersColumns}>
+        {/* Accepted Column */}
+        <div className={styles.orderColumn}>
+          <div className={styles.columnHeader}>
+            <Typography variant="heading-3">New Orders</Typography>
+            <Typography variant="body-medium">
+              {acceptedOrders.length}
+            </Typography>
+          </div>
+          <div className={styles.columnContent}>
+            {acceptedOrders.length === 0 ? (
+              <div className={styles.emptyColumn}>
+                <Typography variant="body-medium">
+                  No new orders
+                </Typography>
+              </div>
+            ) : (
+              acceptedOrders.map((order) => (
+                <DisplayOrderCard key={order.id} orderNumber={order.order_number} />
+              ))
+            )}
+          </div>
+        </div>
+
         {/* Preparing Column */}
         <div className={styles.orderColumn}>
           <div className={styles.columnHeader}>

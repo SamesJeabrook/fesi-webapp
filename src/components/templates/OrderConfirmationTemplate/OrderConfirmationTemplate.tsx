@@ -33,6 +33,13 @@ interface OrderDetails {
   guest_email?: string;
   guest_first_name?: string;
   guest_last_name?: string;
+  merchant?: {
+    id: string;
+    name: string;
+  };
+  event?: {
+    merchant_id: string;
+  };
 }
 
 export function OrderConfirmationTemplate({ orderId }: OrderConfirmationTemplateProps) {
@@ -219,8 +226,16 @@ export function OrderConfirmationTemplate({ orderId }: OrderConfirmationTemplate
             </Button>
           ) : (
             <>
-              <Button variant="primary" onClick={() => router.push(`/orders/track?number=${order.order_number}&email=${order.guest_email}`)}>
-                Track This Order
+              <Button 
+                variant="primary" 
+                onClick={() => {
+                  const merchantId = order.merchant?.id || order.event?.merchant_id;
+                  if (merchantId) {
+                    router.push(`/orders/${merchantId}`);
+                  }
+                }}
+              >
+                View Order Status
               </Button>
               <Button variant="secondary" onClick={() => router.push('/vendors')}>
                 Order More
