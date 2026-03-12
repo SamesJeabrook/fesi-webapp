@@ -46,7 +46,7 @@ export const DisplayMenuSection: React.FC<DisplayMenuSectionProps> = ({
   const generateQRCode = () => {
     if (!merchantId || typeof window === 'undefined' || !qrWrapperRef.current) return;
 
-    const orderUrl = `${window.location.origin}/merchant/${merchantId}/order`;
+    const orderUrl = `${window.location.origin}/vendors/${merchantId}`;
     
     const qrCode = new QRCodeStyling({
       width: 120,
