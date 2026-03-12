@@ -83,14 +83,15 @@ export default function CustomerDisplayPage() {
     try {
       const response = await api.get(`/api/menu/merchant/${merchantId}`);
       if (response.success && response.data) {
-        // Transform API response to match component interface (name -> title)
+        // Transform API response to match component interface
+        // Handle both 'name' and 'title' fields with fallbacks
         const transformedData = {
           ...response.data,
           menu: response.data.menu.map((category: any) => ({
             ...category,
             items: category.items.map((item: any) => ({
               ...item,
-              title: item.name, // Map 'name' from API to 'title' for component
+              title: item.title || item.name || 'Untitled Item',
             }))
           }))
         };
