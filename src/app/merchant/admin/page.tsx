@@ -194,7 +194,7 @@ const dashboardSections: DashboardSection[] = [
         title: 'Subscription & Billing',
         description: 'Manage your subscription plan and view features',
         icon: '💎',
-        href: '/merchant/subscription',
+        href: '/merchant/admin/subscription',
         color: 'secondary'
       },
       {

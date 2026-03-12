@@ -5,7 +5,7 @@ import styles from './DisplayMenuSection.module.scss';
 
 interface MenuItem {
   id: string;
-  name: string;
+  title: string;
   description: string;
   base_price: number;
   category_name: string;
@@ -113,7 +113,7 @@ export const DisplayMenuSection: React.FC<DisplayMenuSectionProps> = ({
                 <div key={item.id} className={styles.menuItem}>
                   <div className={styles.itemDetails}>
                     <Typography variant="body-large">
-                      {item.name}
+                      {item.title}
                     </Typography>
                     {item.description && (
                       <Typography variant="body-small">
