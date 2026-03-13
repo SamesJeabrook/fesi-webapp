@@ -34,6 +34,30 @@
   margin-bottom: 1.5rem;
 }
 
+.orDivider {
+  text-align: center;
+  margin: 1.5rem 0;
+  position: relative;
+  
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: #e0e0e0;
+  }
+  
+  &::before {
+    left: 0;
+  }
+  
+  &::after {
+    right: 0;
+  }
+}
+
 .termsCheckbox {
   display: flex;
   align-items: flex-start;

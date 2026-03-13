@@ -149,8 +149,109 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
     loadCustomerProfile();
   }, [isAuthenticated, user, getAccessTokenSilently]);
 
+  // Setup Apple Pay / Google Pay button - before payment
+  useEffect(() => {
+    if (stripe && costBreakdown?.totalOrderAmount) {
+      const pr = stripe.paymentRequest({
+        country: 'GB',
+        currency: 'gbp',
+        total: {
+          label: 'Order Total',
+          amount: costBreakdown.totalOrderAmount,
+        },
+        requestPayerName: true,
+        requestPayerEmail: true,
+      });
+
+      pr.canMakePayment().then((result: null | { applePay?: object; googlePay?: object; samsungPay?: object; }) => {
+        if (result) {
+          setPaymentRequest(pr);
+          
+          // Handle payment method selection
+          pr.on('paymentmethod', async (e) => {
+            try {
+              setLoading(true);
+              setError(null);
+
+              // Create order
+              const sanitizedItems = basketItems.map(item => ({
+                menu_item_id: item.menu_item_id,
+                quantity: item.quantity,
+                customizations: item.customizations?.map((c: any) => ({
+                  sub_item_id: c.sub_item_id,
+                  quantity: c.quantity || 1
+                })) || []
+              }));
+
+              const orderPayload: any = {
+                event_id: eventData.id,
+                items: sanitizedItems,
+                notes
+              };
+              
+              if (tableId) {
+                orderPayload.table_id = tableId;
+              }
+              
+              if (isAuthenticated && customerProfile?.id) {
+                orderPayload.customer_id = customerProfile.id;
+              } else {
+                // Use payer info from Apple Pay/Google Pay
+                orderPayload.guest_info = {
+                  email: e.payerEmail || guestInfo.email,
+                  first_name: e.payerName?.split(' ')[0] || 'Customer',
+                  last_name: e.payerName?.split(' ').slice(1).join(' ') || '',
+                  phone: e.payerPhone || guestInfo.phone
+                };
+              }
+
+              const orderData = await api.post('/api/orders', orderPayload, { skipAuth: !isAuthenticated });
+              if (!orderData.id) throw new Error(orderData.error || 'Order creation failed');
+              setOrderId(orderData.id);
+
+              // Create payment intent
+              const paymentData = await api.post(`/api/orders/${orderData.id}/payment-intent`, {}, { skipAuth: !isAuthenticated });
+              if (!paymentData.clientSecret) throw new Error(paymentData.error || 'Payment intent creation failed');
+              setClientSecret(paymentData.clientSecret);
+
+              // Confirm payment
+              const { error: confirmError } = await stripe.confirmCardPayment(
+                paymentData.clientSecret,
+                { payment_method: e.paymentMethod.id },
+                { handleActions: false }
+              );
+
+              if (confirmError) {
+                e.complete('fail');
+                throw confirmError;
+              }
+
+              e.complete('success');
+              
+              // Show holding screen
+              setHolding(true);
+              setLoading(false);
+              localStorage.setItem('orderId', orderData.id);
+              localStorage.setItem('basketItems', JSON.stringify(basketItems));
+              localStorage.setItem('costBreakdown', JSON.stringify(costBreakdown));
+              localStorage.setItem('clientSecret', paymentData.clientSecret);
+              localStorage.setItem('holding', 'true');
+
+            } catch (err: any) {
+              e.complete('fail');
+              setLoading(false);
+              setError(err.message || 'Payment failed');
+              onPaymentError && onPaymentError(err);
+            }
+          });
+        }
+      });
+    }
+  }, [stripe, costBreakdown?.totalOrderAmount, basketItems, eventData, tableId, isAuthenticated, customerProfile]);
+
   useEffect(() => {
     if (stripe && clientSecret) {
+      // This is for manual card entry - Apple Pay sets up above
       const pr = stripe.paymentRequest({
         country: 'GB',
         currency: 'gbp',
@@ -321,6 +422,21 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   return (
     <div className={styles.formWrapper}>
       <Typography variant="heading-5">Payment Details</Typography>
+      
+      {/* Apple Pay / Google Pay Button - Show first as preferred method */}
+      {paymentRequest && !loading && (
+        <div>
+          <div className={styles.prButton}>
+            <PaymentRequestButtonElement options={{ paymentRequest }} />
+          </div>
+          <div className={styles.orDivider}>
+            <Typography variant="body-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              Or pay with card
+            </Typography>
+          </div>
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Customer info fields - shown for all users, pre-populated if logged in */}
         {!loadingProfile && (
@@ -430,12 +546,7 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
           {loading ? 'Processing...' : 'Pay Now'}
         </button>
       </form>
-      {paymentRequest && (
-        <div className={styles.prButton}>
-          <PaymentRequestButtonElement options={{ paymentRequest }} />
-        </div>
-      )}
-      {error && <Typography variant="body-small">{error}</Typography>}
+      {error && <Typography variant="body-small" style={{ color: 'var(--color-error)' }}>{error}</Typography>}
     </div>
   );
 };
