@@ -1,0 +1,93 @@
+.block {
+  background: #ffffff;
+  border: 1px solid #dde3ea;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
+.paragraph {
+  margin: 0 0 14px;
+  line-height: 1.7;
+  color: #314056;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  line-height: 1.6;
+}
+
+.steps {
+  display: grid;
+  gap: 14px;
+}
+
+.step {
+  border: 1px solid #dde3ea;
+  border-radius: 16px;
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.stepTitle {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.routeGrid,
+.assetGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.routeItem,
+.assetItem {
+  border: 1px solid #dde3ea;
+  border-radius: 16px;
+  padding: 16px;
+  background: #fdfefe;
+}
+
+.routePath,
+.assetName {
+  font-family: var(--font-space-grotesk, monospace);
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.routeDescription,
+.assetDescription {
+  color: #566176;
+  line-height: 1.6;
+}
+
+.callout {
+  border-radius: 18px;
+  padding: 20px;
+  border: 1px solid transparent;
+}
+
+.calloutInfo {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.calloutWarning {
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+
+.calloutSuccess {
+  background: #ecfdf3;
+  border-color: #86efac;
+}

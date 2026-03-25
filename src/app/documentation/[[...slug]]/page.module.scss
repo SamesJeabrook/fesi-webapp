@@ -1,0 +1,179 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f7f7f3 0%, #ffffff 100%);
+  color: #172033;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.sidebar {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #dde3ea;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.brand {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5b6780;
+  margin-bottom: 8px;
+}
+
+.sidebarTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 20px;
+}
+
+.navSection {
+  margin-bottom: 20px;
+}
+
+.navHeading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #667085;
+  margin-bottom: 10px;
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.navLink {
+  display: block;
+  text-decoration: none;
+  color: #24314d;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+.navLink:hover {
+  background: #eef4ff;
+}
+
+.navLinkActive {
+  background: #172033;
+  color: #ffffff;
+}
+
+.content {
+  min-width: 0;
+}
+
+.hero {
+  background: linear-gradient(135deg, #172033 0%, #314364 100%);
+  color: #ffffff;
+  border-radius: 24px;
+  padding: 36px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1.05;
+  margin: 0 0 12px;
+}
+
+.summary {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 60ch;
+  margin: 0 0 18px;
+}
+
+.audience {
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #dde3ea;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.sectionTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
+.bulletList {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  line-height: 1.6;
+}
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.relatedCard {
+  display: block;
+  text-decoration: none;
+  background: #f8fafc;
+  border: 1px solid #dde3ea;
+  border-radius: 16px;
+  padding: 18px;
+  color: #172033;
+}
+
+.relatedCard:hover {
+  border-color: #9fb2d0;
+  background: #eef4ff;
+}
+
+.relatedTitle {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.relatedSummary {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #566176;
+}
+
+@media (max-width: 960px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+}
