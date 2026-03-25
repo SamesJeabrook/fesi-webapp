@@ -2,57 +2,110 @@ import type { DocumentationPage } from '../types';
 
 export const mobilePosTapToPayDocumentationPage: DocumentationPage = {
   slug: ['mobile-pos', 'tap-to-pay'],
-  title: 'Tap To Pay On iPhone',
+  title: 'Tap to Pay on iPhone',
   summary:
-    'Operational guidance for using Tap to Pay on iPhone in the Fesi POS app, including contactless acceptance, digital wallets, receipts, verification prompts, and fallback handling.',
-  audience: 'Merchant staff, merchant owners, and App Review reviewers.',
+    'How to accept contactless payments with your iPhone using Tap to Pay, including card placement, digital wallets, verification, and what to do if a payment does not go through.',
+  audience: 'Staff and merchants taking payments with Fesi POS.',
   category: 'mobile-pos',
   blocks: [
     {
       type: 'section',
-      title: 'What This Page Should Explain',
+      title: 'What is Tap to Pay?',
       paragraphs: [
-        'This page should document the merchant-facing Tap to Pay flow exactly as the app presents it.',
-        'It should explain where the customer holds their card or device, which payment methods are supported, how digital receipts are offered, and what staff should do if the first attempt does not work.',
+        'Tap to Pay on iPhone lets you accept contactless card payments and digital wallets (like Apple Pay) directly on your phone — no separate card reader needed.',
+        'Customers simply tap or hold their card near the top of your iPhone to pay. It is fast, easy, and secure.',
       ],
-      bullets: [
-        'Contactless cards',
-        'Apple Pay and other digital wallets',
-        'Customer verification prompts when shown by the system',
-        'Fallback to another payment method if the card does not read',
+    },
+    {
+      type: 'section',
+      title: 'How Your Customer Pays',
+      paragraphs: [
+        '**Before they tap:** Tell the customer the amount they are paying and ask them to hold their card or phone near the top of your iPhone. They should wait for the tone and on-screen confirmation that the payment went through.',
+        '**While you wait:** Your iPhone will flash and beep when it reads the card. This usually takes a second or two. Do not move your phone or theirs until you hear the confirmation tone.',
+        '**If it succeeds:** You will see a success screen and your customer will be charged. A receipt is offered immediately.',
+        '**If it does not work:** The app will tell you what happened. Usually it means the card needs to be held in a different spot or tried again. See below for next steps.',
+      ],
+    },
+    {
+      type: 'section',
+      title: 'Payment Methods We Accept',
+      paragraphs: [
+        'Tap to Pay works with:',
+      ],
+    },
+    {
+      type: 'routes',
+      title: 'Supported Payment Methods',
+      routes: [
+        {
+          path: 'Contactless cards',
+          description: 'Any debit or credit card with the contactless symbol.',
+        },
+        {
+          path: 'Apple Pay',
+          description: 'On customer iPhones, Apple Watches, or iPads.',
+        },
+        {
+          path: 'Google Pay and Samsung Pay',
+          description: 'On compatible Android devices.',
+        },
+      ],
+    },
+    {
+      type: 'section',
+      title: 'If the Payment Does Not Work',
+      paragraphs: [
+        'Sometimes a payment does not go through on the first try. Here is what to do:',
+      ],
+    },
+    {
+      type: 'steps',
+      title: 'Troubleshooting Steps',
+      steps: [
+        {
+          title: 'Try again',
+          description: 'Ask the customer to hold their card or phone in a slightly different spot near the top of your iPhone and try again.',
+        },
+        {
+          title: 'Try another card or wallet',
+          description: 'If they have another card or payment method, ask them to try that instead.',
+        },
+        {
+          title: 'Use cash as fallback',
+          description: 'If Tap to Pay still does not work, you can fall back to cash or offer to take their details for a later payment.',
+        },
+      ],
+    },
+    {
+      type: 'section',
+      title: 'After Payment — Receipts',
+      paragraphs: [
+        'If the customer wants a digital receipt, their email address should be entered before payment is taken. Once the payment succeeds, the receipt is sent automatically.',
+        'If they decline a digital receipt, the transaction is still complete and no receipt is sent.',
       ],
     },
     {
       type: 'callout',
       tone: 'info',
-      title: 'UK Rollout Scope',
+      title: 'UK Market Notes',
       paragraphs: [
-        'The current rollout is UK-only, so the operational guidance should be specific to UK merchant expectations and supported payment behavior.',
-        'Where verification prompts appear, the merchant should follow the system-led flow and allow the customer to complete any required action themselves.',
+        'Tap to Pay is currently available in the UK only. If you are trading outside the UK, other payment methods will be available.',
       ],
     },
     {
-      type: 'assets',
-      title: 'Suggested Screenshots To Add Later',
-      assets: [
+      type: 'routes',
+      title: 'Related Topics',
+      routes: [
         {
-          name: 'Tap to Pay education screen',
-          description: 'Screenshot of the in-app education screen that shows where to hold the card near the top of the iPhone.',
+          path: '/documentation/mobile-pos/orders',
+          description: 'Full guide to taking and managing orders.',
         },
         {
-          name: 'Contactless checkout action',
-          description: 'Screenshot of the POS checkout showing Contactless as the primary payment option.',
-        },
-        {
-          name: 'Payment processing state',
-          description: 'Screenshot of the initializing or processing overlay while a Tap to Pay transaction is in progress.',
-        },
-        {
-          name: 'Receipt options',
-          description: 'Screenshot of the post-payment receipt modal showing email and SMS receipt choices.',
+          path: '/documentation/mobile-pos/receipts',
+          description: 'How digital receipts work.',
         },
       ],
     },
   ],
-  related: [['mobile-pos', 'receipts'], ['mobile-pos', 'apple-review']],
+  related: [['mobile-pos', 'orders'], ['mobile-pos', 'receipts']],
 };

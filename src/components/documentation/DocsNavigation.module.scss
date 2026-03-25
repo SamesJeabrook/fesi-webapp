@@ -1,0 +1,136 @@
+.sidebar {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #dde3ea;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.brand {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5b6780;
+  margin-bottom: 8px;
+}
+
+.sidebarTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0 0 20px;
+}
+
+.navSection {
+  margin-bottom: 20px;
+}
+
+.navHeading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #667085;
+  margin-bottom: 10px;
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.navLink {
+  display: block;
+  text-decoration: none;
+  color: #24314d;
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  &:hover {
+    background: #eef4ff;
+  }
+}
+
+.navLinkActive {
+  background: #172033;
+  color: #ffffff;
+}
+
+.burgerButton {
+  display: none;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+  flex-direction: column;
+  gap: 4px;
+  background: #ffffff;
+  border: 1px solid #dde3ea;
+  border-radius: 12px;
+  padding: 12px;
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+}
+
+.burgerLine {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #172033;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 997;
+}
+
+@media (max-width: 960px) {
+  .burgerButton {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    border-radius: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 998;
+    top: 0;
+    overflow-y: auto;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+
+    .brand {
+        text-align: right;
+    }
+
+    .sidebarTitle {
+        text-align: right;
+    }
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  .backdrop {
+    display: block;
+  }
+}
