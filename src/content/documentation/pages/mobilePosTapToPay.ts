@@ -17,6 +17,15 @@ export const mobilePosTapToPayDocumentationPage: DocumentationPage = {
       ],
     },
     {
+      type: 'callout',
+      tone: 'info',
+      title: 'Already Own a Card Reader?',
+      paragraphs: [
+        'Card readers purchased for another payment provider will usually not work with your Stripe setup in Fesi. Even if the hardware looks similar, it may be locked or provisioned for that provider.',
+        'If you want to avoid separate hardware, use Tap to Pay on iPhone where available. If you want an external reader, use a Stripe-supported reader that is available for your region and account.',
+      ],
+    },
+    {
       type: 'section',
       title: 'How Your Customer Pays',
       paragraphs: [

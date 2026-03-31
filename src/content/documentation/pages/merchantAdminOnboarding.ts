@@ -38,13 +38,22 @@ export const merchantAdminOnboardingDocumentationPage: DocumentationPage = {
         {
           title: 'Configure payments',
           description:
-            'Set up how you want to accept payments, including connecting your bank account for payouts. This step is powered by Stripe and must be completed before you can take live orders.',
+            'Set up how you want to accept payments, including connecting your bank account for payouts. This step is powered by Stripe and must be completed before you can take live orders. If you already own a card reader from another payment provider, assume it will not work with your Stripe setup unless Stripe explicitly supports that hardware in your region.',
         },
         {
           title: 'Access the merchant dashboard',
           description:
             'Once all steps are complete, you will be taken to the merchant dashboard — your central hub for managing how your business operates on Fesi. From here you can manage your menu, view orders, configure your POS, and more. See the Merchant Dashboard guide for a full breakdown.',
         },
+      ],
+    },
+    {
+      type: 'callout',
+      tone: 'info',
+      title: 'Payment Hardware Compatibility',
+      paragraphs: [
+        'If you already have a card reader from another payment company, it will usually not work with Stripe in Fesi. Many readers are provisioned to the provider they were purchased from and cannot simply be reused with another platform.',
+        'Where available, Tap to Pay on iPhone does not require separate hardware. If you want to use an external reader instead, choose a Stripe-supported reader for your region and Stripe account.',
       ],
     },
     {

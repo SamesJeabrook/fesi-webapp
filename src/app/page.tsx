@@ -213,6 +213,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <footer className={styles.footer}>
+        <Link href="/privacy">Privacy Policy</Link>
+        {' · '}
+        <Link href="/terms">Terms</Link>
+      </footer>
     </main>
   );
 }

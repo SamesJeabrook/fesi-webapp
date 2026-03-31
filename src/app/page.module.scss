@@ -241,6 +241,24 @@
   }
 }
 
+// Footer
+.footer {
+  background: #1a1a1a;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: var(--spacing-6);
+  font-size: 0.85rem;
+
+  a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+
+    &:hover {
+      color: white;
+    }
+  }
+}
+
 // Responsive adjustments
 @include tablet {
   .hero {

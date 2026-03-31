@@ -25,6 +25,7 @@ export default function PrivacyPolicyPage() {
             <li>Contact information: name, email address, phone number</li>
             <li>Order information: items ordered, delivery/pickup details, transaction history</li>
             <li>Payment information: handled securely via Stripe</li>
+            <li>Camera: used solely for QR code scanning to process orders; no images are stored or transmitted</li>
             <li>Device information: IP address, browser type, operating system</li>
             <li>Other information you provide when contacting support or creating an account</li>
           </ul>

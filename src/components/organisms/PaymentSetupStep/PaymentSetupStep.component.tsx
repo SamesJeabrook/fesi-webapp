@@ -167,6 +167,21 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
             Fesi uses Stripe to securely process payments and transfer funds to your bank account.
           </p>
 
+          <div className={styles.paymentSetupStep__infoBox}>
+            <span className={styles.paymentSetupStep__infoIcon}>ℹ️</span>
+            <div className={styles.paymentSetupStep__infoText}>
+              <strong>Using an existing card reader?</strong>
+              <p>
+                Card readers bought for another payment provider usually do not work with your Stripe setup in Fesi.
+                You can always use Tap to Pay on iPhone where available, and any external reader must be supported by
+                Stripe for your region and account.
+              </p>
+              <p>
+                See <a href="/documentation/mobile-pos/tap-to-pay" target="_blank" rel="noopener noreferrer">Tap to Pay on iPhone</a> and <a href="/documentation/merchant-admin/onboarding" target="_blank" rel="noopener noreferrer">Merchant Onboarding</a> for full compatibility guidance.
+              </p>
+            </div>
+          </div>
+
           {!isStripeConnected ? (
             <>
               <div className={styles.paymentSetupStep__stripeCard}>
