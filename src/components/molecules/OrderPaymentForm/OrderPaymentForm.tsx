@@ -152,6 +152,10 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   // Setup Apple Pay / Google Pay button - before payment
   useEffect(() => {
     if (stripe && costBreakdown?.totalOrderAmount) {
+      console.log('🔧 Setting up Payment Request API...');
+      console.log('🔧 Browser:', navigator.userAgent);
+      console.log('🔧 Total amount:', costBreakdown.totalOrderAmount);
+      
       const pr = stripe.paymentRequest({
         country: 'GB',
         currency: 'gbp',
@@ -164,7 +168,14 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
       });
 
       pr.canMakePayment().then((result: null | { applePay?: object; googlePay?: object; samsungPay?: object; }) => {
+        console.log('🔍 Payment Request canMakePayment result:', result);
+        console.log('🔍 Available payment methods:', {
+          applePay: !!result?.applePay,
+          googlePay: !!result?.googlePay,
+          samsungPay: !!result?.samsungPay
+        });
         if (result) {
+          console.log('✅ Setting payment request - button should appear');
           setPaymentRequest(pr);
           
           // Handle payment method selection
@@ -434,6 +445,20 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
               Or pay with card
             </Typography>
           </div>
+        </div>
+      )}
+      
+      {/* Debug info - remove after testing */}
+      {!paymentRequest && (
+        <div style={{ padding: '1rem', background: '#f0f0f0', borderRadius: '8px', marginBottom: '1rem' }}>
+          <Typography variant="body-small">
+            ℹ️ Apple Pay/Google Pay not available on this device/browser. 
+            {typeof navigator !== 'undefined' && (
+              <span> (Testing on: {navigator.userAgent.includes('iPhone') ? 'iPhone' : 
+                                    navigator.userAgent.includes('Android') ? 'Android' : 
+                                    navigator.userAgent.includes('Safari') ? 'Safari' : 'Other browser'})</span>
+            )}
+          </Typography>
         </div>
       )}
       

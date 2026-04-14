@@ -35,14 +35,24 @@ export default function MerchantTermsPage() {
 
         <section className={styles.section}>
           <h2>4. Fees</h2>
-          <p><strong>Transaction Fees:</strong></p>
+          
+          <p><strong>POS/In-Person Transaction Fees (Merchant Pays):</strong></p>
+          <ul>
+            <li>Free Tier – 3.5% + £0.30 per transaction</li>
+            <li>Professional – 3.0% + £0.40 per transaction</li>
+            <li>Business – 2.9% + £0.50 per transaction</li>
+          </ul>
+          
+          <p><strong>Online Order Transaction Fees (Customer Pays):</strong></p>
           <ul>
             <li>Free Tier – 10%</li>
             <li>Professional – 8%</li>
             <li>Business – 6%</li>
           </ul>
+          
           <p><strong>Order Protection Fee:</strong></p>
-          <p>Applied to online orders for customers and POS payments for merchants to cover processing and platform costs.</p>
+          <p>Applied to online orders to cover payment processing and platform costs. A small order fee may be added to orders under £10 to ensure profitability.</p>
+          
           <p><strong>Subscriptions:</strong> Recurring fees apply for premium features.</p>
         </section>
 

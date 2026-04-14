@@ -11,6 +11,7 @@ import { mobilePosReceiptsDocumentationPage } from './pages/mobilePosReceipts';
 import { mobilePosTapToPayDocumentationPage } from './pages/mobilePosTapToPay';
 import { mobilePosStaffSecurityDocumentationPage } from './pages/mobilePosStaffSecurity';
 import { overviewDocumentationPage } from './pages/overview';
+import { pricingFeesDocumentationPage } from './pages/pricingFees';
 import type { DocumentationNavGroup, DocumentationPage } from './types';
 
 function basicPage(page: DocumentationPage): DocumentationPage {
@@ -19,6 +20,7 @@ function basicPage(page: DocumentationPage): DocumentationPage {
 
 export const documentationPages: DocumentationPage[] = [
   overviewDocumentationPage,
+  pricingFeesDocumentationPage,
   merchantAdminDashboardDocumentationPage,
   merchantAdminOnboardingDocumentationPage,
   merchantAdminMenuDocumentationPage,
@@ -55,7 +57,7 @@ export const documentationPages: DocumentationPage[] = [
 
 export const documentationNavGroups: DocumentationNavGroup[] = [
   {
-    title: 'Overview',
+    title: 'Ov, ['pricing-fees']erview',
     slugs: [[]],
   },
   {
