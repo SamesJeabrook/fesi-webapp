@@ -6,7 +6,7 @@ export const pricingFeesDocumentationPage: DocumentationPage = {
   summary:
     'Complete breakdown of Fesi subscription tiers, POS transaction fees, and online order fees. Understand how fees are calculated for different order types.',
   audience: 'Merchants, finance teams, and support staff.',
-  category: 'pricing',
+  category: 'overview',
   blocks: [
     {
       type: 'section',
