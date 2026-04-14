@@ -57,8 +57,8 @@ export const documentationPages: DocumentationPage[] = [
 
 export const documentationNavGroups: DocumentationNavGroup[] = [
   {
-    title: 'Ov, ['pricing-fees']erview',
-    slugs: [[]],
+    title: 'Overview',
+    slugs: [[], ['pricing-fees']],
   },
   {
     title: 'Merchant Web Dashboard',
