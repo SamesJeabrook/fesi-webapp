@@ -1,0 +1,22 @@
+.slotSelector {
+  &__emptyState {
+    margin-top: 1rem;
+    padding: 1.5rem;
+    background-color: var(--color-surface-secondary, #f9fafb);
+    border: 1px dashed var(--color-border, #d1d5db);
+    border-radius: var(--border-radius-md, 0.5rem);
+    text-align: center;
+  }
+
+  &__emptyIcon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  &__emptyText {
+    color: var(--color-text-secondary, #6b7280);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}

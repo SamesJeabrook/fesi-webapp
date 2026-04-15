@@ -1,6 +1,7 @@
 import React from 'react';
 import classNames from 'classnames';
 import { Typography } from '@/components/atoms';
+import { PreOrderBadge } from '@/components/molecules/PreOrderBadge';
 import type { OrderCardProps } from './OrderCard.types';
 import styles from './OrderCard.module.scss';
 
@@ -21,6 +22,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       [styles.clickable]: onClick,
       [styles.refired]: order.refired_at && order.status === 'preparing',
       [styles.paymentPending]: order.payment_status === 'pending',
+      [styles.preOrder]: order.is_pre_order === true,
     },
     className
   );
@@ -79,6 +81,13 @@ export const OrderCard: React.FC<OrderCardProps> = ({
           {formatTime(order.created_at)}
         </Typography>
       </div>
+
+      {/* Pre-Order Badge */}
+      {order.is_pre_order && order.scheduled_time && (
+        <div className={styles.preOrderBadge}>
+          <PreOrderBadge scheduledTime={order.scheduled_time} />
+        </div>
+      )}
 
       <div className={styles.customer}>
         <Typography variant="body-medium" className={styles.customerName}>

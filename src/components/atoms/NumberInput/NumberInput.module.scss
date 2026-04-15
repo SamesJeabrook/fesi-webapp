@@ -1,0 +1,2 @@
+// Re-export FormInput styles since NumberInput uses the same styling
+@use '../FormInput/FormInput.module.scss';

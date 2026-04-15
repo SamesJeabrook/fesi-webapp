@@ -138,6 +138,9 @@ function useMerchantOrders(merchantId: string | null) {
             : (typeof order.refired_item_ids === 'string' 
               ? JSON.parse(order.refired_item_ids) 
               : []),
+          is_pre_order: order.is_pre_order || false,
+          scheduled_time: order.scheduled_time,
+          order_priority: order.order_priority || 0,
         }));      
         
         console.log('Transformed orders sample:', transformedOrders[0]);

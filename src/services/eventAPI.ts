@@ -53,7 +53,9 @@ class AdminEventAPI implements EventAPIInterface {
           longitude: data.longitude,
           groupEventId: data.groupEventId,
           isOpen: data.isOpen,
-          menuId: data.menu_id
+          menuId: data.menu_id,
+          pre_orders_enabled: data.pre_orders_enabled,
+          pre_order_menu_id: data.pre_order_menu_id
         },
         schedules: data.schedules
       }, merchantId);
@@ -231,6 +233,14 @@ class AdminEventAPI implements EventAPIInterface {
       payload.menu_id = data.menu_id;
     }
     
+    // Include pre-order fields
+    if ('pre_orders_enabled' in data) {
+      payload.pre_orders_enabled = data.pre_orders_enabled;
+    }
+    if ('pre_order_menu_id' in data) {
+      payload.pre_order_menu_id = data.pre_order_menu_id;
+    }
+    
     console.log('AdminEventAPI updateEvent payload:', payload);
     
     const response = await fetch(`${API_BASE_URL}/api/events/${eventId}`, {
@@ -267,7 +277,9 @@ class MerchantEventAPI implements EventAPIInterface {
           longitude: data.longitude,
           groupEventId: data.groupEventId,
           isOpen: data.isOpen,
-          menuId: data.menu_id
+          menuId: data.menu_id,
+          pre_orders_enabled: data.pre_orders_enabled,
+          pre_order_menu_id: data.pre_order_menu_id
         },
         schedules: data.schedules
       });
@@ -431,6 +443,14 @@ class MerchantEventAPI implements EventAPIInterface {
     // Include menu_id in payload (could be null to clear it)
     if ('menu_id' in data) {
       payload.menu_id = data.menu_id;
+    }
+    
+    // Include pre-order fields
+    if ('pre_orders_enabled' in data) {
+      payload.pre_orders_enabled = data.pre_orders_enabled;
+    }
+    if ('pre_order_menu_id' in data) {
+      payload.pre_order_menu_id = data.pre_order_menu_id;
     }
     
     console.log('MerchantEventAPI updateEvent payload:', payload);

@@ -15,6 +15,8 @@ export interface EventBasicInfo {
   groupEventId?: string;
   isOpen?: boolean;
   menuId?: string;
+  pre_orders_enabled?: boolean;
+  pre_order_menu_id?: string;
 }
 
 export interface MultiDayEventData {
@@ -37,6 +39,8 @@ export interface Event {
   total_days: number;
   event_start_date?: string;
   event_end_date?: string;
+  pre_orders_enabled?: boolean;
+  pre_order_menu_id?: string;
   created_at: string;
   updated_at: string;
   merchant_name?: string;
@@ -63,6 +67,8 @@ export interface EventFormData {
   isOpen: boolean;
   eventType: 'single_day' | 'multi_day';
   menu_id?: string;
+  pre_orders_enabled?: boolean;
+  pre_order_menu_id?: string;
   
   // For single day events
   date?: string;

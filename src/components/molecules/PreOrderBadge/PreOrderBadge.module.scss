@@ -1,0 +1,81 @@
+.preOrderBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  &__badge {
+    flex-shrink: 0;
+  }
+
+  &__icon {
+    margin-right: 0.25rem;
+  }
+
+  &__label {
+    font-weight: 600;
+    letter-spacing: 0.025em;
+  }
+
+  &__time {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  &__date {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary, #6b7280);
+  }
+
+  &__timeValue {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-warning-700, #b45309);
+  }
+
+  // Variant: Prominent (for order cards)
+  &--prominent {
+    padding: 0.75rem 1rem;
+    background-color: var(--color-warning-50, #fffbeb);
+    border: 2px solid var(--color-warning-500, #f59e0b);
+    border-radius: var(--border-radius-md, 0.5rem);
+    margin-bottom: 0.75rem;
+
+    .preOrderBadge__timeValue {
+      font-size: 1.25rem;
+    }
+  }
+
+  // Size variants
+  &--sm {
+    gap: 0.5rem;
+
+    .preOrderBadge__timeValue {
+      font-size: 0.875rem;
+    }
+
+    .preOrderBadge__date {
+      font-size: 0.75rem;
+    }
+  }
+
+  &--md {
+    gap: 0.75rem;
+
+    .preOrderBadge__timeValue {
+      font-size: 1.125rem;
+    }
+  }
+
+  &--lg {
+    gap: 1rem;
+
+    .preOrderBadge__timeValue {
+      font-size: 1.5rem;
+    }
+
+    .preOrderBadge__date {
+      font-size: 1rem;
+    }
+  }
+}

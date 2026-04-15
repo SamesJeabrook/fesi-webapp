@@ -144,6 +144,17 @@ export default function MerchantSettingsPage() {
               </div>
             </div>
           </Link>
+          <Link href="/merchant/admin/settings/pre-orders" className={styles.navLink}>
+            <div className={styles.navItem}>
+              <span className={styles.navIcon}>🕐</span>
+              <div>
+                <Typography variant="body-medium">Pre-Orders</Typography>
+                <Typography variant="body-small" className={styles.navDescription}>
+                  Configure scheduled orders and time slot settings
+                </Typography>
+              </div>
+            </div>
+          </Link>
           <div className={styles.navItem + ' ' + styles.navItemActive}>
             <span className={styles.navIcon}>⚙️</span>
             <div>

@@ -1,0 +1,85 @@
+.preOrderConfig {
+  padding: 1.5rem;
+  background-color: var(--color-surface-primary, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--border-radius-lg, 0.75rem);
+
+  &__header {
+    margin-bottom: 1.5rem;
+  }
+
+  &__title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text-primary, #111827);
+    margin: 0 0 1rem 0;
+  }
+
+  &__alert {
+    margin-bottom: 1.5rem;
+
+    p {
+      margin: 0.5rem 0 0 0;
+      font-size: 0.875rem;
+    }
+  }
+
+  &__settingsLink {
+    background: none;
+    border: none;
+    color: var(--color-primary-600, #2563eb);
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 0;
+    font-size: inherit;
+
+    &:hover {
+      color: var(--color-primary-700, #1d4ed8);
+    }
+
+    &:focus {
+      outline: 2px solid var(--color-primary-500, #3b82f6);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+  }
+
+  &__menuSelect {
+    margin-bottom: 1.5rem;
+  }
+
+  &__info {
+    margin-bottom: 1.5rem;
+  }
+
+  &__features {
+    padding: 1rem;
+    background-color: var(--color-surface-secondary, #f9fafb);
+    border-radius: var(--border-radius-md, 0.5rem);
+    margin-top: 1.5rem;
+  }
+
+  &__featuresTitle {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-primary, #111827);
+    margin: 0 0 0.75rem 0;
+  }
+
+  &__featuresList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary, #6b7280);
+      padding: 0.25rem 0;
+      
+      &::before {
+        content: none;
+      }
+    }
+  }
+}

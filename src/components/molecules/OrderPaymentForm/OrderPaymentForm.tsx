@@ -3,7 +3,8 @@ import { loadStripe, PaymentRequest } from '@stripe/stripe-js';
 import { Elements, useStripe, useElements, CardElement, PaymentRequestButtonElement } from '@stripe/react-stripe-js';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Event } from '@/types';
-import { Typography, Input } from '@/components/atoms';
+import { Typography, Input, Alert, DatePicker } from '@/components/atoms';
+import { PreOrderSlotSelector } from '@/components/molecules/PreOrderSlotSelector';
 import PaymentHoldingNotice from '@/components/molecules/PaymentHoldingNotice/PaymentHoldingNotice';
 import { getAuthToken } from '@/utils/devAuth';
 import { OrderListItem } from '@/components/molecules/OrderList/OrderList';
@@ -40,6 +41,14 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acknowledgedRestrictions, setAcknowledgedRestrictions] = useState(false);
+  
+  // Pre-order state
+  const [preOrderDate, setPreOrderDate] = useState<string>('');
+  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<any>(null);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [onlineOrdersSuspended, setOnlineOrdersSuspended] = useState(false);
+  
   // Guest info state
   const [guestInfo, setGuestInfo] = useState({
     email: '',
@@ -49,6 +58,9 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
   });
   const event_id = costBreakdown.event_id || '';
   const notes = '';
+  
+  // Check if pre-orders are enabled for this event
+  const preOrdersEnabled = eventData?.pre_orders_enabled === true;
 
   // Check if order contains any age-restricted items
   const restrictedItems = basketItems.filter((item: any) => item.is_age_restricted === true);
@@ -149,6 +161,47 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
     loadCustomerProfile();
   }, [isAuthenticated, user, getAccessTokenSilently]);
 
+  // Check if online orders are suspended (pre-orders feature)
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (!preOrdersEnabled || !eventData?.id) return;
+      
+      try {
+        const data = await api.get(`/api/pre-orders/events/${eventData.id}/check-availability`, { skipAuth: true });
+        setOnlineOrdersSuspended(data.suspend_online_orders === true);
+      } catch (error) {
+        console.error('Error checking order availability:', error);
+      }
+    };
+    
+    checkAvailability();
+  }, [preOrdersEnabled, eventData?.id]);
+
+  // Fetch available slots when date changes
+  useEffect(() => {
+    const fetchSlots = async () => {
+      if (!preOrderDate || !eventData?.id) {
+        setAvailableSlots([]);
+        setSelectedSlot(null);
+        return;
+      }
+      
+      setLoadingSlots(true);
+      try {
+        const data = await api.get(`/api/pre-orders/events/${eventData.id}/slots/available?date=${preOrderDate}`, { skipAuth: true });
+        setAvailableSlots(data.slots || []);
+        setSelectedSlot(null);
+      } catch (error) {
+        console.error('Error fetching available slots:', error);
+        setAvailableSlots([]);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+    
+    fetchSlots();
+  }, [preOrderDate, eventData?.id]);
+
   // Setup Apple Pay / Google Pay button - before payment
   useEffect(() => {
     if (stripe && costBreakdown?.totalOrderAmount) {
@@ -202,6 +255,13 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
               
               if (tableId) {
                 orderPayload.table_id = tableId;
+              }
+              
+              // Add pre-order fields if slot selected
+              if (selectedSlot) {
+                orderPayload.is_pre_order = true;
+                orderPayload.pre_order_slot_id = selectedSlot.id;
+                orderPayload.scheduled_time = selectedSlot.slot_time;
               }
               
               if (isAuthenticated && customerProfile?.id) {
@@ -381,6 +441,14 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
         console.log('🪑 Table service order - table_id:', tableId, 'table_number:', tableNumber);
       }
       
+      // Add pre-order fields if slot selected
+      if (selectedSlot) {
+        orderPayload.is_pre_order = true;
+        orderPayload.pre_order_slot_id = selectedSlot.id;
+        orderPayload.scheduled_time = selectedSlot.slot_time;
+        console.log('🕐 Pre-order slot selected:', selectedSlot);
+      }
+      
       console.log('🔍 Order submission - isAuthenticated:', isAuthenticated);
       console.log('🔍 Order submission - customerProfile:', customerProfile);
       console.log('🔍 Order submission - user:', user);
@@ -459,6 +527,45 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
                                     navigator.userAgent.includes('Safari') ? 'Safari' : 'Other browser'})</span>
             )}
           </Typography>
+        </div>
+      )}
+      
+      {/* Pre-Order Selection - Show if event has pre-orders enabled */}
+      {preOrdersEnabled && !loading && (
+        <div className={styles.preOrderSection}>
+          <Alert 
+            variant="info" 
+            message="Pre-Orders Enabled - This vendor accepts scheduled pre-orders. Select a date and time slot for your order."
+          />
+          
+          {onlineOrdersSuspended && (
+            <Alert 
+              variant="warning" 
+              message="Walk-in Orders Suspended - Only pre-orders are currently being accepted. Please select a date and time slot below."
+            />
+          )}
+          
+          <div className={styles.preOrderInputs}>
+            <DatePicker
+              label="Order Date"
+              value={preOrderDate}
+              onChange={(e) => setPreOrderDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              required={onlineOrdersSuspended}
+            />
+            
+            {preOrderDate && (
+              <PreOrderSlotSelector
+                slots={availableSlots}
+                selectedSlotId={selectedSlot?.id || undefined}
+                onSelectSlot={(slotId: string) => {
+                  const slot = availableSlots.find(s => s.id === slotId);
+                  setSelectedSlot(slot || null);
+                }}
+                required={onlineOrdersSuspended}
+              />
+            )}
+          </div>
         </div>
       )}
       
@@ -567,8 +674,17 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({ basketItems, costBr
           </label>
         </div>
         
-        <button type="submit" className={styles.payBtn} disabled={loading || !acceptedTerms || (hasRestrictedItems && !acknowledgedRestrictions)}>
-          {loading ? 'Processing...' : 'Pay Now'}
+        <button 
+          type="submit" 
+          className={styles.payBtn} 
+          disabled={
+            loading || 
+            !acceptedTerms || 
+            (hasRestrictedItems && !acknowledgedRestrictions) ||
+            (onlineOrdersSuspended && !selectedSlot)
+          }
+        >
+          {loading ? 'Processing...' : selectedSlot ? 'Schedule Pre-Order' : 'Pay Now'}
         </button>
       </form>
       {error && <Typography variant="body-small" style={{ color: 'var(--color-error)' }}>{error}</Typography>}

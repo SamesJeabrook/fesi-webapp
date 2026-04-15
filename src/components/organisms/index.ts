@@ -20,3 +20,5 @@ export * from './CreateTablesModal';
 export * from './StaffCard';
 export * from './StaffFormModal';
 export * from './StaffPinLogin';
+export * from './PreOrderSettingsForm';
+export * from './EventPreOrderConfig';

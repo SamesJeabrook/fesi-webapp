@@ -11,6 +11,7 @@ import { createEventAPI, EventAPIInterface } from '@/services/eventAPI';
 import { Event, EventFormData, DailySchedule } from '@/types/events';
 import { Menu } from '@/types/menu.types';
 import { DailyScheduleCard } from '@/components/molecules/DailyScheduleCard';
+import { EventPreOrderConfig } from '@/components/organisms/EventPreOrderConfig';
 import { useAuth0 } from '@auth0/auth0-react';
 import { getAuthToken } from '@/utils/devAuth';
 import api from '@/utils/api';
@@ -72,7 +73,9 @@ export function EventManagementTemplate({
     longitude: -0.1278,
     eventType: 'multi_day',
     isOpen: false,
-    schedules: [createDefaultSchedule(1)]
+    schedules: [createDefaultSchedule(1)],
+    pre_orders_enabled: false,
+    pre_order_menu_id: undefined
   });
 
   // API instance
@@ -171,7 +174,9 @@ export function EventManagementTemplate({
         eventType: 'multi_day',
         isOpen: false,
         menu_id: undefined,
-        schedules: [createDefaultSchedule(1)]
+        schedules: [createDefaultSchedule(1)],
+        pre_orders_enabled: false,
+        pre_order_menu_id: undefined
       });
     } catch (error) {
       console.error('Failed to create event:', error);
@@ -188,7 +193,9 @@ export function EventManagementTemplate({
       eventType: 'multi_day',
       isOpen: false,
       menu_id: undefined,
-      schedules: [createDefaultSchedule(1)]
+      schedules: [createDefaultSchedule(1)],
+      pre_orders_enabled: false,
+      pre_order_menu_id: undefined
     });
   };
 
@@ -248,6 +255,8 @@ export function EventManagementTemplate({
       eventType: event.event_type as 'single_day' | 'multi_day',
       isOpen: event.is_open,
       menu_id: event.menu_id || undefined,
+      pre_orders_enabled: event.pre_orders_enabled || false,
+      pre_order_menu_id: event.pre_order_menu_id || undefined,
       schedules: event.schedules?.map((schedule, index) => ({
         dayNumber: index + 1,
         date: schedule.date,
@@ -279,7 +288,9 @@ export function EventManagementTemplate({
         latitude: eventForm.latitude,
         longitude: eventForm.longitude,
         isOpen: eventForm.isOpen,
-        menu_id: eventForm.menu_id || undefined
+        menu_id: eventForm.menu_id || undefined,
+        pre_orders_enabled: eventForm.pre_orders_enabled || false,
+        pre_order_menu_id: eventForm.pre_order_menu_id || undefined
       });
       
       // If it's a multi-day event, also update schedules
@@ -594,6 +605,21 @@ export function EventManagementTemplate({
             </div>
           </div>
 
+          {/* Pre-Order Configuration */}
+          <div className={styles.eventForm__section}>
+            <EventPreOrderConfig
+              merchantId={merchantId || ''}
+              availableMenus={menus.map(m => ({ id: m.id, name: m.name }))}
+              preOrdersEnabled={eventForm.pre_orders_enabled || false}
+              preOrderMenuId={eventForm.pre_order_menu_id || null}
+              onChange={(config) => setEventForm(prev => ({ 
+                ...prev, 
+                pre_orders_enabled: config.preOrdersEnabled,
+                pre_order_menu_id: config.preOrderMenuId || undefined
+              }))}
+            />
+          </div>
+
           <div className={styles.eventForm__section}>
             <Typography variant="heading-6">Event Location</Typography>
             <LocationPicker
@@ -710,6 +736,21 @@ export function EventManagementTemplate({
                 Event is open for orders
               </label>
             </div>
+          </div>
+
+          {/* Pre-Order Configuration */}
+          <div className={styles.eventForm__section}>
+            <EventPreOrderConfig
+              merchantId={merchantId || ''}
+              availableMenus={menus.map(m => ({ id: m.id, name: m.name }))}
+              preOrdersEnabled={eventForm.pre_orders_enabled || false}
+              preOrderMenuId={eventForm.pre_order_menu_id || null}
+              onChange={(config) => setEventForm(prev => ({ 
+                ...prev, 
+                pre_orders_enabled: config.preOrdersEnabled,
+                pre_order_menu_id: config.preOrderMenuId || undefined
+              }))}
+            />
           </div>
 
           <div className={styles.eventForm__section}>

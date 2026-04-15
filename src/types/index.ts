@@ -129,6 +129,8 @@ export interface Event extends BaseEntity {
     is_open: boolean,
     start_time: string,
     end_time: string,
+    pre_orders_enabled?: boolean,
+    pre_order_menu_id?: string,
   }
 
 export interface Order extends BaseEntity {

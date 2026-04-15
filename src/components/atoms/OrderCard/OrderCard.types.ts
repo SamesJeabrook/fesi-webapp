@@ -26,6 +26,8 @@ export interface OrderCardProps {
     refired_item_ids?: string[];
     payment_status?: 'pending' | 'completed' | 'failed' | 'refunded';
     table_number?: string;
+    is_pre_order?: boolean;
+    scheduled_time?: string;
   };
   /** Whether the card is draggable */
   isDraggable?: boolean;

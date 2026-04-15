@@ -50,3 +50,5 @@ export * from './InvitationCard';
 export * from './MyInvitations';
 export * from './GroupEventForm';
 export * from './InvitationManager';
+export * from './PreOrderSlotSelector';
+export * from './PreOrderBadge';

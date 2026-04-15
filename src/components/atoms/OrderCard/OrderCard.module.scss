@@ -362,3 +362,14 @@
     gap: 4px;
   }
 }
+
+/* Pre-Order styling */
+.orderCard.preOrder {
+  border-left: 6px solid #ff8c00;
+  background: linear-gradient(to right, rgba(255, 140, 0, 0.03) 0%, white 20%);
+}
+
+.preOrderBadge {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
