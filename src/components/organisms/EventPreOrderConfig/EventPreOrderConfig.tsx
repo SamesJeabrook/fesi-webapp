@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Toggle, Alert, FormSelect } from '@/components/atoms';
-import styles from './Event PreOrderConfig.module.scss';
+import styles from './EventPreOrderConfig.module.scss';
 
 export interface EventPreOrderConfigProps {
   eventId?: string;
