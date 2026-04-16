@@ -100,7 +100,7 @@ export default function PreOrderSettingsPage() {
     return (
       <ProtectedRoute requireRole={['merchant']}>
         <div className={styles.preOrderSettings}>
-          <BackLink href="/merchant/admin/settings">Back to Settings</BackLink>
+          <BackLink href="/merchant/admin/settings" label="Back to Settings"/>
           <div className={styles.preOrderSettings__loading}>
             <Typography variant="body-medium">Loading settings...</Typography>
           </div>
@@ -112,7 +112,7 @@ export default function PreOrderSettingsPage() {
   return (
     <ProtectedRoute requireRole={['merchant']}>
       <div className={styles.preOrderSettings}>
-        <BackLink href="/merchant/admin/settings">Back to Settings</BackLink>
+        <BackLink href="/merchant/admin/settings" label="Back to Settings"/>
 
         <div className={styles.preOrderSettings__header}>
           <div>

@@ -85,7 +85,7 @@ export const PreOrderSettingsForm: React.FC<PreOrderSettingsFormProps> = ({
             <div className={styles.settingsForm__row}>
               <FormSelect
                 label="Slot Duration"
-                value={formData.slot_duration_minutes}
+                value={formData.slot_duration_minutes.toString()}
                 onChange={(e) => setFormData({ 
                   ...formData, 
                   slot_duration_minutes: parseInt(e.target.value) 
@@ -93,14 +93,15 @@ export const PreOrderSettingsForm: React.FC<PreOrderSettingsFormProps> = ({
                 helpText="How long each time slot lasts"
                 disabled={isLoading}
                 required
-              >
-                <option value={15}>15 minutes</option>
-                <option value={30}>30 minutes</option>
-                <option value={45}>45 minutes</option>
-                <option value={60}>1 hour</option>
-                <option value={90}>1.5 hours</option>
-                <option value={120}>2 hours</option>
-              </FormSelect>
+                options={[
+                  { value: '15', label: '15 minutes' },
+                  { value: '30', label: '30 minutes' },
+                  { value: '45', label: '45 minutes' },
+                  { value: '60', label: '1 hour' },
+                  { value: '90', label: '1.5 hours' },
+                  { value: '120', label: '2 hours' }
+                ]}
+              />
 
               <NumberInput
                 label="Orders Per Slot"

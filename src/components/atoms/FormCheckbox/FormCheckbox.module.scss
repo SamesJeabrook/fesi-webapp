@@ -78,6 +78,7 @@
         position: relative;
         transition: all 0.2s ease;
 
+        // Override default checkmark with switch ball
         &::after {
           content: '';
           position: absolute;
@@ -87,6 +88,9 @@
           height: 1rem;
           background-color: white;
           border-radius: 50%;
+          border: none;
+          transform: none;
+          opacity: 1;
           transition: all 0.2s ease;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
@@ -143,7 +147,7 @@
     color: transparent;
     position: relative;
 
-    // CSS checkmark
+    // CSS checkmark (only for default variant)
     &::after {
       content: '';
       position: absolute;

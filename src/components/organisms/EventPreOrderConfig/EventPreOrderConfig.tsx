@@ -59,21 +59,16 @@ export const EventPreOrderConfig: React.FC<EventPreOrderConfigProps> = ({
       {enabled && (
         <>
           {!hasCustomSettings && (
-            <Alert type="warning" className={styles.preOrderConfig__alert}>
-              <strong>Using System Defaults</strong>
-              <p>
-                You're using the default pre-order settings (4 orders every 15 minutes).{' '}
-                {onManageSettings && (
-                  <button 
-                    type="button"
-                    onClick={onManageSettings} 
-                    className={styles.preOrderConfig__settingsLink}
-                  >
-                    Configure pre-order settings →
-                  </button>
-                )}
-              </p>
-            </Alert>
+            <Alert 
+              type="warning" 
+              className={styles.preOrderConfig__alert}
+              title="Using System Defaults"
+              message="You're using the default pre-order settings (4 orders every 15 minutes)."
+              actions={onManageSettings ? [{
+                label: 'Configure pre-order settings →',
+                onClick: onManageSettings
+              }] : undefined}
+            />
           )}
 
           <div className={styles.preOrderConfig__menuSelect}>
@@ -84,39 +79,25 @@ export const EventPreOrderConfig: React.FC<EventPreOrderConfigProps> = ({
               helpText="Which menu should be available for pre-orders"
               disabled={disabled || availableMenus.length === 0}
               required
-            >
-              {availableMenus.length === 0 ? (
-                <option value="">No menus available</option>
-              ) : (
-                <>
-                  <option value="">Select a menu</option>
-                  {availableMenus.map((menu) => (
-                    <option key={menu.id} value={menu.id}>
-                      {menu.name}
-                    </option>
-                  ))}
-                </>
-              )}
-            </FormSelect>
+              placeholder={availableMenus.length === 0 ? "No menus available" : "Select a menu"}
+              options={availableMenus.map(menu => ({
+                value: menu.id,
+                label: menu.name
+              }))}
+            />
           </div>
 
           {hasCustomSettings && (
             <div className={styles.preOrderConfig__info}>
-              <Alert type="success">
-                <strong>Custom Settings Applied</strong>
-                <p>
-                  This event is using your customized pre-order settings.{' '}
-                  {onManageSettings && (
-                    <button 
-                      type="button"
-                      onClick={onManageSettings} 
-                      className={styles.preOrderConfig__settingsLink}
-                    >
-                      View settings →
-                    </button>
-                  )}
-                </p>
-              </Alert>
+              <Alert 
+                type="success" 
+                title="Custom Settings Applied" 
+                message="This event is using your customized pre-order settings."
+                actions={onManageSettings ? [{
+                  label: 'View settings →',
+                  onClick: onManageSettings
+                }] : undefined}
+              />
             </div>
           )}
 
