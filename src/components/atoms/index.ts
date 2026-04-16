@@ -1,4 +1,5 @@
 // Atomic components export
+export * from './ActivityIndicator';
 export * from './Alert';
 export * from './Button';
 export * from './Input';

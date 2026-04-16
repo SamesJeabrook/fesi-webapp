@@ -227,7 +227,7 @@ export const PreOrderSlotSelector: React.FC<PreOrderSlotSelectorProps> = ({
         <Button 
           variant="primary" 
           onClick={handleConfirm}
-          disabled={!selectedSlotId || loading}
+          isDisabled={!selectedSlotId || loading}
           className={styles.slotSelector__confirmButton}
         >
           Continue to Payment

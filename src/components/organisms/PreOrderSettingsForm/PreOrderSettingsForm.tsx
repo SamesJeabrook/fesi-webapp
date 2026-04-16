@@ -206,7 +206,7 @@ export const PreOrderSettingsForm: React.FC<PreOrderSettingsFormProps> = ({
             type="button" 
             variant="secondary" 
             onClick={onCancel}
-            disabled={isLoading}
+            isDisabled={isLoading}
           >
             Cancel
           </Button>
@@ -214,7 +214,7 @@ export const PreOrderSettingsForm: React.FC<PreOrderSettingsFormProps> = ({
         <Button 
           type="submit" 
           variant="primary"
-          disabled={isLoading}
+          isDisabled={isLoading}
         >
           {isLoading ? 'Saving...' : 'Save Settings'}
         </Button>

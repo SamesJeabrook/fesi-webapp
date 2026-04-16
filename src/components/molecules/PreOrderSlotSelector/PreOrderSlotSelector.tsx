@@ -74,21 +74,13 @@ export const PreOrderSlotSelector: React.FC<PreOrderSlotSelectorProps> = ({
         helpText={helpText}
         disabled={disabled || slots.length === 0}
         required={required}
-      >
-        <option value="" disabled>
-          {slots.length === 0 ? 'No slots available' : 'Select a time slot'}
-        </option>
-        
-        {slots.map((slot) => (
-          <option
-            key={slot.id}
-            value={slot.id}
-            disabled={slot.status === 'full' || slot.available_spots === 0}
-          >
-            {getSlotLabel(slot)}
-          </option>
-        ))}
-      </FormSelect>
+        placeholder={slots.length === 0 ? 'No slots available' : 'Select a time slot'}
+        options={slots.map((slot) => ({
+          value: slot.id,
+          label: getSlotLabel(slot),
+          disabled: slot.status === 'full' || slot.available_spots === 0
+        }))}
+      />
 
       {slots.length === 0 && (
         <div className={styles.slotSelector__emptyState}>
