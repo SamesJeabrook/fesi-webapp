@@ -7,6 +7,19 @@ import EmptyBasketNotice from '@/components/molecules/EmptyBasketNotice/EmptyBas
 import { Event } from '@/types';
 import { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 
+interface PreOrderSettings {
+  enabled: boolean;
+  slot_duration_minutes: number;
+  orders_per_slot: number;
+  min_advance_minutes: number;
+  max_advance_hours: number;
+}
+
+interface SelectedPreOrderSlot {
+  id: string;
+  time: string;
+}
+
 export interface OrderSummaryProps {
   items: OrderItem[];
   costBreakdown: OrderCostBreakdownProps;
@@ -18,10 +31,27 @@ export interface OrderSummaryProps {
   onOrderAccepted?: (order: OrderListItem) => void;
   tableId?: string;
   tableNumber?: string;
+  preOrderSettings?: PreOrderSettings | null;
+  selectedPreOrderSlot?: SelectedPreOrderSlot | null;
+  onPreOrderSlotSelected?: (slotId: string, slotTime: string) => void;
 }
 
 
-const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRemoveItem, clientSecret, onPaymentSuccess, onPaymentError, event, onOrderAccepted, tableId, tableNumber }) => {
+const OrderSummary: React.FC<OrderSummaryProps> = ({ 
+  items, 
+  costBreakdown, 
+  onRemoveItem, 
+  clientSecret, 
+  onPaymentSuccess, 
+  onPaymentError, 
+  event, 
+  onOrderAccepted, 
+  tableId, 
+  tableNumber,
+  preOrderSettings,
+  selectedPreOrderSlot,
+  onPreOrderSlotSelected,
+}) => {
   return (
     <div className={styles.summary}>
       {items.length === 0 ? (
@@ -39,6 +69,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ items, costBreakdown, onRem
             onOrderAccepted={typeof onOrderAccepted === 'function' ? onOrderAccepted : undefined}
             tableId={tableId}
             tableNumber={tableNumber}
+            preOrderSettings={preOrderSettings}
+            selectedPreOrderSlot={selectedPreOrderSlot}
+            onPreOrderSlotSelected={onPreOrderSlotSelected}
           />
         </>
       )}

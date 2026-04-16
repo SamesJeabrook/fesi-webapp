@@ -17,6 +17,7 @@ import { Button } from '@/components';
 import OrderSummary from '@/components/organisms/OrderSummary/OrderSummary';
 import { paymentConfig } from '@/config/paymentConfig';
 import Tabs, { Tab } from '@/components/molecules/Tabs/Tabs';
+import PreOrderNotificationBar from '@/components/organisms/PreOrderNotificationBar/PreOrderNotificationBar';
 import api from '@/utils/api';
 import styles from './VendorMenuWrapper.module.scss';
 
@@ -75,6 +76,20 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     item: MenuItem | null;
   }>({ show: false, item: null });
 
+  // Pre-order related state
+  interface PreOrderSettings {
+    enabled: boolean;
+    slot_duration_minutes: number;
+    orders_per_slot: number;
+    min_advance_minutes: number;
+    max_advance_hours: number;
+  }
+  const [preOrderSettings, setPreOrderSettings] = useState<PreOrderSettings | null>(null);
+  const [selectedPreOrderSlot, setSelectedPreOrderSlot] = useState<{
+    id: string;
+    time: string;
+  } | null>(null);
+
   // Restore basket and cost breakdown from localStorage on mount
   useEffect(() => {
     const savedBasketItems = localStorage.getItem('basketItems');
@@ -131,6 +146,24 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
 
     return () => clearInterval(interval);
   }, [orders.length]); // Only re-run if number of orders changes
+
+  // Fetch pre-order settings for the event
+  useEffect(() => {
+    const fetchPreOrderSettings = async () => {
+      if (!eventData?.id) return;
+
+      try {
+        const response = await api.get(`/api/pre-orders/events/${eventData.id}/settings`);
+        if (response.success && response.settings) {
+          setPreOrderSettings(response.settings);
+        }
+      } catch (error) {
+        console.error('Failed to fetch pre-order settings:', error);
+      }
+    };
+
+    fetchPreOrderSettings();
+  }, [eventData?.id]);
 
   // Handle option group selection changes for the modal
   const handleOptionsChange = (groupId: string, selected: string[], menuItem?: MenuItem) => {
@@ -445,6 +478,10 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     setRestrictionWarning({ show: false, item: null });
   };
 
+  const handlePreOrderSlotSelected = (slotId: string, slotTime: string) => {
+    setSelectedPreOrderSlot({ id: slotId, time: slotTime });
+  };
+
   return (
     <>
       {tableNumber && (
@@ -462,7 +499,15 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
           </p>
         </div>
       )}
-      {!activeEvent && (<Notification message={`${merchant.name} is not taking orders right now,`} subMessage=' but you can still view their menu.' type="warning" />)}
+      {!activeEvent && preOrderSettings?.enabled && (
+        <PreOrderNotificationBar 
+          merchantName={merchant.name}
+          upcomingEventDate={eventData?.start_time}
+          upcomingEventTime={eventData?.start_time ? new Date(eventData.start_time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : undefined}
+          upcomingEventName={eventData?.name}
+        />
+      )}
+      {!activeEvent && (<Notification message={`${merchant.name} is not taking orders right now,`} subMessage={preOrderSettings?.enabled ? ' but you can pre-order for upcoming events!' : ' but you can still view their menu.'} type="warning" />)}
       <MenuDisplay
         merchant={merchant}
         categories={categories.map(cat => ({ ...cat, items: cat.items || [] }))}
@@ -583,6 +628,9 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
                 onOrderAccepted={handleOrderAccepted}
                 tableId={tableId ?? undefined}
                 tableNumber={tableNumber ?? undefined}
+                preOrderSettings={preOrderSettings}
+                selectedPreOrderSlot={selectedPreOrderSlot}
+                onPreOrderSlotSelected={handlePreOrderSlotSelected}
               />
             </Tab>
             <Tab tabKey='orders'>
