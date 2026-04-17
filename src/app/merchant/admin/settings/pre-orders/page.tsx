@@ -116,9 +116,9 @@ export default function PreOrderSettingsPage() {
 
         <div className={styles.preOrderSettings__header}>
           <div>
-            <Typography variant="heading-2">Pre-Order Settings</Typography>
+            <Typography variant="heading-2">Time Slot & Pre-Order Settings</Typography>
             <Typography variant="body-medium" className={styles.preOrderSettings__subtitle}>
-              Configure how customers can schedule orders for specific time slots
+              Configure time slot management for deliveries/pickups and allow customers to book future orders
             </Typography>
           </div>
         </div>
@@ -138,17 +138,19 @@ export default function PreOrderSettingsPage() {
         <div className={styles.preOrderSettings__content}>
           <div className={styles.preOrderSettings__infoBox}>
             <Typography variant="heading-5" className={styles.infoBox__title}>
-              About Pre-Orders
+              About Time Slots & Pre-Orders
             </Typography>
             <Typography variant="body-small" className={styles.infoBox__text}>
-              Pre-orders allow customers to schedule their orders for specific pickup times. 
+              Control how customers order from you using timed delivery/pickup slots. 
               This helps you manage capacity, reduce wait times, and plan your workflow more effectively.
             </Typography>
             <ul className={styles.infoBox__list}>
+              <li><strong>Pre-Orders:</strong> Allow booking for future dates</li>
+              <li><strong>Slot-Based Ordering:</strong> Force time slot selection for all orders (including today)</li>
               <li>Set time slots (e.g., every 15 minutes)</li>
-              <li>Control how many orders per slot</li>
+              <li>Control capacity per slot (by orders or items)</li>
               <li>Manage advance booking window</li>
-              <li>Optionally suspend online orders when at capacity</li>
+              <li>Optionally suspend orders when at capacity</li>
             </ul>
           </div>
 

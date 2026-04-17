@@ -5,6 +5,7 @@ import styles from './PreOrderSettingsForm.module.scss';
 
 export interface PreOrderSettings {
   enabled: boolean;
+  require_time_slot_selection: boolean; // Force all orders to use time slots (not just pre-orders)
   slot_duration_minutes: number;
   orders_per_slot: number;
   capacity_type: 'orders' | 'items';
@@ -24,6 +25,7 @@ export interface PreOrderSettingsFormProps {
 
 const DEFAULT_SETTINGS: PreOrderSettings = {
   enabled: false,
+  require_time_slot_selection: false,
   slot_duration_minutes: 15,
   orders_per_slot: 4,
   capacity_type: 'orders',
@@ -73,20 +75,32 @@ export const PreOrderSettingsForm: React.FC<PreOrderSettingsFormProps> = ({
         
         <Toggle
           label="Enable Pre-Orders"
-          helpText="Allow customers to schedule orders for specific time slots"
+          helpText="Allow customers to schedule orders for future dates"
           checked={formData.enabled}
           onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
           disabled={isLoading}
         />
 
-        {formData.enabled && (
+        <Toggle
+          label="Require Time Slot Selection"
+          helpText="Force all orders to use time slots (including today) - customers must pick a delivery/pickup time"
+          checked={formData.require_time_slot_selection}
+          onChange={(e) => setFormData({ ...formData, require_time_slot_selection: e.target.checked })}
+          disabled={isLoading}
+        />
+
+        {(formData.enabled || formData.require_time_slot_selection) && (
           <Alert type="info" className={styles.settingsForm__alert}>
-            <strong>Pre-orders are enabled.</strong> Configure your time slot settings below.
+            {formData.require_time_slot_selection ? (
+              <><strong>Slot-based ordering is active.</strong> All customers must select a time slot. Configure your time slot settings below.</>
+            ) : (
+              <><strong>Pre-orders are enabled.</strong> Configure your time slot settings below.</>
+            )}
           </Alert>
         )}
       </Card>
 
-      {formData.enabled && (
+      {(formData.enabled || formData.require_time_slot_selection) && (
         <>
           <Card className={styles.settingsForm__section}>
             <h3 className={styles.settingsForm__sectionTitle}>Time Slot Configuration</h3>

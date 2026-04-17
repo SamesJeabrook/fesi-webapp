@@ -9,6 +9,7 @@ import { OrderListItem } from '@/components/molecules/OrderList/OrderList';
 
 interface PreOrderSettings {
   enabled: boolean;
+  require_time_slot_selection: boolean;
   slot_duration_minutes: number;
   orders_per_slot: number;
   min_advance_minutes: number;

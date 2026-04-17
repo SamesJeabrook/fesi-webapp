@@ -22,6 +22,7 @@ export interface OrderPaymentFormProps {
   tableNumber?: string;
   preOrderSettings?: {
     enabled: boolean;
+    require_time_slot_selection: boolean;
     slot_duration_minutes: number;
     orders_per_slot: number;
     min_advance_minutes: number;
@@ -73,8 +74,10 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [onlineOrdersSuspended, setOnlineOrdersSuspended] = useState(false);
   
-  // Check if pre-orders are enabled - use either prop or eventData flag
+  // Check if time slot selection is required - either pre-orders are enabled OR slot-based ordering is required
   const preOrdersEnabled = (preOrderSettings?.enabled === true) || (eventData?.pre_orders_enabled === true);
+  const requireTimeSlotSelection = preOrderSettings?.require_time_slot_selection === true;
+  const needsSlotSelection = preOrdersEnabled || requireTimeSlotSelection;
   
   // Guest info state
   const [guestInfo, setGuestInfo] = useState({
@@ -521,8 +524,8 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({
     return <PaymentHoldingNotice />;
   }
 
-  // If pre-orders are enabled and no slot is selected yet, show slot selector first
-  if (preOrdersEnabled && !selectedPreOrderSlot && eventData?.id) {
+  // If time slot selection is required and no slot is selected yet, show slot selector first
+  if (needsSlotSelection && !selectedPreOrderSlot && eventData?.id) {
     return (
       <PreOrderSlotSelectorOrganism
         eventId={eventData.id}
@@ -540,8 +543,8 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({
     <div className={styles.formWrapper}>
       <Typography variant="heading-5">Payment Details</Typography>
       
-      {/* Show selected pre-order slot info if applicable */}
-      {preOrdersEnabled && selectedPreOrderSlot && (
+      {/* Show selected time slot info if applicable */}
+      {needsSlotSelection && selectedPreOrderSlot && (
         <div style={{ 
           background: 'var(--color-success-lightest, #dcfce7)', 
           border: '2px solid var(--color-success, #10b981)',
