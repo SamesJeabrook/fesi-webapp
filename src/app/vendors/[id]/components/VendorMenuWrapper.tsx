@@ -147,13 +147,22 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     return () => clearInterval(interval);
   }, [orders.length]); // Only re-run if number of orders changes
 
-  // Fetch pre-order settings for the event
+  // Fetch pre-order settings for the event or merchant
   useEffect(() => {
     const fetchPreOrderSettings = async () => {
-      if (!eventData?.id) return;
-
       try {
-        const response = await api.get(`/api/pre-orders/events/${eventData.id}/settings`);
+        let response;
+        
+        // If there's event data (active or upcoming), try to get event-specific settings
+        if (eventData?.id) {
+          response = await api.get(`/api/pre-orders/events/${eventData.id}/settings`);
+        } else if (merchant?.id) {
+          // Otherwise, get merchant-level default settings
+          response = await api.get(`/api/pre-orders/merchants/${merchant.id}/settings`);
+        } else {
+          return;
+        }
+
         if (response.success && response.settings) {
           setPreOrderSettings(response.settings);
         }
@@ -163,7 +172,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     };
 
     fetchPreOrderSettings();
-  }, [eventData?.id]);
+  }, [eventData?.id, merchant?.id]);
 
   // Handle option group selection changes for the modal
   const handleOptionsChange = (groupId: string, selected: string[], menuItem?: MenuItem) => {
@@ -507,13 +516,19 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
           upcomingEventName={eventData?.name}
         />
       )}
-      {!activeEvent && (<Notification message={`${merchant.name} is not taking orders right now,`} subMessage={preOrderSettings?.enabled ? ' but you can pre-order for upcoming events!' : ' but you can still view their menu.'} type="warning" />)}
+      {!activeEvent && !preOrderSettings?.enabled && (
+        <Notification 
+          message={`${merchant.name} is not taking orders right now.`} 
+          subMessage="You can still view their menu." 
+          type="warning" 
+        />
+      )}
       <MenuDisplay
         merchant={merchant}
         categories={categories.map(cat => ({ ...cat, items: cat.items || [] }))}
-        onItemClick={handleItemClick}
+        onItemClick={activeEvent || preOrderSettings?.enabled ? handleItemClick : undefined}
       />
-      {activeEvent && (
+      {(activeEvent || preOrderSettings?.enabled) && (
         <>
           <BasketSummary items={basketItems} total={basketTotal} />
           <CheckoutButtonWrapper>
@@ -604,7 +619,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
         {selectedMenuItem && (
           <MenuItemDetails
             item={selectedMenuItem}
-            disabled={!activeEvent}
+            disabled={!activeEvent && !preOrderSettings?.enabled}
             selectedOptions={selectedOptions}
             onOptionsChange={(groupId, selected) => handleOptionsChange(groupId, selected.map(opt => opt.id), selectedMenuItem)}
             onAddToOrder={(qty: number) => handleAddToOrder(selectedMenuItem.id, qty)}
@@ -612,7 +627,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
           />
         )}
       </FullscreenTransition>
-      {activeEvent && (
+      {(activeEvent || preOrderSettings?.enabled) && (
         <FullscreenTransition
           open={checkoutDisplay}
           onClose={() => setCheckoutDisplay(false)}

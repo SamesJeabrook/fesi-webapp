@@ -1,0 +1,242 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem;
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--color-neutral-200);
+  }
+
+  &__subtitle {
+    color: var(--color-neutral-600);
+  }
+
+  &__slots {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  background-color: var(--color-neutral-white);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--color-primary-300);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-neutral-200);
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  &__time {
+    color: var(--color-neutral-900);
+    font-weight: 600;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-neutral-600);
+  }
+
+  &__orderCount,
+  &__itemCount {
+    font-weight: 500;
+  }
+
+  &__capacity {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.375rem;
+    min-width: 120px;
+  }
+
+  &__capacityBar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--color-neutral-200);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  &__capacityFill {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 4px;
+
+    &.capacity--low {
+      background-color: var(--color-success-main);
+    }
+
+    &.capacity--medium {
+      background-color: var(--color-warning-main);
+    }
+
+    &.capacity--high {
+      background-color: var(--color-warning-dark);
+    }
+
+    &.capacity--full {
+      background-color: var(--color-error-main);
+    }
+  }
+
+  &__capacityLabel {
+    color: var(--color-neutral-600);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  &__orders {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  &__orderCard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    // Don't add overflow: hidden or background as it interferes with OrderCard styling
+  }
+
+  &__orderActions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0.5rem 0 0.5rem; // No bottom padding, no background
+    margin-top: -0.5rem; // Pull up closer to the card
+  }
+}
+
+.actionButton {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &--primary {
+    background-color: var(--color-primary-500);
+    color: white;
+
+    &:hover {
+      background-color: var(--color-primary-600);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &--success {
+    background-color: var(--color-success-main);
+    color: white;
+
+    &:hover {
+      background-color: var(--color-success-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 3rem 1.5rem;
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    max-width: 400px;
+    text-align: center;
+  }
+
+  &__icon {
+    font-size: 4rem;
+    line-height: 1;
+    opacity: 0.5;
+  }
+
+  &__title {
+    color: var(--color-neutral-900);
+    margin: 0;
+  }
+
+  &__message {
+    color: var(--color-neutral-600);
+    margin: 0;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .timeline {
+    padding: 0.5rem;
+
+    &__slots {
+      gap: 1rem;
+    }
+  }
+
+  .slot {
+    padding: 1rem;
+
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    &__capacity {
+      width: 100%;
+      align-items: flex-start;
+    }
+
+    &__orders {
+      grid-template-columns: 1fr;
+    }
+  }
+}

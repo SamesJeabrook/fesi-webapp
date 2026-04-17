@@ -88,6 +88,25 @@ export default async function VendorPage({
         if (eventData.menu_id) {
           menuIdToFetch = eventData.menu_id;
         }
+      } else {
+        // No active event - check for upcoming events for pre-orders
+        try {
+          const eventsResponse = await fetch(`${apiUrl}/api/events?merchant_id=${merchant.id}`);
+          if (eventsResponse.ok) {
+            const eventsData = await eventsResponse.json();
+            // Find the next upcoming event (future events sorted by start time)
+            const now = new Date();
+            const upcomingEvents = eventsData
+              .filter((evt: any) => new Date(evt.start_time) > now)
+              .sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+            
+            if (upcomingEvents.length > 0) {
+              eventData = upcomingEvents[0];  // Use the next upcoming event for pre-orders
+            }
+          }
+        } catch (err) {
+          console.log('Could not fetch upcoming events:', err);
+        }
       }
     }
 

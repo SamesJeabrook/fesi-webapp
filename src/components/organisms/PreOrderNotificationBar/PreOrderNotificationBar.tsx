@@ -46,17 +46,18 @@ export const PreOrderNotificationBar: React.FC<PreOrderNotificationBarProps> = (
             variant="body-medium" 
             className={styles.preOrderBar__title}
           >
-            We're Taking Pre-Orders!
+            {merchantName} is Closed – Pre-Orders Available
           </Typography>
           
           <Typography 
             variant="body-small" 
             className={styles.preOrderBar__description}
           >
-            {merchantName} is currently closed, but you can pre-order for{' '}
-            {upcomingEventName && <strong>{upcomingEventName}</strong>}
-            {eventDate && <>{eventDate}{upcomingEventTime && ` at ${upcomingEventTime}`}</>}
-            {!eventDate && 'the upcoming event'}
+            Book your time slot for{' '}
+            {upcomingEventName && <strong>{upcomingEventName} </strong>}
+            {eventDate && <>{eventDate}{upcomingEventTime && ` at ${upcomingEventTime}`}. </>}
+            {!eventDate && 'the upcoming event. '}
+            Browse the menu and select your items to choose a pickup time.
           </Typography>
         </div>
 

@@ -3,7 +3,7 @@
 // Event Management Page Template
 // Template for both admin and merchant event management interfaces
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Typography, Button } from '@/components/atoms';
 import { Modal, AdminPageHeader, LocationPicker } from '@/components/molecules';
@@ -80,6 +80,15 @@ export function EventManagementTemplate({
 
   // API instance
   const [eventApi, setEventApi] = useState<EventAPIInterface | null>(null);
+
+  // Memoized callback for pre-order config changes
+  const handlePreOrderConfigChange = useCallback((config: { preOrdersEnabled: boolean; preOrderMenuId: string | null }) => {
+    setEventForm(prev => ({
+      ...prev,
+      pre_orders_enabled: config.preOrdersEnabled,
+      pre_order_menu_id: config.preOrderMenuId || undefined
+    }));
+  }, []);
 
   // Initialize API when Auth0 is ready
   useEffect(() => {
@@ -612,11 +621,7 @@ export function EventManagementTemplate({
               availableMenus={menus.map(m => ({ id: m.id, name: m.name }))}
               preOrdersEnabled={eventForm.pre_orders_enabled || false}
               preOrderMenuId={eventForm.pre_order_menu_id || null}
-              onChange={(config) => setEventForm(prev => ({ 
-                ...prev, 
-                pre_orders_enabled: config.preOrdersEnabled,
-                pre_order_menu_id: config.preOrderMenuId || undefined
-              }))}
+              onChange={handlePreOrderConfigChange}
             />
           </div>
 
@@ -745,11 +750,7 @@ export function EventManagementTemplate({
               availableMenus={menus.map(m => ({ id: m.id, name: m.name }))}
               preOrdersEnabled={eventForm.pre_orders_enabled || false}
               preOrderMenuId={eventForm.pre_order_menu_id || null}
-              onChange={(config) => setEventForm(prev => ({ 
-                ...prev, 
-                pre_orders_enabled: config.preOrdersEnabled,
-                pre_order_menu_id: config.preOrderMenuId || undefined
-              }))}
+              onChange={handlePreOrderConfigChange}
             />
           </div>
 

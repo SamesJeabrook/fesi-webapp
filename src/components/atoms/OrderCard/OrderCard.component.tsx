@@ -20,7 +20,7 @@ export const OrderCard: React.FC<OrderCardProps> = ({
       [styles.draggable]: isDraggable,
       [styles.dragging]: isDragging,
       [styles.clickable]: onClick,
-      [styles.refired]: order.refired_at && order.status === 'preparing',
+      [styles.refired]: order.refired_at && ['accepted', 'preparing', 'ready'].includes(order.status),
       [styles.paymentPending]: order.payment_status === 'pending',
       [styles.preOrder]: order.is_pre_order === true,
     },

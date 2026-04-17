@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Toggle, NumberInput, FormSelect, Alert } from '@/components/atoms';
 import { Button, Card } from '@/components/atoms';
 import styles from './PreOrderSettingsForm.module.scss';
@@ -7,6 +7,7 @@ export interface PreOrderSettings {
   enabled: boolean;
   slot_duration_minutes: number;
   orders_per_slot: number;
+  capacity_type: 'orders' | 'items';
   min_advance_minutes: number;
   max_advance_hours: number;
   suspend_online_when_slots_full: boolean;
@@ -25,6 +26,7 @@ const DEFAULT_SETTINGS: PreOrderSettings = {
   enabled: false,
   slot_duration_minutes: 15,
   orders_per_slot: 4,
+  capacity_type: 'orders',
   min_advance_minutes: 30,
   max_advance_hours: 48,
   suspend_online_when_slots_full: false,
@@ -45,6 +47,13 @@ export const PreOrderSettingsForm: React.FC<PreOrderSettingsFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<PreOrderSettings>(settings);
   const [error, setError] = useState<string | null>(null);
+
+  // Update form data when settings prop changes
+  useEffect(() => {
+    if (settings) {
+      setFormData(settings);
+    }
+  }, [settings]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,8 +112,28 @@ export const PreOrderSettingsForm: React.FC<PreOrderSettingsFormProps> = ({
                 ]}
               />
 
+              <FormSelect
+                label="Capacity Type"
+                value={formData.capacity_type}
+                onChange={(e) => setFormData({ 
+                  ...formData, 
+                  capacity_type: e.target.value as 'orders' | 'items'
+                })}
+                helpText={formData.capacity_type === 'orders' 
+                  ? 'Limit by number of orders' 
+                  : 'Limit by total item quantity'}
+                disabled={isLoading}
+                required
+                options={[
+                  { value: 'orders', label: 'Orders (count of orders)' },
+                  { value: 'items', label: 'Items (quantity of items)' }
+                ]}
+              />
+            </div>
+
+            <div className={styles.settingsForm__row}>
               <NumberInput
-                label="Orders Per Slot"
+                label={formData.capacity_type === 'orders' ? 'Orders Per Slot' : 'Items Per Slot'}
                 value={formData.orders_per_slot}
                 onChange={(e) => setFormData({ 
                   ...formData, 
@@ -112,16 +141,26 @@ export const PreOrderSettingsForm: React.FC<PreOrderSettingsFormProps> = ({
                 })}
                 min={1}
                 max={50}
-                helpText="Maximum orders accepted per time slot"
+                helpText={formData.capacity_type === 'orders'
+                  ? 'Maximum orders accepted per time slot'
+                  : 'Maximum total items (e.g., pizzas) per time slot'}
                 disabled={isLoading}
                 required
               />
             </div>
 
             <div className={styles.settingsForm__example}>
-              <strong>Example:</strong> With {formData.orders_per_slot} orders every{' '}
-              {formData.slot_duration_minutes} minutes, you can manage up to{' '}
-              {Math.floor(60 / formData.slot_duration_minutes) * formData.orders_per_slot} orders per hour.
+              <strong>Example:</strong> 
+              {formData.capacity_type === 'orders' ? (
+                <> With {formData.orders_per_slot} orders every{' '}
+                {formData.slot_duration_minutes} minutes, you can manage up to{' '}
+                {Math.floor(60 / formData.slot_duration_minutes) * formData.orders_per_slot} orders per hour.</>
+              ) : (
+                <> With {formData.orders_per_slot} items every{' '}
+                {formData.slot_duration_minutes} minutes, you can produce up to{' '}
+                {Math.floor(60 / formData.slot_duration_minutes) * formData.orders_per_slot} items per hour.
+                An order with 4 pizzas will use 4 slots of capacity.</>
+              )}
             </div>
           </Card>
 

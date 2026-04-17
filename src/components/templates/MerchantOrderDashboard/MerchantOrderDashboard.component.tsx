@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { OrderBoard } from '@/components/molecules/OrderBoard';
 import { OrderDetailsModal } from '@/components/molecules/OrderDetailsModal';
+import { OrderViewToggle, OrderView } from '@/components/molecules/OrderViewToggle/OrderViewToggle';
+import { PreOrderTimelineView } from '@/components/organisms/PreOrderTimelineView/PreOrderTimelineView';
 import { Typography, Button } from '@/components/atoms';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import api from '@/utils/api';
@@ -23,6 +25,7 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 }) => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [currentView, setCurrentView] = useState<OrderView>('all');
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   const dashboardClasses = classNames(styles.merchantOrderDashboard, className);
@@ -162,16 +165,46 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
   };
 
   const getOrderStats = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
     const stats = {
       total: orders.length,
       pending: orders.filter(o => o.status === 'pending').length,
       active: orders.filter(o => ['accepted', 'preparing'].includes(o.status)).length,
       ready: orders.filter(o => o.status === 'ready').length,
+      preOrders: orders.filter(o => o.is_pre_order === true).length,
+      today: orders.filter(o => {
+        const orderDate = new Date(o.created_at);
+        orderDate.setHours(0, 0, 0, 0);
+        return orderDate.getTime() === today.getTime();
+      }).length,
     };
     return stats;
   };
 
+  // Filter orders based on current view
+  const getFilteredOrders = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    switch (currentView) {
+      case 'preorders':
+        return orders.filter(o => o.is_pre_order === true);
+      case 'today':
+        return orders.filter(o => {
+          const orderDate = new Date(o.created_at);
+          orderDate.setHours(0, 0, 0, 0);
+          return orderDate.getTime() === today.getTime();
+        });
+      case 'all':
+      default:
+        return orders;
+    }
+  };
+
   const stats = getOrderStats();
+  const filteredOrders = getFilteredOrders();
 
   return (
     <div className={dashboardClasses} data-testid={dataTestId}>
@@ -254,14 +287,32 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
       </header>
 
       <main className={styles.main}>
-        <OrderBoard
-          orders={orders}
-          isReadOnly={false}
-          onOrderStatusChange={handleOrderStatusChange}
-          onOrderClick={handleOrderClick}
-          isLoading={isLoading}
-          error={error}
-        />
+        <div className={styles.viewControl}>
+          <OrderViewToggle
+            currentView={currentView}
+            onViewChange={setCurrentView}
+            preOrderCount={stats.preOrders}
+            todayCount={stats.today}
+          />
+        </div>
+
+        {currentView === 'preorders' ? (
+          <PreOrderTimelineView
+            orders={filteredOrders}
+            capacityType="orders" // TODO: Get from merchant settings
+            onOrderClick={handleOrderClick}
+            onOrderStatusChange={handleOrderStatusChange}
+          />
+        ) : (
+          <OrderBoard
+            orders={filteredOrders}
+            isReadOnly={false}
+            onOrderStatusChange={handleOrderStatusChange}
+            onOrderClick={handleOrderClick}
+            isLoading={isLoading}
+            error={error}
+          />
+        )}
       </main>
 
       {/* Order Details Modal */}

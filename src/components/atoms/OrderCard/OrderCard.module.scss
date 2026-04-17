@@ -367,6 +367,15 @@
 .orderCard.preOrder {
   border-left: 6px solid #ff8c00;
   background: linear-gradient(to right, rgba(255, 140, 0, 0.03) 0%, white 20%);
+  
+  /* When pre-order is refired, refired styling should take precedence */
+  &.refired {
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8800 25%, #ffaa00 50%, #ff8800 75%, #ff6b00 100%);
+    background-size: 200% 200%;
+    animation: fireGradient 3s ease infinite;
+    border: 2px solid #ff6b00;
+    box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+  }
 }
 
 .preOrderBadge {
