@@ -6,24 +6,36 @@ export interface Order {
   status: 'pending' | 'accepted' | 'preparing' | 'ready' | 'complete' | 'cancelled' | 'rejected';
   total_amount: number;
   created_at: string;
+  scheduled_time?: string;
   event_name?: string;
   merchant_name?: string;
+  merchant_id?: string;
+  customer_name?: string;
+  customer_email?: string;
+  notes?: string;
+  special_instructions?: string;
+  vendor_latitude?: number;
+  vendor_longitude?: number;
+  vendor_address?: string;
   items: OrderItem[];
 }
 
 export interface OrderItem {
   id: string;
-  menu_item_name: string;
+  menu_item_id: string;
+  menu_item_title: string;
   quantity: number;
   unit_price: number;
   total_price: number;
-  options?: OrderItemOption[];
+  customizations?: OrderItemCustomization[];
 }
 
-export interface OrderItemOption {
-  sub_group_name: string;
-  option_name: string;
-  price_adjustment: number;
+export interface OrderItemCustomization {
+  sub_item_id: string;
+  sub_item_name: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
 }
 
 export interface CustomerOrdersTemplateProps {

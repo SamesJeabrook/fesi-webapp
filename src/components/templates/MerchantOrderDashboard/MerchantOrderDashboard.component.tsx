@@ -17,6 +17,8 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
   error = null,
   onOrderStatusChange,
   onRefresh,
+  onViewChange,
+  currentView: parentCurrentView,
   getToken,
   backLink,
   pollingInterval = 30000, // Default 30 seconds
@@ -25,7 +27,20 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
 }) => {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
-  const [currentView, setCurrentView] = useState<OrderView>('all');
+  const [currentView, setCurrentView] = useState<OrderView>(parentCurrentView || 'all');
+
+  // Sync with parent's view state
+  useEffect(() => {
+    if (parentCurrentView) {
+      setCurrentView(parentCurrentView);
+    }
+  }, [parentCurrentView]);
+
+  // Notify parent when view changes
+  const handleViewChange = (view: OrderView) => {
+    setCurrentView(view);
+    onViewChange?.(view);
+  };
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
   const dashboardClasses = classNames(styles.merchantOrderDashboard, className);
@@ -175,9 +190,12 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
       ready: orders.filter(o => o.status === 'ready').length,
       preOrders: orders.filter(o => o.is_pre_order === true).length,
       today: orders.filter(o => {
-        const orderDate = new Date(o.created_at);
-        orderDate.setHours(0, 0, 0, 0);
-        return orderDate.getTime() === today.getTime();
+        // For pre-orders, check scheduled_time; for regular orders, check created_at
+        const relevantDate = o.is_pre_order && o.scheduled_time 
+          ? new Date(o.scheduled_time)
+          : new Date(o.created_at);
+        relevantDate.setHours(0, 0, 0, 0);
+        return relevantDate.getTime() === today.getTime();
       }).length,
     };
     return stats;
@@ -192,10 +210,13 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
       case 'preorders':
         return orders.filter(o => o.is_pre_order === true);
       case 'today':
+        // Filter by scheduled_time for pre-orders, created_at for regular orders
         return orders.filter(o => {
-          const orderDate = new Date(o.created_at);
-          orderDate.setHours(0, 0, 0, 0);
-          return orderDate.getTime() === today.getTime();
+          const relevantDate = o.is_pre_order && o.scheduled_time
+            ? new Date(o.scheduled_time)
+            : new Date(o.created_at);
+          relevantDate.setHours(0, 0, 0, 0);
+          return relevantDate.getTime() === today.getTime();
         });
       case 'all':
       default:
@@ -290,7 +311,7 @@ export const MerchantOrderDashboard: React.FC<MerchantOrderDashboardProps> = ({
         <div className={styles.viewControl}>
           <OrderViewToggle
             currentView={currentView}
-            onViewChange={setCurrentView}
+            onViewChange={handleViewChange}
             preOrderCount={stats.preOrders}
             todayCount={stats.today}
           />

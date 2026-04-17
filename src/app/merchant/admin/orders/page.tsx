@@ -55,7 +55,7 @@ interface Order {
 }
 
 // Custom hook to get merchant orders using Auth0
-function useMerchantOrders(merchantId: string | null) {
+function useMerchantOrders(merchantId: string | null, filterDate?: string) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { getAccessTokenSilently } = useAuth0();
@@ -68,9 +68,15 @@ function useMerchantOrders(merchantId: string | null) {
       // Get Auth0 token or dev token
       const token = await getAuthToken(getAccessTokenSilently);
 
-      console.log('Fetching orders for merchant:', merchantId);
+      console.log('Fetching orders for merchant:', merchantId, 'date:', filterDate);
       
-      const response = await fetch(`${API_BASE_URL}/api/merchants/${merchantId}/orders`, {
+      // Build URL with optional date parameter
+      let url = `${API_BASE_URL}/api/merchants/${merchantId}/orders`;
+      if (filterDate) {
+        url += `?date=${filterDate}`;
+      }
+      
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -155,7 +161,7 @@ function useMerchantOrders(merchantId: string | null) {
 
   useEffect(() => {
     fetchOrders();
-  }, [merchantId]);
+  }, [merchantId, filterDate]);
 
   return { orders, isLoading, refetch: fetchOrders };
 }
@@ -164,6 +170,12 @@ export default function MerchantAdminPage() {
   const { user, isLoading: authLoading, getAccessTokenSilently } = useAuth0();
   const { selectedMerchant, isImpersonating, isAdmin } = useAdmin();
   const [merchantId, setMerchantId] = useState<string | null>(null);
+  const [currentView, setCurrentView] = useState<'all' | 'today' | 'preorders'>('all');
+  
+  // Handler for view changes from the dashboard
+  const handleViewChange = (view: 'all' | 'today' | 'preorders') => {
+    setCurrentView(view);
+  };
   
   // Get merchant ID from dev token, impersonation, or user
   useEffect(() => {
@@ -210,6 +222,7 @@ export default function MerchantAdminPage() {
     getMerchantId();
   }, [user, isImpersonating, selectedMerchant, getAccessTokenSilently]);
   
+  // Always fetch all orders (no date filter) so badge counts are accurate
   const { orders, isLoading: ordersLoading, refetch } = useMerchantOrders(merchantId);
 
   // Setup new order notifications
@@ -266,6 +279,8 @@ export default function MerchantAdminPage() {
         isLoading={ordersLoading}
         onOrderStatusChange={handleOrderStatusChange}
         onRefresh={refetch}
+        onViewChange={handleViewChange}
+        currentView={currentView}
         backLink={{
           href: '/merchant/admin',
           label: 'Back to Dashboard'

@@ -41,6 +41,7 @@ export function CustomerOrdersTemplate({
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<OrderStatus | 'all'>('all');
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     ensureCustomerProfileExists();
@@ -150,6 +151,38 @@ export function CustomerOrdersTemplate({
     });
   };
 
+  const formatCollectionTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-GB', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const openMapsToVendor = (order: Order) => {
+    if (!order.vendor_latitude || !order.vendor_longitude) {
+      alert('Location not available for this vendor');
+      return;
+    }
+
+    const vendorName = encodeURIComponent(order.merchant_name || 'Vendor');
+    const lat = order.vendor_latitude;
+    const lng = order.vendor_longitude;
+
+    // Detect iOS vs other platforms
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    if (isIOS) {
+      // Apple Maps on iOS
+      window.open(`http://maps.apple.com/?q=${vendorName}&ll=${lat},${lng}`);
+    } else {
+      // Google Maps on other platforms
+      window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`);
+    }
+  };
+
   return (
     <div className={styles.customerOrders}>
       {showNavigation && (
@@ -208,7 +241,10 @@ export function CustomerOrdersTemplate({
               </Button>
             </div>
           ) : (
-            filteredOrders.map((order) => (
+            filteredOrders.map((order) => {
+              const isExpanded = expandedOrderId === order.id;
+              const hasDetailsToExpand = (order.notes && order.notes.length > 0) || order.items.length > 2;
+              return (
               <div key={order.id} className={styles.orderCard}>
                 {/* Header */}
                 <div className={styles.orderCard__header}>
@@ -232,23 +268,35 @@ export function CustomerOrdersTemplate({
                   </div>
                 </div>
 
-                {/* Items */}
+                {/* Collection Time - only for pre-orders */}
+                {order.scheduled_time && (
+                  <div className={styles.orderCard__collection}>
+                    <Typography variant="body-small" className={styles.orderCard__collectionLabel}>
+                      🕐 Collection Time
+                    </Typography>
+                    <Typography variant="body-medium" className={styles.orderCard__collectionTime}>
+                      {formatCollectionTime(order.scheduled_time)}
+                    </Typography>
+                  </div>
+                )}
+
+                {/* Items Preview (always show first 2) */}
                 <div className={styles.orderCard__items}>
-                  {order.items.map((item) => (
+                  {order.items.slice(0, isExpanded ? order.items.length : 2).map((item) => (
                     <div key={item.id} className={styles.orderCard__item}>
                       <div className={styles.orderCard__itemDetails}>
                         <div className={styles.orderCard__itemName}>
-                          {item.menu_item_name}
+                          {item.menu_item_title}
                         </div>
                         <div className={styles.orderCard__itemQuantity}>
                           Quantity: {item.quantity}
                         </div>
-                        {item.options && item.options.length > 0 && (
+                        {item.customizations && item.customizations.length > 0 && (
                           <div className={styles.orderCard__itemOptions}>
-                            {item.options.map((option, idx) => (
+                            {item.customizations.map((custom, idx) => (
                               <span key={idx} className={styles.orderCard__itemOption}>
-                                + {option.option_name}
-                                {option.price_adjustment > 0 && ` (+${formatCurrency(option.price_adjustment)})`}
+                                + {custom.sub_item_name}
+                                {custom.unit_price > 0 && ` (+${formatCurrency(custom.unit_price)})`}
                               </span>
                             ))}
                           </div>
@@ -259,7 +307,29 @@ export function CustomerOrdersTemplate({
                       </div>
                     </div>
                   ))}
+                  
+                  {!isExpanded && order.items.length > 2 && (
+                    <Typography variant="body-small" className={styles.orderCard__moreItems}>
+                      + {order.items.length - 2} more item{order.items.length - 2 !== 1 ? 's' : ''}
+                    </Typography>
+                  )}
                 </div>
+
+                {/* Expanded Details */}
+                {isExpanded && (
+                  <div className={styles.orderCard__expanded}>
+                    {order.notes && (
+                      <div className={styles.orderCard__notes}>
+                        <Typography variant="body-small" className={styles.orderCard__notesLabel}>
+                          📝 Order Notes
+                        </Typography>
+                        <Typography variant="body-small">
+                          {order.notes}
+                        </Typography>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Footer */}
                 <div className={styles.orderCard__footer}>
@@ -270,9 +340,24 @@ export function CustomerOrdersTemplate({
                     </span>
                   </div>
                   <div className={styles.orderCard__actions}>
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
+                    {hasDetailsToExpand && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                      >
+                        {isExpanded ? 'Hide Details' : 'View Details'}
+                      </Button>
+                    )}
+                    {(order.vendor_latitude && order.vendor_longitude) && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => openMapsToVendor(order)}
+                      >
+                        📍 Get Directions
+                      </Button>
+                    )}
                     {order.status === 'complete' && (
                       <Button variant="primary" size="sm">
                         Reorder
@@ -281,7 +366,8 @@ export function CustomerOrdersTemplate({
                   </div>
                 </div>
               </div>
-            ))
+            );
+            })
           )}
         </div>
       </div>

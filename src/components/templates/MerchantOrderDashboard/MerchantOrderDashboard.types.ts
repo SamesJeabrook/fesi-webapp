@@ -17,6 +17,10 @@ export interface MerchantOrderDashboardProps {
   onOrderStatusChange?: (orderId: string, newStatus: string) => void;
   /** Handler for refreshing orders */
   onRefresh?: () => void;
+  /** Handler for when the view changes */
+  onViewChange?: (view: 'all' | 'today' | 'preorders') => void;
+  /** Current view (controlled from parent) */
+  currentView?: 'all' | 'today' | 'preorders';
   /** Function to get authentication token */
   getToken?: () => Promise<string>;
   /** Back link configuration */

@@ -170,6 +170,27 @@
   }
 }
 
+.orderCard__collection {
+  background: #e3f2fd;
+  border-left: 4px solid #1976d2;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.orderCard__collectionLabel {
+  font-weight: 600;
+  color: #1565c0;
+}
+
+.orderCard__collectionTime {
+  font-weight: 700;
+  color: #0d47a1;
+}
+
 .orderCard__items {
   border-top: 1px solid var(--color-border-light, #e0e0e0);
   padding-top: 1rem;
@@ -212,6 +233,40 @@
 .orderCard__itemPrice {
   font-weight: 600;
   white-space: nowrap;
+}
+
+.orderCard__moreItems {
+  color: var(--color-text-secondary, #757575);
+  font-style: italic;
+  padding: 0.5rem 0;
+  text-align: center;
+}
+
+.orderCard__expanded {
+  border-top: 1px solid var(--color-border-light, #e0e0e0);
+  padding-top: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.orderCard__notes {
+  background: var(--color-background-secondary, #f5f5f5);
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+}
+
+.orderCard__notesLabel {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.orderCard__directionsBtn {
+  width: 100%;
+  justify-content: center;
 }
 
 .orderCard__footer {

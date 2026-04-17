@@ -98,6 +98,26 @@ export const CustomerOrderTracker: React.FC<CustomerOrderTrackerProps> = ({
   };
 
   const getEstimatedTime = () => {
+    // For pre-orders, show the scheduled pickup time
+    if (order.is_pre_order && order.scheduled_time) {
+      const pickupTime = new Date(order.scheduled_time);
+      const now = new Date();
+      
+      // If the pickup time is in the future, show "Ready for pickup at [time]"
+      if (pickupTime > now) {
+        return `Ready for pickup at ${pickupTime.toLocaleString('en-GB', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}`;
+      }
+      // If pickup time has passed, show "Ready for pickup"
+      return 'Ready for pickup';
+    }
+    
+    // For regular orders with estimated_completion
     if (order.estimated_completion) {
       const eta = new Date(order.estimated_completion);
       const now = new Date();

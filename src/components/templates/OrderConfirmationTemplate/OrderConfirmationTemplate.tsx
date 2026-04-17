@@ -18,6 +18,8 @@ interface OrderDetails {
   status: string;
   total_amount: number;
   created_at: string;
+  is_pre_order?: boolean;
+  scheduled_time?: string;
   items: Array<{
     menu_item_title: string;
     quantity: number;
@@ -105,7 +107,19 @@ export function OrderConfirmationTemplate({ orderId }: OrderConfirmationTemplate
   };
 
   const getEstimatedTime = () => {
-    // Estimate 15-30 minutes for food preparation
+    // For pre-orders, show the scheduled pickup time
+    if (order?.is_pre_order && order?.scheduled_time) {
+      const pickupTime = new Date(order.scheduled_time);
+      return pickupTime.toLocaleString('en-GB', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    
+    // For regular orders, estimate 15-30 minutes for food preparation
     return '15-30 minutes';
   };
 
@@ -165,7 +179,7 @@ export function OrderConfirmationTemplate({ orderId }: OrderConfirmationTemplate
           </div>
           
           <div className={styles.confirmation__infoCard}>
-            <Typography variant="heading-6">Estimated Time</Typography>
+            <Typography variant="heading-6">{order.is_pre_order ? 'Pickup Time' : 'Estimated Time'}</Typography>
             <Typography variant="body-large">{getEstimatedTime()}</Typography>
           </div>
           
