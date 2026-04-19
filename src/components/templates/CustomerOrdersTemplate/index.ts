@@ -3,6 +3,6 @@ export type {
   CustomerOrdersTemplateProps,
   Order,
   OrderItem,
-  OrderItemOption,
+  OrderItemCustomization,
   OrderStatus
 } from './CustomerOrdersTemplate.types';

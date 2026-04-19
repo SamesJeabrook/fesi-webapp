@@ -79,6 +79,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   // Pre-order related state
   interface PreOrderSettings {
     enabled: boolean;
+    require_time_slot_selection: boolean;
     slot_duration_minutes: number;
     orders_per_slot: number;
     min_advance_minutes: number;
