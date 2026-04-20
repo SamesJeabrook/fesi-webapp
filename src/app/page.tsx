@@ -34,14 +34,18 @@ export default function HomePage() {
     if (isAuthenticated && user && !isLoading) {
       const userRoles = user['https://fesi.app/roles'] || [];
       console.log('Homepage - User authenticated with roles:', userRoles);
+      console.log('Homepage - Full user object:', user);
       
-      // Redirect based on role
-      if (userRoles.includes('merchant')) {
+      // Redirect based on role (admin takes precedence)
+      if (userRoles.includes('admin')) {
+        console.log('Redirecting admin to dashboard');
+        router.push('/admin');
+      } else if (userRoles.includes('organization')) {
+        console.log('Redirecting organization to dashboard');
+        router.push('/admin');
+      } else if (userRoles.includes('merchant')) {
         console.log('Redirecting merchant to dashboard');
         router.push('/merchant/admin');
-      } else if (userRoles.includes('organization') || userRoles.includes('admin')) {
-        console.log('Redirecting organization/admin to dashboard');
-        router.push('/admin');
       }
       // If no recognized role, stay on homepage
     }

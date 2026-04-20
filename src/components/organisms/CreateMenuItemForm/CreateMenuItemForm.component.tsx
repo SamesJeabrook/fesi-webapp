@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Typography, Button, FormInput, FormSelect, Grid } from '@/components/atoms';
 import { FormTextArea } from '@/components/atoms/FormTextArea/FormTextArea.component';
 import OptionGroupSelector, { SubItemGroup } from '@/components/molecules/OptionGroupSelector';
+import api from '@/utils/api';
 import styles from './CreateMenuItemForm.module.scss';
 
 export interface MenuCategory {
@@ -171,24 +172,19 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
 
     setIsUploadingImage(true);
     try {
+      console.log('[CreateMenuItemForm] uploadImage - Starting upload');
       const formData = new FormData();
       formData.append('image', imageFile);
       formData.append('imageType', 'menu-item');
       formData.append('merchantId', merchantId);
 
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const data = await response.json();
-      return data.url;
+      console.log('[CreateMenuItemForm] uploadImage - Calling api.upload');
+      const data = await api.upload<{ success: boolean; image: { url: string; publicId: string; optimizedUrl: string } }>('/api/upload/image', formData);
+      console.log('[CreateMenuItemForm] uploadImage - Upload response:', data);
+      console.log('[CreateMenuItemForm] uploadImage - Extracted URL:', data.image?.url || data.image?.optimizedUrl);
+      return data.image?.url || data.image?.optimizedUrl || null;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('[CreateMenuItemForm] uploadImage - Error uploading image:', error);
       alert('Failed to upload image. Please try again.');
       return null;
     } finally {
@@ -197,23 +193,32 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
   };
 
   const handleSubmit = async () => {
+    console.log('[CreateMenuItemForm] handleSubmit called');
     if (!validateForm()) {
+      console.log('[CreateMenuItemForm] Form validation failed');
       return;
     }
 
+    console.log('[CreateMenuItemForm] Starting submission');
     try {
       // Upload image first if present
       let imageUrl = formData.image_url;
       if (imageFile) {
+        console.log('[CreateMenuItemForm] Uploading image...');
         const uploadedUrl = await uploadImage();
+        console.log('[CreateMenuItemForm] Image uploaded:', uploadedUrl);
         if (uploadedUrl) {
           imageUrl = uploadedUrl;
         } else {
           // Image upload failed, abort submission
+          console.error('[CreateMenuItemForm] Image upload returned null');
           return;
         }
       }
 
+      console.log('[CreateMenuItemForm] Final image URL:', imageUrl);
+      console.log('[CreateMenuItemForm] Calling onSubmit with data');
+      
       await onSubmit({ 
         ...formData, 
         image_url: imageUrl,
@@ -224,6 +229,8 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
         restriction_warning: formData.is_age_restricted && formData.restriction_warning ? formData.restriction_warning : undefined,
         requires_id_verification: formData.is_age_restricted ? formData.requires_id_verification : undefined,
       });
+      
+      console.log('[CreateMenuItemForm] onSubmit completed successfully');
       
       // Reset form on success
       setFormData({

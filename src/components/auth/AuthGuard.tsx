@@ -78,6 +78,12 @@ export function AuthGuard({
         console.log('AuthGuard - Required role:', requireRole);
         console.log('AuthGuard - User roles:', userRoles);
         
+        // Admin users have access to all routes (superuser)
+        if (userRoles.includes('admin')) {
+          console.log('AuthGuard - Admin user detected, granting access to all routes');
+          return;
+        }
+        
         if (!userRoles.includes(requireRole)) {
           console.warn('AuthGuard - User does not have required role. Redirecting to unauthorized.');
           console.warn('AuthGuard - Available roles:', userRoles);
@@ -138,7 +144,8 @@ export function AuthGuard({
       );
     }
     
-    if (!userRoles.includes(requireRole)) {
+    // Admin users have access to all routes (superuser)
+    if (!userRoles.includes('admin') && !userRoles.includes(requireRole)) {
       return null; // Will redirect via useEffect
     }
   }

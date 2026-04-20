@@ -60,9 +60,15 @@ export async function apiRequest<T = any>(
   
   // Build headers
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...options.headers,
   };
+  
+  // Only set Content-Type if body is not FormData
+  // FormData will set its own Content-Type with boundary
+  const isFormData = fetchOptions.body instanceof FormData;
+  if (!isFormData && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
   
   // Add authentication token
   if (!skipAuth) {
@@ -139,6 +145,14 @@ export const api = {
     
   delete: <T = any>(endpoint: string, options?: ApiRequestOptions) =>
     apiRequest<T>(endpoint, { ...options, method: 'DELETE' }),
+    
+  // Upload file/FormData
+  upload: <T = any>(endpoint: string, formData: FormData, options?: ApiRequestOptions) =>
+    apiRequest<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: formData,
+    }),
 };
 
 export default api;

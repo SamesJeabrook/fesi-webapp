@@ -164,24 +164,19 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
 
     setIsUploadingImage(true);
     try {
+      console.log('[EditMenuItemModal] uploadImage - Starting upload');
       const uploadFormData = new FormData();
       uploadFormData.append('image', imageFile);
       uploadFormData.append('imageType', 'menu-item');
       uploadFormData.append('merchantId', merchantId);
 
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: uploadFormData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      const data = await response.json();
-      return data.url;
+      console.log('[EditMenuItemModal] uploadImage - Calling api.upload');
+      const data = await api.upload<{ success: boolean; image: { url: string; publicId: string; optimizedUrl: string } }>('/api/upload/image', uploadFormData);
+      console.log('[EditMenuItemModal] uploadImage - Upload response:', data);
+      console.log('[EditMenuItemModal] uploadImage - Extracted URL:', data.image?.url || data.image?.optimizedUrl);
+      return data.image?.url || data.image?.optimizedUrl || null;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('[EditMenuItemModal] uploadImage - Error uploading image:', error);
       alert('Failed to upload image. Please try again.');
       return null;
     } finally {
@@ -190,6 +185,9 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
   };
 
   const handleSave = async () => {
+    console.log('[EditMenuItemModal] handleSave called');
+    console.log('[EditMenuItemModal] formData:', formData);
+    
     if (!formData.name.trim()) {
       alert('Item name is required');
       return;
@@ -201,21 +199,27 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
     }
 
     setIsSaving(true);
+    console.log('[EditMenuItemModal] Starting save process');
     
     try {
       // Upload image first if a new one was selected
       let imageUrl = formData.image_url;
       if (imageFile) {
+        console.log('[EditMenuItemModal] Uploading image...');
         const uploadedUrl = await uploadImage();
+        console.log('[EditMenuItemModal] Image uploaded:', uploadedUrl);
         if (uploadedUrl) {
           imageUrl = uploadedUrl;
         } else {
           // Image upload failed, abort submission
+          console.error('[EditMenuItemModal] Image upload returned null');
           setIsSaving(false);
           return;
         }
       }
 
+      console.log('[EditMenuItemModal] Final image URL:', imageUrl);
+      
       const updatedData = {
         title: formData.name.trim(), // API expects 'title'
         description: formData.description.trim(),
@@ -230,10 +234,12 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
         requires_id_verification: formData.is_age_restricted ? formData.requires_id_verification : undefined,
       };
 
+      console.log('[EditMenuItemModal] Calling onSave with data:', updatedData);
       await onSave(updatedData);
+      console.log('[EditMenuItemModal] onSave completed successfully');
       onClose();
     } catch (error) {
-      console.error('Error saving item:', error);
+      console.error('[EditMenuItemModal] Error saving item:', error);
       alert('Error saving item. Please try again.');
     } finally {
       setIsSaving(false);

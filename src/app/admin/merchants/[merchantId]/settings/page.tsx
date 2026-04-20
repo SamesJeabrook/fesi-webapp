@@ -4,10 +4,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth0 } from '@auth0/auth0-react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { SystemSettingsTemplate } from '@/components/templates/SystemSettingsTemplate/SystemSettingsTemplate';
+import { Typography } from '@/components/atoms';
 import api from '@/utils/api';
+import styles from './settings.module.scss';
 
 interface Category {
   id: string;
@@ -69,14 +72,63 @@ export default function AdminSystemSettingsPage() {
 
   return (
     <ProtectedRoute requireRole={['admin']}>
-      <SystemSettingsTemplate
-        company={company}
-        loading={loading}
-        availableTags={availableTags.map(cat => ({ id: cat.id, label: cat.name }))}
-        backLink={{ label: 'Back to Merchant', href: `/admin/merchants/${merchantId}` }}
-        adminContext="Merchant Settings"
-      />
-      {loadingTags && <div>Loading categories...</div>}
+      <div className={styles.settingsContainer}>
+        <div className={styles.settingsNav}>
+          <Typography variant="heading-5" className={styles.navTitle}>Merchant Settings</Typography>
+          <Link href={`/admin/merchants/${merchantId}/settings/operating-mode`} className={styles.navLink}>
+            <div className={styles.navItem}>
+              <span className={styles.navIcon}>🏪</span>
+              <div>
+                <Typography variant="body-medium">Operating Mode</Typography>
+                <Typography variant="body-small" className={styles.navDescription}>
+                  Switch between event-based and static restaurant mode
+                </Typography>
+              </div>
+            </div>
+          </Link>
+          <Link href={`/admin/merchants/${merchantId}/settings/reservations`} className={styles.navLink}>
+            <div className={styles.navItem}>
+              <span className={styles.navIcon}>📅</span>
+              <div>
+                <Typography variant="body-medium">Reservations</Typography>
+                <Typography variant="body-small" className={styles.navDescription}>
+                  Configure table booking and reservation settings
+                </Typography>
+              </div>
+            </div>
+          </Link>
+          <Link href={`/admin/merchants/${merchantId}/settings/pre-orders`} className={styles.navLink}>
+            <div className={styles.navItem}>
+              <span className={styles.navIcon}>🕐</span>
+              <div>
+                <Typography variant="body-medium">Pre-Orders</Typography>
+                <Typography variant="body-small" className={styles.navDescription}>
+                  Configure scheduled orders and time slot settings
+                </Typography>
+              </div>
+            </div>
+          </Link>
+          <div className={styles.navItem + ' ' + styles.navItemActive}>
+            <span className={styles.navIcon}>⚙️</span>
+            <div>
+              <Typography variant="body-medium">General Settings</Typography>
+              <Typography variant="body-small" className={styles.navDescription}>
+                Business info, categories, and compliance
+              </Typography>
+            </div>
+          </div>
+        </div>
+        <div className={styles.settingsContent}>
+          <SystemSettingsTemplate
+            company={company}
+            loading={loading}
+            availableTags={availableTags.map(cat => ({ id: cat.id, label: cat.name }))}
+            backLink={{ label: 'Back to Merchant', href: `/admin/merchants/${merchantId}` }}
+            adminContext="Merchant Settings"
+          />
+          {loadingTags && <div>Loading categories...</div>}
+        </div>
+      </div>
     </ProtectedRoute>
   );
 }
