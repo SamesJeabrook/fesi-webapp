@@ -40,6 +40,30 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
     restriction_type: item.restriction_type || 'alcohol',
     restriction_warning: item.restriction_warning || '',
     requires_id_verification: item.requires_id_verification || false,
+    is_vegetarian: item.is_vegetarian || false,
+    is_vegan: item.is_vegan || false,
+    is_gluten_free: item.is_gluten_free || false,
+    is_dairy_free: item.is_dairy_free || false,
+    allergens: (item.allergens || []) as string[],
+    allergen_info_complete: item.allergen_info_complete || false,
+  });
+  
+  // Debug logging
+  console.log('[EditMenuItemModal] Initial item prop:', {
+    is_vegetarian: item.is_vegetarian,
+    is_vegan: item.is_vegan,
+    is_gluten_free: item.is_gluten_free,
+    is_dairy_free: item.is_dairy_free,
+    allergens: item.allergens,
+    allergen_info_complete: item.allergen_info_complete
+  });
+  console.log('[EditMenuItemModal] Initial formData state:', {
+    is_vegetarian: formData.is_vegetarian,
+    is_vegan: formData.is_vegan,
+    is_gluten_free: formData.is_gluten_free,
+    is_dairy_free: formData.is_dairy_free,
+    allergens: formData.allergens,
+    allergen_info_complete: formData.allergen_info_complete
   });
   const [isSaving, setIsSaving] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -74,6 +98,14 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
 
   // Reset form when item changes
   useEffect(() => {
+    console.log('EditMenuItemModal - Resetting form with item:', {
+      is_vegetarian: item.is_vegetarian,
+      is_vegan: item.is_vegan,
+      is_gluten_free: item.is_gluten_free,
+      is_dairy_free: item.is_dairy_free,
+      allergens: item.allergens,
+      allergen_info_complete: item.allergen_info_complete
+    });
     setFormData({
       name: item.name,
       description: item.description || '',
@@ -86,6 +118,12 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
       restriction_type: item.restriction_type || 'alcohol',
       restriction_warning: item.restriction_warning || '',
       requires_id_verification: item.requires_id_verification || false,
+      is_vegetarian: item.is_vegetarian || false,
+      is_vegan: item.is_vegan || false,
+      is_gluten_free: item.is_gluten_free || false,
+      is_dairy_free: item.is_dairy_free || false,
+      allergens: (item.allergens || []) as string[],
+      allergen_info_complete: item.allergen_info_complete || false,
     });
     setImagePreview(item.image_url || '');
     setImageFile(null);
@@ -232,6 +270,12 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
         restriction_type: formData.is_age_restricted ? formData.restriction_type : undefined,
         restriction_warning: formData.is_age_restricted && formData.restriction_warning ? formData.restriction_warning : undefined,
         requires_id_verification: formData.is_age_restricted ? formData.requires_id_verification : undefined,
+        is_vegetarian: formData.is_vegetarian || undefined,
+        is_vegan: formData.is_vegan || undefined,
+        is_gluten_free: formData.is_gluten_free || undefined,
+        is_dairy_free: formData.is_dairy_free || undefined,
+        allergens: formData.allergens.length > 0 ? formData.allergens : undefined,
+        allergen_info_complete: formData.allergen_info_complete,
       };
 
       console.log('[EditMenuItemModal] Calling onSave with data:', updatedData);
@@ -260,6 +304,12 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
       restriction_type: item.restriction_type || 'alcohol',
       restriction_warning: item.restriction_warning || '',
       requires_id_verification: item.requires_id_verification || false,
+      is_vegetarian: item.is_vegetarian || false,
+      is_vegan: item.is_vegan || false,
+      is_gluten_free: item.is_gluten_free || false,
+      is_dairy_free: item.is_dairy_free || false,
+      allergens: (item.allergens || []) as string[],
+      allergen_info_complete: item.allergen_info_complete || false,
     });
     setImageFile(null);
     setImagePreview(item.image_url || '');
@@ -476,6 +526,117 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
                 </Grid.Container>
               </div>
             )}
+          </div>
+        </Grid.Item>
+
+        <Grid.Item lg={12}>
+          <div style={{ 
+            borderTop: '1px solid var(--color-border-primary, #e5e7eb)', 
+            paddingTop: '16px',
+            marginTop: '8px'
+          }}>
+            <label className={styles.editMenuItemModal__optionGroupsLabel} style={{ marginBottom: '8px', display: 'block' }}>
+              Dietary Information & Allergens
+            </label>
+            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+              Help customers make informed choices by marking dietary suitability and allergen information
+            </p>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px' }}>
+                Dietary Suitability:
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.is_vegetarian}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      is_vegetarian: e.target.checked,
+                      is_vegan: e.target.checked ? false : prev.is_vegan
+                    }))}
+                    disabled={isSaving || isUploadingImage || formData.is_vegan}
+                  />
+                  <span style={{ fontSize: '0.875rem' }}>🥬 Vegetarian</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.is_vegan}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      is_vegan: e.target.checked,
+                      is_vegetarian: e.target.checked ? true : prev.is_vegetarian
+                    }))}
+                    disabled={isSaving || isUploadingImage}
+                  />
+                  <span style={{ fontSize: '0.875rem' }}>🌱 Vegan</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.is_gluten_free}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_gluten_free: e.target.checked }))}
+                    disabled={isSaving || isUploadingImage}
+                  />
+                  <span style={{ fontSize: '0.875rem' }}>🌾 Gluten Free</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.is_dairy_free}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_dairy_free: e.target.checked }))}
+                    disabled={isSaving || isUploadingImage}
+                  />
+                  <span style={{ fontSize: '0.875rem' }}>🥛 Dairy Free</span>
+                </label>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <p style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px' }}>
+                Contains Allergens:
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '8px' }}>
+                {['Nuts', 'Peanuts', 'Eggs', 'Milk', 'Soy', 'Wheat', 'Fish', 'Shellfish', 'Sesame', 'Celery', 'Mustard', 'Lupin', 'Sulphites', 'Molluscs'].map(allergen => (
+                  <label key={allergen} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.allergens.includes(allergen.toLowerCase())}
+                      onChange={(e) => {
+                        const allergenLower = allergen.toLowerCase();
+                        setFormData(prev => ({
+                          ...prev,
+                          allergens: e.target.checked 
+                            ? [...prev.allergens, allergenLower]
+                            : prev.allergens.filter(a => a !== allergenLower)
+                        }));
+                      }}
+                      disabled={isSaving || isUploadingImage}
+                    />
+                    <span style={{ fontSize: '0.875rem' }}>{allergen}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={formData.allergen_info_complete}
+                  onChange={(e) => setFormData(prev => ({ ...prev, allergen_info_complete: e.target.checked }))}
+                  disabled={isSaving || isUploadingImage}
+                />
+                <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                  ✓ I have reviewed and completed allergen information for this item
+                </span>
+              </label>
+              <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '4px', marginLeft: '24px' }}>
+                Check this when all allergen and dietary information is accurate
+              </p>
+            </div>
           </div>
         </Grid.Item>
       </Grid.Container>

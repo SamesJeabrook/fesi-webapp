@@ -30,6 +30,12 @@ interface MenuItem {
   restriction_type?: string;
   restriction_warning?: string;
   requires_id_verification?: boolean;
+  is_vegetarian?: boolean;
+  is_vegan?: boolean;
+  is_gluten_free?: boolean;
+  is_dairy_free?: boolean;
+  allergens?: string[];
+  allergen_info_complete?: boolean;
 }
 
 interface MenuCategory {
@@ -124,7 +130,13 @@ export default function MenuItemsPage() {
               minimum_age: item.minimum_age,
               restriction_type: item.restriction_type,
               restriction_warning: item.restriction_warning,
-              requires_id_verification: item.requires_id_verification
+              requires_id_verification: item.requires_id_verification,
+              is_vegetarian: item.is_vegetarian,
+              is_vegan: item.is_vegan,
+              is_gluten_free: item.is_gluten_free,
+              is_dairy_free: item.is_dairy_free,
+              allergens: item.allergens,
+              allergen_info_complete: item.allergen_info_complete
             });
           });
         }
@@ -195,9 +207,26 @@ export default function MenuItemsPage() {
     try {
       const data = await api.get(`/api/menu/${item.id}`);
       console.log('API Response:', data);
+      console.log('API Response allergen data:', {
+        is_vegetarian: data.data?.is_vegetarian || data.is_vegetarian,
+        is_vegan: data.data?.is_vegan || data.is_vegan,
+        is_gluten_free: data.data?.is_gluten_free || data.is_gluten_free,
+        is_dairy_free: data.data?.is_dairy_free || data.is_dairy_free,
+        allergens: data.data?.allergens || data.allergens,
+        allergen_info_complete: data.data?.allergen_info_complete || data.allergen_info_complete
+      });
       
       // The API might return data directly or wrapped in a data property
       const itemData = data.data || data;
+      
+      console.log('[page.tsx handleEditItem] itemData allergen fields:', {
+        is_vegetarian: itemData.is_vegetarian,
+        is_vegan: itemData.is_vegan,
+        is_gluten_free: itemData.is_gluten_free,
+        is_dairy_free: itemData.is_dairy_free,
+        allergens: itemData.allergens,
+        allergen_info_complete: itemData.allergen_info_complete
+      });
       
       // Use all fields from API response, including restriction fields
       const updatedItem: MenuItem = {
@@ -217,9 +246,15 @@ export default function MenuItemsPage() {
         minimum_age: itemData.minimum_age,
         restriction_type: itemData.restriction_type,
         restriction_warning: itemData.restriction_warning,
-        requires_id_verification: itemData.requires_id_verification
+        requires_id_verification: itemData.requires_id_verification,
+        is_vegetarian: itemData.is_vegetarian,
+        is_vegan: itemData.is_vegan,
+        is_gluten_free: itemData.is_gluten_free,
+        is_dairy_free: itemData.is_dairy_free,
+        allergens: itemData.allergens,
+        allergen_info_complete: itemData.allergen_info_complete
       };
-      console.log('Setting editingItem to:', updatedItem);
+      console.log('[page.tsx] Full updatedItem object:', JSON.stringify(updatedItem, null, 2));
       
       setEditingItem(updatedItem);
     } catch (error) {
@@ -371,7 +406,19 @@ export default function MenuItemsPage() {
               minimum_age: editingItem.minimum_age,
               restriction_type: editingItem.restriction_type,
               restriction_warning: editingItem.restriction_warning,
-              requires_id_verification: editingItem.requires_id_verification
+              requires_id_verification: editingItem.requires_id_verification,
+              is_vegetarian: (() => { 
+                console.log('[page.tsx Modal JSX] editingItem.is_vegetarian:', editingItem.is_vegetarian); 
+                return editingItem.is_vegetarian; 
+              })(),
+              is_vegan: editingItem.is_vegan,
+              is_gluten_free: editingItem.is_gluten_free,
+              is_dairy_free: editingItem.is_dairy_free,
+              allergens: (() => {
+                console.log('[page.tsx Modal JSX] editingItem.allergens:', editingItem.allergens);
+                return editingItem.allergens;
+              })(),
+              allergen_info_complete: editingItem.allergen_info_complete
             }}
             categories={categories}
             isOpen={!!editingItem}

@@ -93,6 +93,12 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     time: string;
   } | null>(null);
 
+  // Allergen information completeness state
+  const [allergenInfo, setAllergenInfo] = useState<{
+    has_incomplete_info: boolean;
+    completion_percentage: number;
+  } | null>(null);
+
   // Restore basket and cost breakdown from localStorage on mount
   useEffect(() => {
     const savedBasketItems = localStorage.getItem('basketItems');
@@ -202,6 +208,30 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
 
     fetchPreOrderSettings();
   }, [eventData?.id, merchant?.id, eventData?.start_time]);
+
+  // Fetch allergen completeness information
+  useEffect(() => {
+    const fetchAllergenInfo = async () => {
+      try {
+        if (merchant?.id || merchant?.username) {
+          const identifier = merchant.username || merchant.id;
+          const response = await api.get(`/api/menu/merchant/${identifier}/allergen-completeness`, { skipAuth: true });
+          if (response.success && response.data) {
+            setAllergenInfo({
+              has_incomplete_info: response.data.has_incomplete_info,
+              completion_percentage: response.data.completion_percentage
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch allergen completeness:', error);
+        // Don't show banner if fetch fails
+        setAllergenInfo(null);
+      }
+    };
+
+    fetchAllergenInfo();
+  }, [merchant?.id, merchant?.username]);
 
   // Handle option group selection changes for the modal
   const handleOptionsChange = (groupId: string, selected: string[], menuItem?: MenuItem) => {
@@ -556,6 +586,28 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
         onOrdersClick={handleViewOrders}
         hasActiveOrders={hasActiveOrders}
       />
+      {allergenInfo?.has_incomplete_info && (
+        <div style={{
+          background: 'var(--color-info-lightest, #e3f2fd)',
+          border: '1px solid var(--color-info-light, #90caf9)',
+          borderRadius: 'var(--border-radius-md, 8px)',
+          padding: '1rem',
+          marginBottom: '1rem',
+          display: 'flex',
+          gap: '0.75rem',
+          alignItems: 'flex-start',
+        }}>
+          <span style={{ fontSize: '1.25rem', flexShrink: 0 }}>ⓘ</span>
+          <div>
+            <strong style={{ display: 'block', marginBottom: '0.25rem', color: 'var(--color-info-dark, #1976d2)' }}>
+              Allergen Information
+            </strong>
+            <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-text-primary)' }}>
+              Allergen information may be incomplete for some items. If you have allergies or dietary requirements, please contact {merchant.name} directly before ordering.
+            </p>
+          </div>
+        </div>
+      )}
       {tableNumber && (
         <div style={{ 
           background: 'var(--color-primary-lightest)', 

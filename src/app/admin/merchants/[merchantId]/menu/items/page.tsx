@@ -30,6 +30,12 @@ interface MenuItem {
   restriction_type?: string;
   restriction_warning?: string;
   requires_id_verification?: boolean;
+  is_vegetarian?: boolean;
+  is_vegan?: boolean;
+  is_gluten_free?: boolean;
+  is_dairy_free?: boolean;
+  allergens?: string[];
+  allergen_info_complete?: boolean;
 }
 
 interface MenuCategory {
@@ -97,7 +103,13 @@ export default function AdminMenuItemsPage() {
                   minimum_age: item.minimum_age,
                   restriction_type: item.restriction_type,
                   restriction_warning: item.restriction_warning,
-                  requires_id_verification: item.requires_id_verification
+                  requires_id_verification: item.requires_id_verification,
+                  is_vegetarian: item.is_vegetarian,
+                  is_vegan: item.is_vegan,
+                  is_gluten_free: item.is_gluten_free,
+                  is_dairy_free: item.is_dairy_free,
+                  allergens: item.allergens,
+                  allergen_info_complete: item.allergen_info_complete
                 });
               });
             }
@@ -181,7 +193,13 @@ export default function AdminMenuItemsPage() {
         minimum_age: itemData.minimum_age,
         restriction_type: itemData.restriction_type,
         restriction_warning: itemData.restriction_warning,
-        requires_id_verification: itemData.requires_id_verification
+        requires_id_verification: itemData.requires_id_verification,
+        is_vegetarian: itemData.is_vegetarian,
+        is_vegan: itemData.is_vegan,
+        is_gluten_free: itemData.is_gluten_free,
+        is_dairy_free: itemData.is_dairy_free,
+        allergens: itemData.allergens,
+        allergen_info_complete: itemData.allergen_info_complete
       };
       console.log('Setting editingItem to:', updatedItem);
       
@@ -378,7 +396,13 @@ export default function AdminMenuItemsPage() {
               minimum_age: editingItem.minimum_age,
               restriction_type: editingItem.restriction_type,
               restriction_warning: editingItem.restriction_warning,
-              requires_id_verification: editingItem.requires_id_verification
+              requires_id_verification: editingItem.requires_id_verification,
+              is_vegetarian: editingItem.is_vegetarian,
+              is_vegan: editingItem.is_vegan,
+              is_gluten_free: editingItem.is_gluten_free,
+              is_dairy_free: editingItem.is_dairy_free,
+              allergens: editingItem.allergens,
+              allergen_info_complete: editingItem.allergen_info_complete
             }}
             categories={categories}
             isOpen={!!editingItem}

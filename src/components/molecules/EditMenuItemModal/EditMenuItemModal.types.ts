@@ -22,6 +22,12 @@ export interface MenuItem {
   restriction_type?: string;
   restriction_warning?: string;
   requires_id_verification?: boolean;
+  is_vegetarian?: boolean;
+  is_vegan?: boolean;
+  is_gluten_free?: boolean;
+  is_dairy_free?: boolean;
+  allergens?: string[];
+  allergen_info_complete?: boolean;
 }
 
 export interface MenuCategory {

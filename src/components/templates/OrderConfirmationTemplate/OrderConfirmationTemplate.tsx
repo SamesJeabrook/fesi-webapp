@@ -38,6 +38,7 @@ interface OrderDetails {
   merchant?: {
     id: string;
     name: string;
+    username?: string;
   };
   event?: {
     merchant_id: string;
@@ -235,9 +236,24 @@ export function OrderConfirmationTemplate({ orderId }: OrderConfirmationTemplate
         {/* Actions */}
         <div className={styles.confirmation__actions}>
           {isAuthenticated ? (
-            <Button variant="primary" onClick={() => router.push('/vendors/orders')}>
-              View All Orders
-            </Button>
+            <>
+              <Button variant="primary" onClick={() => router.push('/vendors/orders')}>
+                View All Orders
+              </Button>
+              <Button 
+                variant="secondary" 
+                onClick={() => {
+                  const merchantUsername = order.merchant?.username;
+                  if (merchantUsername) {
+                    router.push(`/vendors/${merchantUsername}`);
+                  } else {
+                    router.push('/vendors');
+                  }
+                }}
+              >
+                Order More
+              </Button>
+            </>
           ) : (
             <>
               <Button 
@@ -251,7 +267,17 @@ export function OrderConfirmationTemplate({ orderId }: OrderConfirmationTemplate
               >
                 View Order Status
               </Button>
-              <Button variant="secondary" onClick={() => router.push('/vendors')}>
+              <Button 
+                variant="secondary" 
+                onClick={() => {
+                  const merchantUsername = order.merchant?.username;
+                  if (merchantUsername) {
+                    router.push(`/vendors/${merchantUsername}`);
+                  } else {
+                    router.push('/vendors');
+                  }
+                }}
+              >
                 Order More
               </Button>
             </>

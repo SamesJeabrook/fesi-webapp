@@ -55,6 +55,38 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
             </p>
           )}
 
+          {/* Dietary badges - show on all screen sizes */}
+          {menuItem.dietaryInfo && menuItem.dietaryInfo.length > 0 && (
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '8px' }}>
+              {menuItem.dietaryInfo.map((diet) => {
+                const badges: Record<string, { emoji: string; label: string }> = {
+                  'vegan': { emoji: '🌱', label: 'Vegan' },
+                  'vegetarian': { emoji: '🥬', label: 'Vegetarian' },
+                  'gluten-free': { emoji: '🌾', label: 'GF' },
+                  'dairy-free': { emoji: '🥛', label: 'DF' },
+                };
+                const badge = badges[diet];
+                if (!badge) return null;
+                return (
+                  <span 
+                    key={diet} 
+                    style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center',
+                      gap: '3px',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      color: 'var(--color-success-dark, #065f46)',
+                    }}
+                    title={badge.label}
+                  >
+                    {badge.emoji} {badge.label}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
           {/* Meta information */}
           {isAbove('sm') && (
             <>
@@ -71,18 +103,8 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
                     </span>
                     )}
                 </div>
-                {/* Dietary info */}
-                {menuItem.dietaryInfo && menuItem.dietaryInfo.length > 0 && (
-                    <div className={styles.dietaryInfo}>
-                    {menuItem.dietaryInfo.map((diet) => (
-                        <span key={diet} className={styles.dietaryBadge}>
-                        {diet}
-                        </span>
-                    ))}
-                    </div>
-                )}
 
-                {/* Allergens */}
+                {/* Allergens - only on larger screens */}
                 {menuItem.allergens && menuItem.allergens.length > 0 && (
                     <div className={styles.allergens}>
                     <span className={styles.allergensLabel}>Contains:</span>

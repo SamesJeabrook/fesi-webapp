@@ -25,6 +25,13 @@ export interface APIMenuItem {
   restriction_type?: string;
   restriction_warning?: string;
   requires_id_verification?: boolean;
+  // Allergen & Dietary Info
+  is_vegetarian?: boolean;
+  is_vegan?: boolean;
+  is_gluten_free?: boolean;
+  is_dairy_free?: boolean;
+  allergens?: string[];
+  allergen_info_complete?: boolean;
 }
 
 /**
@@ -75,33 +82,42 @@ export const formatPrice = (basePrice: number, currency: string = 'GBP'): string
 /**
  * Transform API menu item to component MenuItem
  */
-export const transformMenuItem = (apiItem: APIMenuItem, currency: string = 'GBP'): MenuItem => ({
-  id: apiItem.id,
-  merchantId: apiItem.merchant_id,
-  categoryId: apiItem.category_id,
-  name: apiItem.title,
-  description: apiItem.description || undefined,
-  price: formatPrice(apiItem.base_price, currency),
-  basePrice: apiItem.base_price,
-  imageUrl: apiItem.image_url || undefined,
-  isAvailable: apiItem.is_active,
-  displayOrder: apiItem.display_order,
-  createdAt: apiItem.created_at,
-  updatedAt: apiItem.updated_at,
-  // Set defaults for optional fields
-  isPopular: false,
-  preparationTime: undefined,
-  calories: undefined,
-  allergens: undefined,
-  dietaryInfo: undefined,
-  option: undefined,
-  // Restriction fields
-  isAgeRestricted: apiItem.is_age_restricted,
-  minimumAge: apiItem.minimum_age,
-  restrictionType: apiItem.restriction_type,
-  restrictionWarning: apiItem.restriction_warning,
-  requiresIdVerification: apiItem.requires_id_verification,
-});
+export const transformMenuItem = (apiItem: APIMenuItem, currency: string = 'GBP'): MenuItem => {
+  // Build dietary info array from boolean flags
+  const dietaryInfo: ('vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free')[] = [];
+  if (apiItem.is_vegan) dietaryInfo.push('vegan');
+  if (apiItem.is_vegetarian && !apiItem.is_vegan) dietaryInfo.push('vegetarian'); // Don't duplicate if vegan
+  if (apiItem.is_gluten_free) dietaryInfo.push('gluten-free');
+  if (apiItem.is_dairy_free) dietaryInfo.push('dairy-free');
+
+  return {
+    id: apiItem.id,
+    merchantId: apiItem.merchant_id,
+    categoryId: apiItem.category_id,
+    name: apiItem.title,
+    description: apiItem.description || undefined,
+    price: formatPrice(apiItem.base_price, currency),
+    basePrice: apiItem.base_price,
+    imageUrl: apiItem.image_url || undefined,
+    isAvailable: apiItem.is_active,
+    displayOrder: apiItem.display_order,
+    createdAt: apiItem.created_at,
+    updatedAt: apiItem.updated_at,
+    // Set defaults for optional fields
+    isPopular: false,
+    preparationTime: undefined,
+    calories: undefined,
+    allergens: apiItem.allergens && apiItem.allergens.length > 0 ? apiItem.allergens : undefined,
+    dietaryInfo: dietaryInfo.length > 0 ? dietaryInfo : undefined,
+    option: undefined,
+    // Restriction fields
+    isAgeRestricted: apiItem.is_age_restricted,
+    minimumAge: apiItem.minimum_age,
+    restrictionType: apiItem.restriction_type,
+    restrictionWarning: apiItem.restriction_warning,
+    requiresIdVerification: apiItem.requires_id_verification,
+  };
+};
 
 /**
  * Transform API merchant to component Merchant

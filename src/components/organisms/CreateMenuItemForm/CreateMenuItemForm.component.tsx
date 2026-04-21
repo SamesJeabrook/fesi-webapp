@@ -24,6 +24,12 @@ export interface CreateMenuItemFormProps {
     restriction_type?: string;
     restriction_warning?: string;
     requires_id_verification?: boolean;
+    is_vegetarian?: boolean;
+    is_vegan?: boolean;
+    is_gluten_free?: boolean;
+    is_dairy_free?: boolean;
+    allergens?: string[];
+    allergen_info_complete?: boolean;
   }) => Promise<void>;
   onCancel: () => void;
   isSubmitting?: boolean;
@@ -52,6 +58,12 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
     restriction_type: 'alcohol',
     restriction_warning: '',
     requires_id_verification: false,
+    is_vegetarian: false,
+    is_vegan: false,
+    is_gluten_free: false,
+    is_dairy_free: false,
+    allergens: [] as string[],
+    allergen_info_complete: false,
   });
 
   const [errors, setErrors] = useState({
@@ -228,6 +240,12 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
         restriction_type: formData.is_age_restricted ? formData.restriction_type : undefined,
         restriction_warning: formData.is_age_restricted && formData.restriction_warning ? formData.restriction_warning : undefined,
         requires_id_verification: formData.is_age_restricted ? formData.requires_id_verification : undefined,
+        is_vegetarian: formData.is_vegetarian || undefined,
+        is_vegan: formData.is_vegan || undefined,
+        is_gluten_free: formData.is_gluten_free || undefined,
+        is_dairy_free: formData.is_dairy_free || undefined,
+        allergens: formData.allergens.length > 0 ? formData.allergens : undefined,
+        allergen_info_complete: formData.allergen_info_complete,
       });
       
       console.log('[CreateMenuItemForm] onSubmit completed successfully');
@@ -244,6 +262,12 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
         restriction_type: 'alcohol',
         restriction_warning: '',
         requires_id_verification: false,
+        is_vegetarian: false,
+        is_vegan: false,
+        is_gluten_free: false,
+        is_dairy_free: false,
+        allergens: [] as string[],
+        allergen_info_complete: false,
       });
       setErrors({
         name: '',
@@ -465,6 +489,117 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
                 </Grid.Container>
               </div>
             )}
+          </div>
+        </Grid.Item>
+
+        <Grid.Item sm={16}>
+          <div style={{ 
+            borderTop: '1px solid var(--color-border-primary, #e5e7eb)', 
+            paddingTop: '16px',
+            marginTop: '8px'
+          }}>
+            <Typography variant="body-medium" style={{ marginBottom: '12px' }}>
+              Dietary Information & Allergens
+            </Typography>
+            <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+              Help customers make informed choices by marking dietary suitability and allergen information
+            </Typography>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <Typography variant="body-small" style={{ fontWeight: 600, marginBottom: '8px' }}>
+                Dietary Suitability:
+              </Typography>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.is_vegetarian}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      is_vegetarian: e.target.checked,
+                      is_vegan: e.target.checked ? false : prev.is_vegan
+                    }))}
+                    disabled={isSubmitting || isUploadingImage || formData.is_vegan}
+                  />
+                  <Typography variant="body-small">🥬 Vegetarian</Typography>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.is_vegan}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      is_vegan: e.target.checked,
+                      is_vegetarian: e.target.checked ? true : prev.is_vegetarian
+                    }))}
+                    disabled={isSubmitting || isUploadingImage}
+                  />
+                  <Typography variant="body-small">🌱 Vegan</Typography>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.is_gluten_free}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_gluten_free: e.target.checked }))}
+                    disabled={isSubmitting || isUploadingImage}
+                  />
+                  <Typography variant="body-small">🌾 Gluten Free</Typography>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.is_dairy_free}
+                    onChange={(e) => setFormData(prev => ({ ...prev, is_dairy_free: e.target.checked }))}
+                    disabled={isSubmitting || isUploadingImage}
+                  />
+                  <Typography variant="body-small">🥛 Dairy Free</Typography>
+                </label>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <Typography variant="body-small" style={{ fontWeight: 600, marginBottom: '8px' }}>
+                Contains Allergens:
+              </Typography>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '8px' }}>
+                {['Nuts', 'Peanuts', 'Eggs', 'Milk', 'Soy', 'Wheat', 'Fish', 'Shellfish', 'Sesame', 'Celery', 'Mustard', 'Lupin', 'Sulphites', 'Molluscs'].map(allergen => (
+                  <label key={allergen} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={formData.allergens.includes(allergen.toLowerCase())}
+                      onChange={(e) => {
+                        const allergenLower = allergen.toLowerCase();
+                        setFormData(prev => ({
+                          ...prev,
+                          allergens: e.target.checked 
+                            ? [...prev.allergens, allergenLower]
+                            : prev.allergens.filter(a => a !== allergenLower)
+                        }));
+                      }}
+                      disabled={isSubmitting || isUploadingImage}
+                    />
+                    <Typography variant="body-small">{allergen}</Typography>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={formData.allergen_info_complete}
+                  onChange={(e) => setFormData(prev => ({ ...prev, allergen_info_complete: e.target.checked }))}
+                  disabled={isSubmitting || isUploadingImage}
+                />
+                <Typography variant="body-small" style={{ fontWeight: 600 }}>
+                  ✓ I have reviewed and completed allergen information for this item
+                </Typography>
+              </label>
+              <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)', marginTop: '4px', marginLeft: '24px' }}>
+                Check this when all allergen and dietary information is accurate
+              </Typography>
+            </div>
           </div>
         </Grid.Item>
 

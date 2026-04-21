@@ -27,6 +27,13 @@ export interface MenuItem {
   description?: string;
   image_url?: string;
   option_groups?: OptionGroup[];
+  // Allergen & Dietary Info
+  is_vegetarian?: boolean;
+  is_vegan?: boolean;
+  is_gluten_free?: boolean;
+  is_dairy_free?: boolean;
+  allergens?: string[];
+  allergen_info_complete?: boolean;
 }
 
 export interface MenuItemOptionsModalProps {
@@ -118,6 +125,96 @@ export const MenuItemOptionsModal: React.FC<MenuItemOptionsModalProps> = ({
         >
           {menuItem.description}
         </Typography>
+      )}
+
+      {/* Dietary & Allergen Information */}
+      {((menuItem.is_vegetarian || menuItem.is_vegan || menuItem.is_gluten_free || menuItem.is_dairy_free) || 
+        (menuItem.allergens && menuItem.allergens.length > 0)) && (
+        <div style={{ 
+          padding: '12px', 
+          background: 'var(--color-background-secondary, #f9fafb)', 
+          borderRadius: '8px',
+          marginBottom: '16px',
+          border: '1px solid var(--color-border-primary, #e5e7eb)'
+        }}>
+          {/* Dietary badges */}
+          {(menuItem.is_vegetarian || menuItem.is_vegan || menuItem.is_gluten_free || menuItem.is_dairy_free) && (
+            <div style={{ marginBottom: menuItem.allergens && menuItem.allergens.length > 0 ? '8px' : '0' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {menuItem.is_vegan && (
+                  <span style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 8px', 
+                    background: 'var(--color-success-lightest, #d1fae5)', 
+                    color: 'var(--color-success-dark, #065f46)',
+                    borderRadius: '4px', 
+                    fontSize: '0.75rem',
+                    fontWeight: 600
+                  }}>
+                    🌱 Vegan
+                  </span>
+                )}
+                {menuItem.is_vegetarian && !menuItem.is_vegan && (
+                  <span style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 8px', 
+                    background: 'var(--color-success-lightest, #d1fae5)', 
+                    color: 'var(--color-success-dark, #065f46)',
+                    borderRadius: '4px', 
+                    fontSize: '0.75rem',
+                    fontWeight: 600
+                  }}>
+                    🥬 Vegetarian
+                  </span>
+                )}
+                {menuItem.is_gluten_free && (
+                  <span style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 8px', 
+                    background: 'var(--color-warning-lightest, #fef3c7)', 
+                    color: 'var(--color-warning-dark, #92400e)',
+                    borderRadius: '4px', 
+                    fontSize: '0.75rem',
+                    fontWeight: 600
+                  }}>
+                    🌾 Gluten Free
+                  </span>
+                )}
+                {menuItem.is_dairy_free && (
+                  <span style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 8px', 
+                    background: 'var(--color-info-lightest, #dbeafe)', 
+                    color: 'var(--color-info-dark, #1e40af)',
+                    borderRadius: '4px', 
+                    fontSize: '0.75rem',
+                    fontWeight: 600
+                  }}>
+                    🥛 Dairy Free
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Allergen warning */}
+          {menuItem.allergens && menuItem.allergens.length > 0 && (
+            <div style={{ fontSize: '0.875rem' }}>
+              <strong style={{ color: 'var(--color-warning-dark, #92400e)' }}>⚠️ May contain:</strong>{' '}
+              <span style={{ color: 'var(--color-text-primary)' }}>
+                {menuItem.allergens.join(', ')}
+              </span>
+            </div>
+          )}
+        </div>
       )}
 
       <div className={styles.optionGroups}>
