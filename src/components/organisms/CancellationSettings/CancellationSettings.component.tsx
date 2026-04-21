@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Button } from '@/components/atoms';
 import api from '@/utils/api';
-import styles from './cancellationSettings.module.scss';
+import styles from './CancellationSettings.module.scss';
 
 interface CancellationSettingsProps {
   merchantId: string;
