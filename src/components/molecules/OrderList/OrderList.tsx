@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { formatPrice } from '@/utils/menu';
 import { Typography, Button } from '@/components/atoms';
 import { OrderQRCode } from '@/components/atoms/OrderQRCode';
+import { CancelOrderModal } from '@/components/molecules/CancelOrderModal';
 import styles from './OrderList.module.scss';
 import { MapPin } from '@/components/atoms';
 
@@ -19,14 +20,18 @@ export interface OrderListItem {
     merchant_name: string;
     total: number;
     completed_at?: string; // ISO timestamp when order was completed
+    scheduled_time?: string; // ISO timestamp for pre-order pickup time
+    is_pre_order?: boolean;
 }
 
 export interface OrderListProps {
   orders: OrderListItem[];
+  onOrderCancelled?: (orderId: string) => void;
 }
 
-const OrderList: React.FC<OrderListProps> = ({ orders }) => {
+const OrderList: React.FC<OrderListProps> = ({ orders, onOrderCancelled }) => {
   const [qrModalOrder, setQrModalOrder] = useState<OrderListItem | null>(null);
+  const [cancelModalOrder, setCancelModalOrder] = useState<OrderListItem | null>(null);
   
   // Filter out orders that were completed more than 12 hours ago
   const filteredOrders = orders.filter(order => {
@@ -65,6 +70,17 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
             >
               {order.status}
             </Typography>
+            {order.is_pre_order && order.scheduled_time && (
+              <Typography variant="caption" as="span" className={styles.pickupTime}>
+                🕐 {new Date(order.scheduled_time).toLocaleString('en-GB', {
+                  weekday: 'short',
+                  day: 'numeric',
+                  month: 'short',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </Typography>
+            )}
           </div>
           <div className={styles.orderSummary}>
             {order.items.map((item, idx) => (
@@ -86,16 +102,28 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
             <Typography variant="body-medium" as="span">
               Total: {formatPrice(order.total)}
             </Typography>
-            {order.status === 'ready' && (
-              <Button 
-                variant="primary" 
-                size="sm"
-                onClick={() => setQrModalOrder(order)}
-                className={styles.qrButton}
-              >
-                Show QR Code
-              </Button>
-            )}
+            <div className={styles.orderActions}>
+              {order.status === 'ready' && (
+                <Button 
+                  variant="primary" 
+                  size="sm"
+                  onClick={() => setQrModalOrder(order)}
+                  className={styles.qrButton}
+                >
+                  Show QR Code
+                </Button>
+              )}
+              {['pending', 'accepted', 'preparing'].includes(order.status) && (
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  onClick={() => setCancelModalOrder(order)}
+                  className={styles.cancelButton}
+                >
+                  Cancel Order
+                </Button>
+              )}
+            </div>
           </div>
           {(order.status === 'preparing' || order.status === 'ready') && (
             <MapPin
@@ -143,6 +171,23 @@ const OrderList: React.FC<OrderListProps> = ({ orders }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Cancel Order Modal */}
+      {cancelModalOrder && (
+        <CancelOrderModal
+          orderId={cancelModalOrder.id}
+          orderNumber={cancelModalOrder.order_number.toString()}
+          onClose={() => setCancelModalOrder(null)}
+          onCancelled={() => {
+            setCancelModalOrder(null);
+            if (onOrderCancelled) {
+              onOrderCancelled(cancelModalOrder.id);
+            }
+          }}
+          userRole="customer"
+          skipAuth={true} // Allow guest users to cancel
+        />
       )}
     </div>
   );

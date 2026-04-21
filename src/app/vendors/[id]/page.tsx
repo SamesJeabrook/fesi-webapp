@@ -3,7 +3,6 @@ import { VendorMenuWrapper } from './components/VendorMenuWrapper';
 import { transformMenuResponse } from '@/utils/menu/menuTransformers';
 import { GridContainer, GridItem } from '@/components/atoms/Grid';
 import { Typography } from '@/components/atoms/Typography';
-import { CustomerNavigationWrapper } from '@/components/molecules/CustomerNavigation';
 
 // Generate metadata for the page
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -192,14 +191,11 @@ export default async function VendorPage({
   const { merchant, categories: transformedCategories } = transformMenuResponse(menuData);
 
   return (
-    <>
-      <CustomerNavigationWrapper />
-      <VendorMenuWrapper 
-        activeEvent={activeEvent}
-        eventData={eventData}
-        merchant={merchant}
-        categories={transformedCategories}
-      />
-    </>
+    <VendorMenuWrapper 
+      activeEvent={activeEvent}
+      eventData={eventData}
+      merchant={merchant}
+      categories={transformedCategories}
+    />
   );
 }

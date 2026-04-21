@@ -18,6 +18,7 @@ import OrderSummary from '@/components/organisms/OrderSummary/OrderSummary';
 import { paymentConfig } from '@/config/paymentConfig';
 import Tabs, { Tab } from '@/components/molecules/Tabs/Tabs';
 import PreOrderNotificationBar from '@/components/organisms/PreOrderNotificationBar/PreOrderNotificationBar';
+import { CustomerNavigationWrapper } from '@/components/molecules/CustomerNavigation';
 import api from '@/utils/api';
 import styles from './VendorMenuWrapper.module.scss';
 
@@ -86,6 +87,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     max_advance_hours: number;
   }
   const [preOrderSettings, setPreOrderSettings] = useState<PreOrderSettings | null>(null);
+  const [hasFutureEvents, setHasFutureEvents] = useState<boolean>(false);
   const [selectedPreOrderSlot, setSelectedPreOrderSlot] = useState<{
     id: string;
     time: string;
@@ -125,11 +127,24 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     const pollOrders = async () => {
       try {
         const orderIds = orders.map(order => order.id);
-        const data = await api.post('/orders/batch', { orderIds }, { skipAuth: true });
+        const data = await api.post('/api/orders/batch', { orderIds }, { skipAuth: true });
 
         const updatedOrders = orders.map(order => {
           const serverOrder = data.orders.find((o: any) => o.id === order.id);
-          return serverOrder ? { ...order, status: serverOrder.status } : order;
+          if (serverOrder) {
+            // Merge server data with existing order, preserving all fields
+            return {
+              ...order,
+              status: serverOrder.status,
+              order_number: serverOrder.order_number || order.order_number,
+              latitude: serverOrder.latitude ?? order.latitude,
+              longitude: serverOrder.longitude ?? order.longitude,
+              scheduled_time: serverOrder.scheduled_time || order.scheduled_time,
+              is_pre_order: serverOrder.is_pre_order ?? order.is_pre_order,
+              completed_at: serverOrder.completed_at || order.completed_at,
+            };
+          }
+          return order;
         });
 
         setOrders(updatedOrders);
@@ -156,24 +171,37 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
         
         // If there's event data (active or upcoming), try to get event-specific settings
         if (eventData?.id) {
-          response = await api.get(`/api/pre-orders/events/${eventData.id}/settings`);
+          response = await api.get(`/api/pre-orders/events/${eventData.id}/settings`, { skipAuth: true });
         } else if (merchant?.id) {
           // Otherwise, get merchant-level default settings
-          response = await api.get(`/api/pre-orders/merchants/${merchant.id}/settings`);
+          response = await api.get(`/api/pre-orders/merchants/${merchant.id}/settings`, { skipAuth: true });
         } else {
           return;
         }
 
         if (response.success && response.settings) {
           setPreOrderSettings(response.settings);
+          // Set hasFutureEvents flag if provided (only from merchant endpoint)
+          if (response.has_future_events !== undefined) {
+            setHasFutureEvents(response.has_future_events);
+          } else {
+            // If fetching event-specific settings, check if eventData has a future date
+            if (eventData?.start_time) {
+              const eventStart = new Date(eventData.start_time);
+              setHasFutureEvents(eventStart > new Date());
+            } else {
+              setHasFutureEvents(false);
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to fetch pre-order settings:', error);
+        setHasFutureEvents(false);
       }
     };
 
     fetchPreOrderSettings();
-  }, [eventData?.id, merchant?.id]);
+  }, [eventData?.id, merchant?.id, eventData?.start_time]);
 
   // Handle option group selection changes for the modal
   const handleOptionsChange = (groupId: string, selected: string[], menuItem?: MenuItem) => {
@@ -427,7 +455,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   ]
 
   // Callback for when an order is accepted
-  const handleOrderAccepted = (order: { id: string; status: string; order_number?: number; items: any[]; total: number; }) => {
+  const handleOrderAccepted = (order: { id: string; status: string; order_number?: number; items: any[]; total: number; scheduled_time?: string; is_pre_order?: boolean; }) => {
     // Convert partial order to OrderListItem with required fields
     const fullOrder: OrderListItem = {
       id: order.id,
@@ -438,6 +466,8 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
       longitude: 0,
       latitude: 0,
       merchant_name: merchant.name,
+      scheduled_time: order.scheduled_time,
+      is_pre_order: order.is_pre_order,
     };
     
     setOrders(prev => {
@@ -492,8 +522,40 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
     setSelectedPreOrderSlot({ id: slotId, time: slotTime });
   };
 
+  const handleOrderCancelled = (orderId: string) => {
+    // Update the order status to cancelled in the list
+    setOrders(prev => {
+      const updated = prev.map(order => 
+        order.id === orderId 
+          ? { ...order, status: 'cancelled' as const }
+          : order
+      );
+      localStorage.setItem('acceptedOrders', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleViewOrders = () => {
+    setCheckoutDisplay(true);
+    setActiveCheckoutTab('orders');
+  };
+
+  // Count active orders (not cancelled or completed)
+  const activeOrderCount = orders.filter(order => 
+    !['cancelled', 'complete'].includes(order.status)
+  ).length;
+
+  const hasActiveOrders = orders.some(order => 
+    ['accepted', 'preparing', 'ready'].includes(order.status)
+  );
+
   return (
     <>
+      <CustomerNavigationWrapper 
+        orderCount={activeOrderCount}
+        onOrdersClick={handleViewOrders}
+        hasActiveOrders={hasActiveOrders}
+      />
       {tableNumber && (
         <div style={{ 
           background: 'var(--color-primary-lightest)', 
@@ -509,7 +571,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
           </p>
         </div>
       )}
-      {!activeEvent && preOrderSettings?.enabled && (
+      {!activeEvent && preOrderSettings?.enabled && hasFutureEvents && eventData?.start_time && (
         <PreOrderNotificationBar 
           merchantName={merchant.name}
           upcomingEventDate={eventData?.start_time}
@@ -517,7 +579,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
           upcomingEventName={eventData?.name}
         />
       )}
-      {!activeEvent && !preOrderSettings?.enabled && (
+      {!activeEvent && (!preOrderSettings?.enabled || !hasFutureEvents) && (
         <Notification 
           message={`${merchant.name} is not taking orders right now.`} 
           subMessage="You can still view their menu." 
@@ -527,9 +589,9 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
       <MenuDisplay
         merchant={merchant}
         categories={categories.map(cat => ({ ...cat, items: cat.items || [] }))}
-        onItemClick={activeEvent || preOrderSettings?.enabled ? handleItemClick : undefined}
+        onItemClick={activeEvent || (preOrderSettings?.enabled && hasFutureEvents) ? handleItemClick : undefined}
       />
-      {(activeEvent || preOrderSettings?.enabled) && (
+      {(activeEvent || (preOrderSettings?.enabled && hasFutureEvents)) && (
         <>
           <BasketSummary items={basketItems} total={basketTotal} />
           <CheckoutButtonWrapper>
@@ -620,7 +682,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
         {selectedMenuItem && (
           <MenuItemDetails
             item={selectedMenuItem}
-            disabled={!activeEvent && !preOrderSettings?.enabled}
+            disabled={!activeEvent && !(preOrderSettings?.enabled && hasFutureEvents)}
             selectedOptions={selectedOptions}
             onOptionsChange={(groupId, selected) => handleOptionsChange(groupId, selected.map(opt => opt.id), selectedMenuItem)}
             onAddToOrder={(qty: number) => handleAddToOrder(selectedMenuItem.id, qty)}
@@ -628,7 +690,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
           />
         )}
       </FullscreenTransition>
-      {(activeEvent || preOrderSettings?.enabled) && (
+      {(activeEvent || (preOrderSettings?.enabled && hasFutureEvents)) && (
         <FullscreenTransition
           open={checkoutDisplay}
           onClose={() => setCheckoutDisplay(false)}
@@ -650,7 +712,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
               />
             </Tab>
             <Tab tabKey='orders'>
-              <OrderList orders={orders} />
+              <OrderList orders={orders} onOrderCancelled={handleOrderCancelled} />
             </Tab>
           </Tabs>
         </FullscreenTransition>

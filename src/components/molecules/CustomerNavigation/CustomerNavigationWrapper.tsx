@@ -4,12 +4,22 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { useRouter } from 'next/navigation';
 import { CustomerNavigation } from './CustomerNavigation';
 
+interface CustomerNavigationWrapperProps {
+  orderCount?: number;
+  onOrdersClick?: () => void;
+  hasActiveOrders?: boolean;
+}
+
 /**
  * CustomerNavigationWrapper
  * Wraps CustomerNavigation with Auth0 integration
  * Use this component in your pages instead of CustomerNavigation directly
  */
-export function CustomerNavigationWrapper() {
+export function CustomerNavigationWrapper({ 
+  orderCount = 0, 
+  onOrdersClick,
+  hasActiveOrders = false 
+}: CustomerNavigationWrapperProps = {}) {
   const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const router = useRouter();
 
@@ -49,6 +59,9 @@ export function CustomerNavigationWrapper() {
       onLogoutClick={handleLogoutClick}
       showCart={false}
       cartItemCount={0}
+      orderCount={orderCount}
+      onOrdersClick={onOrdersClick}
+      hasActiveOrders={hasActiveOrders}
     />
   );
 }

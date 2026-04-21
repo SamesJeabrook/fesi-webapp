@@ -386,7 +386,9 @@ const PaymentFormInner: React.FC<OrderPaymentFormProps> = ({
                 total: data.total_amount,
                 latitude: data.latitude,
                 longitude: data.longitude,
-                merchant_name: data.merchant_name
+                merchant_name: data.merchant_name,
+                scheduled_time: data.scheduled_time,
+                is_pre_order: data.is_pre_order
               });
             }
             resetLocalStorage();

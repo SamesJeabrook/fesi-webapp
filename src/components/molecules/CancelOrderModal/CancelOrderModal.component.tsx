@@ -22,6 +22,7 @@ interface CancelOrderModalProps {
   onClose: () => void;
   onCancelled: () => void;
   userRole?: 'customer' | 'merchant' | 'admin';
+  skipAuth?: boolean; // For guest users
 }
 
 export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
@@ -29,7 +30,8 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   orderNumber,
   onClose,
   onCancelled,
-  userRole = 'customer'
+  userRole = 'customer',
+  skipAuth = false
 }) => {
   const [eligibility, setEligibility] = useState<CancellationEligibility | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,10 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   const checkEligibility = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/api/orders/${orderId}/cancellation-eligibility`);
+      const response = await api.get(
+        `/api/orders/${orderId}/cancellation-eligibility`,
+        skipAuth ? { skipAuth: true } : undefined
+      );
       setEligibility(response);
     } catch (err: any) {
       setError(err.message || 'Failed to check cancellation eligibility');
@@ -62,9 +67,13 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
       setCancelling(true);
       setError(null);
 
-      const response = await api.post(`/api/orders/${orderId}/cancel`, {
-        reason: reason || 'Cancelled by ' + userRole
-      });
+      const response = await api.post(
+        `/api/orders/${orderId}/cancel`,
+        {
+          reason: reason || 'Cancelled by ' + userRole
+        },
+        skipAuth ? { skipAuth: true } : undefined
+      );
 
       if (response.success) {
         onCancelled();

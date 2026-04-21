@@ -34,6 +34,21 @@ export interface CustomerNavigationProps {
    * Whether to show the cart icon
    */
   showCart?: boolean;
+  
+  /**
+   * Number of active orders (for guest users)
+   */
+  orderCount?: number;
+  
+  /**
+   * Callback when orders button is clicked
+   */
+  onOrdersClick?: () => void;
+  
+  /**
+   * Whether there are active orders (for visual indicator)
+   */
+  hasActiveOrders?: boolean;
 }
 
 export interface NavItem {

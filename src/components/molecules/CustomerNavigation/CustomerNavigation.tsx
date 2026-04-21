@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/atoms';
@@ -19,11 +19,20 @@ export function CustomerNavigation({
   onLoginClick,
   onLogoutClick,
   cartItemCount = 0,
-  showCart = false
+  showCart = false,
+  orderCount = 0,
+  onOrdersClick,
+  hasActiveOrders = false
 }: CustomerNavigationProps) {
   const pathname = usePathname();
   const currentPath = activePath || pathname;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Prevent hydration mismatch by only showing orders button after client mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const getInitials = (name?: string, email?: string) => {
     if (name) {
@@ -76,6 +85,22 @@ export function CustomerNavigation({
 
         {/* Actions */}
         <div className={styles.customerNavigation__actions}>
+          {/* Orders Button (for guest users) - only render after mount to prevent hydration mismatch */}
+          {isMounted && orderCount > 0 && onOrdersClick && (
+            <button 
+              className={styles.customerNavigation__ordersButton}
+              onClick={onOrdersClick}
+            >
+              📋
+              <span className={styles.customerNavigation__ordersBadge}>
+                {orderCount}
+              </span>
+              {hasActiveOrders && (
+                <span className={styles.customerNavigation__ordersPulse} />
+              )}
+            </button>
+          )}
+          
           {/* Cart Button */}
           {showCart && (
             <button className={styles.customerNavigation__cartButton}>

@@ -18,11 +18,22 @@
   align-items: center;
   font-weight: 600;
   font-size: 1.1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 .orderStatus {
   font-size: 0.95rem;
   color: #2a7b2a; // accepted (default green)
   font-weight: 500;
+}
+.pickupTime {
+  font-size: 0.9rem;
+  color: #6366f1;
+  font-weight: 500;
+  background: #eef2ff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 .orderStatus.pending {
   color: #e6b800; // yellow/amber
@@ -50,10 +61,22 @@
   font-weight: 600;
   color: #222;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.orderActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .qrButton {
-  margin-left: 1rem;
+  white-space: nowrap;
+}
+
+.cancelButton {
+  white-space: nowrap;
 }
 
 /* QR Code Modal Styles */

@@ -15,6 +15,7 @@ export default function PreOrderSettingsPage() {
   const router = useRouter();
   const [merchantId, setMerchantId] = useState<string | null>(null);
   const [settings, setSettings] = useState<PreOrderSettings | undefined>();
+  const [hasFutureEvents, setHasFutureEvents] = useState<boolean>(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +59,7 @@ export default function PreOrderSettingsPage() {
         setLoading(true);
         const data = await api.get(`/api/pre-orders/merchants/${merchantId}/settings`);
         setSettings(data.settings);
+        setHasFutureEvents(data.has_future_events !== false);
       } catch (error) {
         console.error('Failed to fetch pre-order settings:', error);
         setError('Failed to load settings');
@@ -84,9 +86,13 @@ export default function PreOrderSettingsPage() {
 
       // Scroll to top to show success message
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save settings:', error);
-      setError('Failed to save settings. Please try again.');
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to save settings. Please try again.';
+      setError(errorMessage);
+      
+      // Scroll to top to show error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);
     }
@@ -132,6 +138,14 @@ export default function PreOrderSettingsPage() {
         {error && (
           <Alert type="error" className={styles.preOrderSettings__alert}>
             {error}
+          </Alert>
+        )}
+
+        {!hasFutureEvents && (
+          <Alert type="warning" className={styles.preOrderSettings__alert}>
+            <strong>No Future Events Scheduled</strong>
+            <br />
+            You cannot enable pre-orders without having future events. Pre-orders allow customers to place orders in advance for your upcoming events. Please create at least one event with a future date before enabling pre-orders.
           </Alert>
         )}
 

@@ -36,16 +36,24 @@ export const PreOrderTimelineView: React.FC<PreOrderTimelineViewProps> = ({
   // Group orders by scheduled time slot
   const groupByTimeSlot = (): TimeSlot[] => {
     const slotMap = new Map<string, TimeSlot>();
+    const now = new Date();
 
     orders.forEach(order => {
       if (!order.scheduled_time) return;
 
-      const slotTime = new Date(order.scheduled_time).toISOString();
+      const scheduledTime = new Date(order.scheduled_time);
+      
+      // Filter out completed or cancelled orders that are in the past
+      if ((order.status === 'complete' || order.status === 'cancelled') && scheduledTime < now) {
+        return; // Skip this order
+      }
+
+      const slotTime = scheduledTime.toISOString();
       
       if (!slotMap.has(slotTime)) {
         slotMap.set(slotTime, {
           time: slotTime,
-          displayTime: formatSlotTime(new Date(order.scheduled_time)),
+          displayTime: formatSlotTime(scheduledTime),
           orders: [],
           capacity: 0, // Will be determined from first order if available
           used: 0
