@@ -1,0 +1,45 @@
+.cancellations {
+  padding: var(--spacing-xl);
+  max-width: 1200px;
+  margin: 0 auto;
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  &__backLink {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    transition: color 0.2s;
+
+    &:hover {
+      color: var(--color-primary-dark);
+      text-decoration: underline;
+    }
+  }
+
+  &__subtitle {
+    color: var(--color-text-secondary);
+  }
+
+  &__content {
+    background-color: var(--color-background);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+  }
+
+  @media (max-width: 768px) {
+    padding: var(--spacing-md);
+
+    &__content {
+      padding: var(--spacing-md);
+    }
+  }
+}

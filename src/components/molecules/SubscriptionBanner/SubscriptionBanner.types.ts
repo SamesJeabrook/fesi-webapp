@@ -1,4 +1,4 @@
-export type SubscriptionTier = 'free' | 'basic' | 'professional' | 'business' | 'premium' | 'enterprise';
+export type SubscriptionTier = 'starter' | 'basic' | 'professional' | 'business' | 'premium' | 'enterprise';
 
 export interface SubscriptionBannerProps {
   currentTier: SubscriptionTier;

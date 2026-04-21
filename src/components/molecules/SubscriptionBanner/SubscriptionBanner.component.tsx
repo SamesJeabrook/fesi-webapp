@@ -25,10 +25,10 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
   
   const getTierInfo = (tier: SubscriptionTier) => {
     switch (tier) {
-      case 'free':
+      case 'starter':
         return {
-          name: 'Free',
-          icon: '🆓',
+          name: 'Starter',
+          icon: '🚀',
           color: 'secondary',
           nextTier: 'Professional',
           nextRetention: 12,

@@ -127,7 +127,7 @@ export const pricingFeesDocumentationPage: DocumentationPage = {
         'Fees are calculated automatically based on:',
       ],
       bullets: [
-        'Your subscription tier (Free, Professional, or Business)',
+        'Your subscription tier (Starter, Professional, or Business)',
         'Order source (POS vs Online)',
         'Order subtotal (before tips)',
         'Small order protection threshold (£10 for online orders)',

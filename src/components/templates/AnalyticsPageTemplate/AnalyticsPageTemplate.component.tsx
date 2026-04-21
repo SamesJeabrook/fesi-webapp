@@ -18,7 +18,7 @@ export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
   overviewStats,
   recentEvents,
   monthlyBreakdowns,
-  subscriptionTier = 'free',
+  subscriptionTier = 'starter',
   dataRetentionMonths = 1,
   isApproachingLimit = false,
   loading = false,
@@ -160,7 +160,7 @@ export const AnalyticsPageTemplate: React.FC<AnalyticsPageTemplateProps> = ({
       </div>
 
       {/* Staff Performance Analytics - Only for premium tiers */}
-      {subscriptionTier !== 'free' && (
+      {subscriptionTier !== 'starter' && (
         <div className={styles.analyticsPageTemplate__section}>
           <StaffAnalytics merchantId={merchantId} operatingMode={operatingMode} />
         </div>

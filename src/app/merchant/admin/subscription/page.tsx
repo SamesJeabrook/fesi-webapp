@@ -153,7 +153,7 @@ export default function SubscriptionPage() {
                 className={styles.upgradeBtn}
                 onClick={() => handleUpgrade(plan.tier)}
               >
-                {currentSubscription?.subscription_tier === 'free' ? 'Upgrade' : 'Change Plan'}
+                {currentSubscription?.subscription_tier === 'starter' ? 'Upgrade' : 'Change Plan'}
               </button>
             )}
           </div>

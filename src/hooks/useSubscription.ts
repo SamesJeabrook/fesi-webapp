@@ -90,11 +90,11 @@ export function useSubscription() {
 
   const canUpgrade = useCallback((): boolean => {
     const tier = subscription?.subscription_tier;
-    return tier === 'free' || tier === 'professional' || tier === 'business';
+    return tier === 'starter' || tier === 'professional' || tier === 'business';
   }, [subscription]);
 
   const getTierName = useCallback((): string => {
-    return subscription?.plan_name || 'Free';
+    return subscription?.plan_name || 'Starter';
   }, [subscription]);
 
   const getTransactionFee = useCallback((): number => {

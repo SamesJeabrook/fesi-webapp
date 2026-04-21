@@ -18,7 +18,7 @@ export default function MerchantAnalyticsPage() {
   const [merchantId, setMerchantId] = useState<string | null>(null);
   const [merchantName, setMerchantName] = useState<string>('');
   const [operatingMode, setOperatingMode] = useState<'event_based' | 'static'>('event_based');
-  const [subscriptionTier, setSubscriptionTier] = useState<'free' | 'basic' | 'premium'>('free');
+  const [subscriptionTier, setSubscriptionTier] = useState<'starter' | 'basic' | 'premium'>('starter');
   const [dataRetentionMonths, setDataRetentionMonths] = useState<number>(1);
   const [overviewStats, setOverviewStats] = useState<OverviewStats>({
     totalRevenue: 0,
@@ -83,7 +83,7 @@ export default function MerchantAnalyticsPage() {
         const merchantData = merchantResponse.data || merchantResponse;
         setMerchantName(merchantData.business_name || 'Your Business');
         setOperatingMode(merchantData.operating_mode || 'event_based');
-        setSubscriptionTier(merchantData.subscription_tier || 'free');
+        setSubscriptionTier(merchantData.subscription_tier || 'starter');
         
         // Set data retention based on subscription limit
         const analyticsMonths = getLimit('analytics_history_months') || 3;
