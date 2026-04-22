@@ -228,7 +228,7 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
                   <div className={styles.planSelectionStep__selectButton}>
                     <Button
                       variant={isSelected ? 'primary' : 'secondary'}
-                      size="medium"
+                      size="md"
                       fullWidth
                       type="button"
                       onClick={(e) => {
@@ -248,18 +248,18 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
           <div className={styles.planSelectionStep__actions}>
             <Button
               variant="secondary"
-              size="large"
+              size="lg"
               onClick={onBack}
-              disabled={loading}
+              isDisabled={loading}
               type="button"
             >
               Back
             </Button>
             <Button
               variant="primary"
-              size="large"
+              size="lg"
               type="submit"
-              disabled={loading || !selectedTier}
+              isDisabled={loading || !selectedTier}
             >
               {loading ? 'Processing...' : 'Continue'}
             </Button>

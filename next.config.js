@@ -20,10 +20,6 @@ const withPWA = require('next-pwa')({
       // DO NOT cache API calls - always fetch fresh data
       urlPattern: /^https?:\/\/.*\/api\/.*/i,
       handler: 'NetworkOnly',
-      options: {
-        cacheName: 'api-cache',
-        networkTimeoutSeconds: 10,
-      },
     },
     {
       // Cache Google Fonts
