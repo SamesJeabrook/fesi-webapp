@@ -1,0 +1,265 @@
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.grantCard {
+  margin-bottom: 2rem;
+  padding: 2rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.labelHint {
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  font-family: inherit;
+  font-size: 0.875rem;
+  resize: vertical;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-lightest);
+  }
+
+  &:disabled {
+    background: var(--color-background-secondary);
+    cursor: not-allowed;
+  }
+}
+
+.select,
+.input {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  font-family: inherit;
+  font-size: 0.875rem;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-lightest);
+  }
+
+  &:disabled {
+    background: var(--color-background-secondary);
+    cursor: not-allowed;
+  }
+}
+
+.submitButton {
+  align-self: flex-start;
+  min-width: 200px;
+}
+
+.result {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+}
+
+.resultSection {
+  margin-bottom: 1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  strong {
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.resultList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid var(--color-border-primary);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.usersCard {
+  padding: 2rem;
+}
+
+.usersHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.loading,
+.empty {
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    background: var(--color-background-secondary);
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-border-primary);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border-primary);
+  }
+
+  tr:hover td {
+    background: var(--color-background-secondary);
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &--success {
+    background: var(--color-success-lightest);
+    color: var(--color-success-dark);
+  }
+
+  &--info {
+    background: var(--color-info-lightest);
+    color: var(--color-info-dark);
+  }
+
+  &--warning {
+    background: var(--color-warning-lightest);
+    color: var(--color-warning-dark);
+  }
+
+  &--danger {
+    background: var(--color-danger-lightest);
+    color: var(--color-danger-dark);
+  }
+}
+
+.tier {
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.notes {
+  display: inline-block;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  font-size: 0.813rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actionButton {
+  background: none;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+
+  &:hover {
+    background: var(--color-background-secondary);
+    transform: scale(1.1);
+  }
+
+  &--danger:hover {
+    background: var(--color-danger-lightest);
+    border-color: var(--color-danger);
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 1rem;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .tableWrapper {
+    .table {
+      font-size: 0.75rem;
+
+      th,
+      td {
+        padding: 0.5rem;
+      }
+    }
+  }
+
+  .notes {
+    max-width: 100px;
+  }
+}

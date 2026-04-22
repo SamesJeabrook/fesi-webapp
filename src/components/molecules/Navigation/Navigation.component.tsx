@@ -43,7 +43,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             <>
               {isAdmin && (
                 <>
-                  <Link href="/admin/merchants" className={styles.navigation__link}>
+                  <Link href="/admin" className={styles.navigation__link}>
                     <Typography variant="body-medium">Admin Dashboard</Typography>
                   </Link>
                   <Link href="/merchant/admin" className={styles.navigation__link}>

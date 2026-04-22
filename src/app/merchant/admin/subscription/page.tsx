@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth0 } from '@auth0/auth0-react';
+import Link from 'next/link';
 import api from '@/utils/api';
-import { getMerchantIdFromDevToken } from '@/utils/devAuth';
 import styles from './subscription.module.scss';
 
 interface SubscriptionPlan {
@@ -12,7 +13,8 @@ interface SubscriptionPlan {
   price_monthly: number;
   transaction_fee_percentage: number;
   features: Record<string, boolean>;
-  limits: Record<string, number | null>;
+  feature_descriptions?: string[];
+  limits: Record<string, number | boolean | null>;
 }
 
 interface CurrentSubscription {
@@ -24,11 +26,14 @@ interface CurrentSubscription {
   price_monthly: number;
   transaction_fee_percentage: number;
   features: Record<string, boolean>;
-  limits: Record<string, number | null>;
+  feature_descriptions?: string[];
+  limits: Record<string, number | boolean | null>;
 }
 
 export default function SubscriptionPage() {
   const router = useRouter();
+  const { getAccessTokenSilently } = useAuth0();
+  const [merchantId, setMerchantId] = useState<string | null>(null);
   const [currentSubscription, setCurrentSubscription] = useState<CurrentSubscription | null>(null);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,24 +49,48 @@ export default function SubscriptionPage() {
     console.log('fetchSubscriptionData called');
 
     try {
-      // Fetch plans first (public endpoint, no auth needed)
-      console.log('Fetching plans...');
-      const plansData = await api.get('/api/subscriptions/plans', { skipAuth: true });
-      console.log('Plans data received:', plansData);
-      setPlans(plansData.data || []);
+      // Get merchant ID first
+      let currentMerchantId: string | undefined;
+      const devToken = localStorage.getItem('dev_token');
+      
+      if (devToken && devToken.startsWith('dev-merchant-')) {
+        // Extract merchant ID from dev token
+        currentMerchantId = devToken.replace('dev-merchant-', '');
+        console.log('[DEV MODE] Using merchant ID from dev token:', currentMerchantId);
+      } else {
+        // For real Auth0 tokens, get merchant_ids from /api/auth/me
+        const userData = await api.get('/api/auth/me');
+        const merchantIds = userData.user?.merchant_ids || [];
+        
+        if (merchantIds.length > 0) {
+          currentMerchantId = merchantIds[0];
+          console.log('[Auth0] User merchant_id:', currentMerchantId);
+        } else {
+          console.error('No merchant ID found for user');
+          setLoading(false);
+          return;
+        }
+      }
 
-      // Fetch current subscription (requires auth)
-      console.log('Fetching current subscription...');
-      const merchantId = getMerchantIdFromDevToken();
-      if (!merchantId) {
+      if (!currentMerchantId) {
         console.error('No merchant ID found');
         setLoading(false);
         return;
       }
 
-      const subscriptionData = await api.get(`/api/subscriptions/merchant/${merchantId}`);
+      setMerchantId(currentMerchantId);
+
+      // Fetch plans first (public endpoint, no auth needed)
+      console.log('Fetching plans...');
+      const plansData = await api.get('/api/subscriptions/plans', { skipAuth: true });
+      console.log('Plans data received:', plansData);
+      setPlans(plansData.plans || []);
+
+      // Fetch current subscription (requires auth, automatically gets merchant's subscription)
+      console.log('Fetching current subscription...');
+      const subscriptionData = await api.get('/api/subscriptions/current');
       console.log('Subscription data received:', subscriptionData);
-      setCurrentSubscription(subscriptionData.data);
+      setCurrentSubscription(subscriptionData.subscription);
     } catch (error) {
       console.error('Error fetching subscription data:', error);
     } finally {
@@ -75,10 +104,9 @@ export default function SubscriptionPage() {
   };
 
   const confirmUpgrade = async () => {
-    if (!selectedPlan) return;
+    if (!selectedPlan || !merchantId) return;
 
     try {
-      const merchantId = getMerchantIdFromDevToken();
       await api.post(`/api/subscriptions/upgrade`, {
         merchant_id: merchantId,
         new_tier: selectedPlan
@@ -100,7 +128,12 @@ export default function SubscriptionPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Subscription Management</h1>
+      <div className={styles.header}>
+        <Link href="/merchant/admin" className={styles.backLink}>
+          ← Back to Dashboard
+        </Link>
+        <h1>Subscription Management</h1>
+      </div>
 
       {currentSubscription && (
         <div className={styles.currentPlan}>
@@ -117,7 +150,9 @@ export default function SubscriptionPage() {
 
       <h2>Available Plans</h2>
       <div className={styles.plansGrid}>
-        {plans.map((plan) => (
+        {plans
+          .filter(plan => plan.tier !== 'enterprise' && plan.tier !== 'business')
+          .map((plan) => (
           <div 
             key={plan.tier} 
             className={`${styles.planCard} ${currentSubscription?.subscription_tier === plan.tier ? styles.current : ''}`}
@@ -129,9 +164,9 @@ export default function SubscriptionPage() {
             <div className={styles.features}>
               <h4>Features:</h4>
               <ul>
-                {Object.entries(plan.features).map(([feature, enabled]) => (
-                  <li key={feature} className={enabled ? styles.enabled : styles.disabled}>
-                    {feature.replace(/_/g, ' ')}: {enabled ? '✓' : '✗'}
+                {(plan.feature_descriptions || []).map((feature, index) => (
+                  <li key={index}>
+                    {feature}
                   </li>
                 ))}
               </ul>
@@ -142,7 +177,11 @@ export default function SubscriptionPage() {
               <ul>
                 {Object.entries(plan.limits).map(([limit, value]) => (
                   <li key={limit}>
-                    {limit.replace(/_/g, ' ')}: {value === null ? 'Unlimited' : value}
+                    {limit.replace(/_/g, ' ')}: {
+                      value === null ? 'Unlimited' : 
+                      typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 
+                      value
+                    }
                   </li>
                 ))}
               </ul>

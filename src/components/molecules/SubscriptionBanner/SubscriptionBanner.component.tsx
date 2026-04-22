@@ -47,14 +47,15 @@ export const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({
           name: 'Business',
           icon: '⭐',
           color: 'success',
-          nextTier: 'Enterprise',
+          nextTier: null, // Top tier (Enterprise removed)
           nextRetention: null, // Unlimited
         };
       case 'premium':
       case 'enterprise':
+        // Legacy tiers - redirect to Business
         return {
-          name: 'Enterprise',
-          icon: '💎',
+          name: 'Business',
+          icon: '⭐',
           color: 'success',
           nextTier: null,
           nextRetention: null,

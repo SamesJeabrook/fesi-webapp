@@ -20,11 +20,15 @@ interface SubscriptionFeatures {
 }
 
 interface SubscriptionLimits {
-  staff_accounts: number | null;
-  menu_items: number | null;
-  analytics_history_months: number | null;
-  tables: number | null;
-  monthly_orders: number | null;
+  staff_accounts?: number | null;
+  max_menu_items?: number | null;
+  menu_items?: number | null; // Alias for max_menu_items
+  max_menus?: number | null;
+  max_staff_members?: number | null;
+  analytics_history_months?: number | null;
+  tables?: number | null;
+  monthly_orders?: number | null;
+  has_inventory_tracking?: boolean;
 }
 
 interface Subscription {
@@ -36,6 +40,7 @@ interface Subscription {
   price_monthly: number;
   transaction_fee_percentage: number;
   features: SubscriptionFeatures;
+  feature_descriptions?: string[];
   limits: SubscriptionLimits;
 }
 
@@ -79,7 +84,10 @@ export function useSubscription() {
   }, [subscription]);
 
   const getLimit = useCallback((limit: keyof SubscriptionLimits): number | null => {
-    return subscription?.limits?.[limit] ?? null;
+    const value = subscription?.limits?.[limit];
+    // Filter out boolean values and only return numbers or null
+    if (typeof value === 'boolean') return null;
+    return value ?? null;
   }, [subscription]);
 
   const isWithinLimit = useCallback((limit: keyof SubscriptionLimits, currentCount: number): boolean => {

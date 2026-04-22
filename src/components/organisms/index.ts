@@ -22,3 +22,4 @@ export * from './StaffFormModal';
 export * from './StaffPinLogin';
 export * from './PreOrderSettingsForm';
 export * from './EventPreOrderConfig';
+export * from './PlanSelectionStep';

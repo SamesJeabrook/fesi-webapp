@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Typography, Button } from '@/components/atoms';
 import { MenuList, MenuEditor } from '@/components/organisms';
-import { ConfirmationModal } from '@/components/molecules';
+import { ConfirmationModal, SubscriptionLimitBanner } from '@/components/molecules';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { useSubscription } from '@/hooks/useSubscription';
 import api from '@/utils/api';
 import { getMerchantIdFromDevToken } from '@/utils/devAuth';
 import { Menu, CreateMenuPayload, UpdateMenuPayload } from '@/types/menu.types';
@@ -36,6 +37,7 @@ interface Category {
 
 export default function MenusPage() {
   const router = useRouter();
+  const { getLimit, subscription } = useSubscription();
   const [menus, setMenus] = useState<Menu[]>([]);
   const [availableItems, setAvailableItems] = useState<Category[]>([]);
   const [merchantId, setMerchantId] = useState<string>('');
@@ -52,6 +54,10 @@ export default function MenusPage() {
     menuId: null,
     menuName: '',
   });
+
+  // Get subscription limits
+  const menuLimit = getLimit('max_menus');
+  const canCreateMenu = menuLimit === null || menus.length < menuLimit;
 
   // Get merchant ID on mount
   useEffect(() => {
@@ -207,6 +213,14 @@ export default function MenusPage() {
             ← Back to Dashboard
           </Button>
         </div>
+
+        {/* Subscription Limit Banner */}
+        <SubscriptionLimitBanner
+          resourceType="menus"
+          current={menus.length}
+          limit={menuLimit}
+          tier={subscription?.subscription_tier}
+        />
 
         <div className={styles.page__content}>
           {showEditor ? (

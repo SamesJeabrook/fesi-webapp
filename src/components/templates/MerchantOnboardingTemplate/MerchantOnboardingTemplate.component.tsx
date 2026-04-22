@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useAuth0 } from '@auth0/auth0-react';
 import { OnboardingProgress } from '@/components/atoms/OnboardingProgress';
 import { AccountSetupStep } from '@/components/organisms/AccountSetupStep';
+import { PlanSelectionStep } from '@/components/organisms/PlanSelectionStep';
 import { BusinessDetailsStep } from '@/components/organisms/BusinessDetailsStep';
 import { ComplianceStep } from '@/components/organisms/ComplianceStep';
 import { PaymentSetupStep } from '@/components/organisms/PaymentSetupStep';
@@ -16,6 +17,7 @@ import styles from './MerchantOnboardingTemplate.module.scss';
 
 const STEPS: StepConfig[] = [
   { id: 'account', title: 'Account', description: 'Basic account setup' },
+  { id: 'plan', title: 'Plan', description: 'Choose subscription' },
   { id: 'business', title: 'Business', description: 'Business information' },
   { id: 'compliance', title: 'Compliance', description: 'Legal documents' },
   { id: 'payment', title: 'Payment', description: 'Payment setup' },
@@ -40,6 +42,11 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
 
   const handleAccountSetupComplete = (data: MerchantOnboardingData['accountSetup']) => {
     setFormData(prev => ({ ...prev, accountSetup: data }));
+    setCurrentStep('plan');
+  };
+
+  const handlePlanSelectionComplete = (data: MerchantOnboardingData['planSelection']) => {
+    setFormData(prev => ({ ...prev, planSelection: data }));
     setCurrentStep('business');
   };
 
@@ -132,6 +139,10 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
           name: user?.name || updatedFormData.accountSetup?.name,
           auth0Id: user?.sub,
           
+          selectedTier: updatedFormData.planSelection?.selectedTier,
+          hasTrialAccess: updatedFormData.planSelection?.hasTrialAccess,
+          isBetaUser: updatedFormData.planSelection?.isBetaUser,
+          
           businessName: updatedFormData.businessDetails?.businessName,
           description: updatedFormData.businessDetails?.description,
           phoneNumber: updatedFormData.businessDetails?.phoneNumber,
@@ -198,6 +209,10 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
           email: user?.email || completeData.accountSetup?.email,
           name: user?.name || completeData.accountSetup?.name,
           auth0Id: user?.sub,
+          
+          selectedTier: completeData.planSelection?.selectedTier,
+          hasTrialAccess: completeData.planSelection?.hasTrialAccess,
+          isBetaUser: completeData.planSelection?.isBetaUser,
           
           businessName: completeData.businessDetails?.businessName,
           description: completeData.businessDetails?.description,
@@ -290,10 +305,20 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
               />
             )}
 
+            {currentStep === 'plan' && (
+              <PlanSelectionStep
+                onComplete={handlePlanSelectionComplete}
+                onBack={() => handleBack('account')}
+                initialData={formData.planSelection}
+                loading={loading}
+                userEmail={user?.email || ''}
+              />
+            )}
+
             {currentStep === 'business' && (
               <BusinessDetailsStep
                 onComplete={handleBusinessDetailsComplete}
-                onBack={() => handleBack('account')}
+                onBack={() => handleBack('plan')}
                 initialData={formData.businessDetails}
                 loading={loading}
               />

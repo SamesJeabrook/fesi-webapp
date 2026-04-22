@@ -33,80 +33,18 @@ const dashboardSections: DashboardSection[] = [
         href: '/admin/merchants',
         color: 'primary'
       },
-      {
-        title: 'Merchant Support',
-        description: 'Access merchant dashboards to assist with service calls',
-        icon: '🛠️',
-        href: '/admin/merchant-support',
-        color: 'info'
-      },
-      {
-        title: 'Merchant Settings',
-        description: 'Configure merchant settings and resolve issues',
-        icon: '⚙️',
-        href: '/admin/merchant-settings',
-        color: 'warning'
-      },
     ]
   },
   {
-    title: 'Platform Operations',
-    description: 'Platform-wide operations and analytics',
+    title: 'User & Access Management',
+    description: 'Manage test access, trials, and beta users',
     items: [
       {
-        title: 'Group Events',
-        description: 'Organize collaborative events with multiple merchants',
-        icon: '🤝',
-        href: '/admin/group-events',
-        color: 'primary'
-      },
-      {
-        title: 'Global Events',
-        description: 'View and manage events across all merchants',
-        icon: '🎉',
-        href: '/admin/events',
-        color: 'secondary'
-      },
-      {
-        title: 'Platform Analytics',
-        description: 'Platform-wide analytics and reporting',
-        icon: '📊',
-        href: '/admin/analytics',
-        color: 'success'
-      },
-      {
-        title: 'Orders Overview',
-        description: 'Monitor all orders across the platform',
-        icon: '📋',
-        href: '/admin/orders',
-        color: 'primary'
-      },
-    ]
-  },
-  {
-    title: 'System Administration',
-    description: 'Platform configuration and advanced settings',
-    items: [
-      {
-        title: 'System Settings',
-        description: 'Platform configuration and global settings',
-        icon: '⚙️',
-        href: '/admin/settings',
-        color: 'warning'
-      },
-      {
-        title: 'User Management',
-        description: 'Manage admin users and permissions',
-        icon: '👥',
-        href: '/admin/users',
+        title: 'Test Access Management',
+        description: 'Grant trial or beta access to merchants for testing',
+        icon: '🎟️',
+        href: '/admin/test-access',
         color: 'info'
-      },
-      {
-        title: 'Logs & Monitoring',
-        description: 'View system logs and monitor platform health',
-        icon: '📝',
-        href: '/admin/logs',
-        color: 'secondary'
       },
     ]
   }
@@ -118,10 +56,10 @@ export default function AdminDashboard() {
       <div className={styles.dashboard}>
         <div className={styles.dashboard__header}>
           <Typography variant="heading-2">
-            Organization Dashboard
+            Admin Dashboard
           </Typography>
           <Typography variant="body-large" style={{ color: 'var(--color-text-secondary)' }}>
-            Organize group events and collaborate with merchants
+            Manage merchants and test access
           </Typography>
         </div>
 
@@ -163,7 +101,7 @@ export default function AdminDashboard() {
 
         <div className={styles.dashboard__footer}>
           <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-            Platform administration and merchant support tools
+            Admin tools for merchant management and test access
           </Typography>
         </div>
       </div>

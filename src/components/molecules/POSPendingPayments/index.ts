@@ -1,0 +1,1 @@
+export { POSPendingPayments } from './POSPendingPayments';

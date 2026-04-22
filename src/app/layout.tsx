@@ -13,6 +13,13 @@ export const metadata: Metadata = {
   description: 'Order food from your favorite local restaurants',
   keywords: ['food delivery', 'restaurant', 'ordering', 'takeaway'],
   authors: [{ name: 'James Seabrook' }],
+  manifest: '/manifest.json',
+  themeColor: '#6366f1',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Fesi',
+  },
   openGraph: {
     title: 'Fesi - Food Ordering Platform',
     description: 'Order food from your favorite local restaurants',

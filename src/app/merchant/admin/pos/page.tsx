@@ -9,6 +9,7 @@ import {
   POSMenuItemCard,
   POSCategoryFilter,
   POSPaymentQR,
+  POSPendingPayments,
   type CartItemCustomization
 } from '@/components/molecules';
 import {
@@ -51,9 +52,13 @@ export default function POSPage() {
   const [noEventsError, setNoEventsError] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
-  const [showPaymentQR, setShowPaymentQR] = useState(false);
-  const [checkoutUrl, setCheckoutUrl] = useState<string>('');
-  const [pendingOrderId, setPendingOrderId] = useState<string>('');
+  const [pendingPayments, setPendingPayments] = useState<Array<{
+    orderId: string;
+    checkoutUrl: string;
+    amount: number;
+    timestamp: Date;
+    timeRemaining: number;
+  }>>([]);
 
   // Check session storage for existing staff login
   useEffect(() => {
@@ -199,6 +204,27 @@ export default function POSPage() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Timer countdown for pending payments
+  useEffect(() => {
+    if (pendingPayments.length === 0) return;
+
+    const timer = setInterval(() => {
+      setPendingPayments(prev => {
+        return prev.map(payment => {
+          if (payment.timeRemaining <= 0) {
+            return payment;
+          }
+          return {
+            ...payment,
+            timeRemaining: payment.timeRemaining - 1
+          };
+        }).filter(p => p.timeRemaining > 0);
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [pendingPayments.length]);
 
   const categories = ['all', ...Array.from(new Set(menuItems.map(item => item.category_name).filter((cat): cat is string => Boolean(cat))))];
 
@@ -458,7 +484,6 @@ export default function POSPage() {
       });
 
       const order = result.data || result;
-      setPendingOrderId(order.id);
       
       // Create Stripe Checkout Session
       try {
@@ -467,8 +492,23 @@ export default function POSPage() {
           merchant_id: merchantId
         });
         
-        setCheckoutUrl(checkoutResult.checkout_url);
-        setShowPaymentQR(true);
+        // Add to pending payments
+        setPendingPayments(prev => [
+          ...prev,
+          {
+            orderId: order.id,
+            checkoutUrl: checkoutResult.checkout_url,
+            amount: calculateTotal(),
+            timestamp: new Date(),
+            timeRemaining: 300, // 5 minutes
+          }
+        ]);
+        
+        // Clear cart immediately so merchant can take next order
+        clearCart();
+        setCustomerName('');
+        setCustomerEmail('');
+        setCustomerPhone('');
       } catch (checkoutError) {
         // Stripe checkout failed - mark order as cancelled
         console.error('Stripe checkout failed, cancelling order:', checkoutError);
@@ -489,6 +529,26 @@ export default function POSPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleRemovePendingPayment = async (orderId: string) => {
+    // Remove from pending list
+    setPendingPayments(prev => prev.filter(p => p.orderId !== orderId));
+    
+    // Optionally cancel the order in the database
+    try {
+      await api.put(`/api/orders/${orderId}/status`, {
+        status: 'cancelled',
+        notes: 'Payment cancelled by merchant'
+      });
+    } catch (error) {
+      console.error('Failed to cancel order:', error);
+    }
+  };
+
+  const handlePaymentComplete = (orderId: string) => {
+    // Remove from pending list
+    setPendingPayments(prev => prev.filter(p => p.orderId !== orderId));
   };
 
   // Prevent hydration mismatch by only rendering after client mount
@@ -665,36 +725,12 @@ export default function POSPage() {
           onAddToCart={addToCartWithOptions}
         />
 
-        {/* Payment QR Modal */}
-        {showPaymentQR && checkoutUrl && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000
-          }}>
-            <POSPaymentQR
-              checkoutUrl={checkoutUrl}
-              orderTotal={calculateTotal()}
-              onPaymentComplete={() => {
-                setShowPaymentQR(false);
-                setOrderNumber(pendingOrderId);
-                clearCart();
-              }}
-              onCancel={() => {
-                setShowPaymentQR(false);
-                setCheckoutUrl('');
-                setPendingOrderId('');
-              }}
-            />
-          </div>
-        )}
+        {/* Pending Payments Widget */}
+        <POSPendingPayments
+          pendingPayments={pendingPayments}
+          onRemovePayment={handleRemovePendingPayment}
+          onPaymentComplete={handlePaymentComplete}
+        />
       </div>
     </ProtectedRoute>
   );

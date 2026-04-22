@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import { MenuItemManagementCard, EditMenuItemModal, MenuItemStockRequirementsModal } from '@/components/molecules';
+import { MenuItemManagementCard, EditMenuItemModal, MenuItemStockRequirementsModal, SubscriptionLimitBanner } from '@/components/molecules';
 import { CreateMenuItemForm } from '@/components/organisms';
 import { SubItemGroup } from '@/components/molecules/OptionGroupSelector';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { useSubscription } from '@/hooks/useSubscription';
 import { getAuthToken } from '@/utils/devAuth';
 import api from '@/utils/api';
 import Link from 'next/link';
@@ -45,6 +46,7 @@ interface MenuCategory {
 
 export default function MenuItemsPage() {
   const { getAccessTokenSilently, user } = useAuth0();
+  const { getLimit, subscription, hasFeature } = useSubscription();
   const [items, setItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,6 +58,11 @@ export default function MenuItemsPage() {
   const [merchantId, setMerchantId] = useState<string>('');
   const [stockModalItem, setStockModalItem] = useState<{ id: string; name: string } | null>(null);
   const [authToken, setAuthToken] = useState<string>('');
+
+  // Get subscription limits and features
+  const menuItemLimit = getLimit('max_menu_items');
+  const canCreateItem = menuItemLimit === null || items.length < menuItemLimit;
+  const hasInventoryTracking = hasFeature('inventory_management');
 
   // Prevent hydration issues
   useEffect(() => {
@@ -315,10 +322,19 @@ export default function MenuItemsPage() {
             variant="primary"
             onClick={() => setIsCreating(true)}
             className={styles.items__createButton}
+            isDisabled={!canCreateItem}
           >
             + Add Item
           </Button>
         </div>
+
+        {/* Subscription Limit Banner */}
+        <SubscriptionLimitBanner
+          resourceType="menu_items"
+          current={items.length}
+          limit={menuItemLimit}
+          tier={subscription?.subscription_tier}
+        />
 
         <div className={styles.items__filters}>
           <select
@@ -378,7 +394,7 @@ export default function MenuItemsPage() {
                   displayOrder={item.display_order}
                   imageUrl={item.image_url}
                   onToggleAvailability={toggleItemAvailability}
-                  onManageStock={(id, name) => setStockModalItem({ id, name })}
+                  onManageStock={hasInventoryTracking ? (id, name) => setStockModalItem({ id, name }) : undefined}
                   onEdit={() => handleEditItem(item)}
                 />
               </Grid.Item>

@@ -73,6 +73,10 @@ export default function AdminMerchantsPage() {
     <ProtectedRoute requireRole={['admin']}>
       <div className={styles.merchants}>
         <AdminPageHeader
+          backLink={{
+            href: '/admin',
+            label: 'Back to Admin Dashboard'
+          }}
           adminContext="System administration area"
           title="Merchant Management"
           description="Select a merchant to manage their account and operations"

@@ -50,7 +50,7 @@ export interface POSOrderSummaryProps {
   onClearCart: () => void;
   /** Handler for submitting the order (cash payment) */
   onSubmitOrder: () => void;
-  /** Handler for submitting the order with card payment */
+  /** Handler for submitting the order with payment link (Stripe Checkout) */
   onSubmitOrderWithCard?: () => void;
 }
 
@@ -180,7 +180,7 @@ export const POSOrderSummary: React.FC<POSOrderSummaryProps> = ({
               fullWidth
               isDisabled={cart.length === 0 || isSubmitting}
             >
-              {isSubmitting ? 'Processing...' : 'Pay with Card'}
+              {isSubmitting ? 'Processing...' : 'Pay by Link'}
             </Button>
           )}
         </div>

@@ -1,3 +1,54 @@
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+  runtimeCaching: [
+    {
+      // Cache static assets (images, fonts, etc.)
+      urlPattern: /^https?.*\.(png|jpg|jpeg|webp|svg|gif|ico|woff|woff2|ttf|otf|eot)$/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'static-assets',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        },
+      },
+    },
+    {
+      // DO NOT cache API calls - always fetch fresh data
+      urlPattern: /^https?:\/\/.*\/api\/.*/i,
+      handler: 'NetworkOnly',
+      options: {
+        cacheName: 'api-cache',
+        networkTimeoutSeconds: 10,
+      },
+    },
+    {
+      // Cache Google Fonts
+      urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'google-fonts',
+        expiration: {
+          maxEntries: 20,
+          maxAgeSeconds: 365 * 24 * 60 * 60, // 1 year
+        },
+      },
+    },
+    {
+      // Cache other same-origin requests
+      urlPattern: /^https?:\/\/localhost.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'localhost-cache',
+        networkTimeoutSeconds: 5,
+      },
+    },
+  ],
+});
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   sassOptions: {
@@ -68,6 +119,7 @@ const nextConfig = {
       },
     ];
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = withPWA(nextConfig);
+
