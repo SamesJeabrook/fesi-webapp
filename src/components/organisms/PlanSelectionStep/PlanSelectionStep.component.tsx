@@ -14,7 +14,7 @@ const PLANS: SubscriptionPlan[] = [
       'Up to 50 menu items',
       'Up to 3 menus',
       '1 staff account',
-      '10% transaction fee',
+      '10% transaction fee (tiered caps: £3.50/£5.50/£8)',
       '3 months analytics history',
       'Event booking management',
       'Customer orders & payments',

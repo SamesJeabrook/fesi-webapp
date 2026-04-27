@@ -442,6 +442,7 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   // Use paymentConfig for cost breakdown
   const {
     platformFeePercentage,
+    platformFeeCapTiers,
     stripeFeePct,
     stripeFeeFixed,
     minimumPlatformProfit,
@@ -451,19 +452,28 @@ export function VendorMenuWrapper({ merchant, categories, activeEvent, eventData
   } = paymentConfig;
 
   const subtotal = basketItems.reduce((sum, item) => sum + item.item_total, 0);
-  // Calculate base platform fee
+  
+  // Calculate base platform fee (before cap)
   const basePlatformFee = subtotal * platformFeePercentage;
+  
+  // Apply tiered cap based on order amount
+  const applicableTier = platformFeeCapTiers.find(tier => subtotal <= tier.maxOrderAmount);
+  const cappedPlatformFee = applicableTier 
+    ? Math.min(basePlatformFee, applicableTier.cap)
+    : basePlatformFee;
+  
   // Stripe fee estimate
   const stripeFeeEstimate = Math.round((subtotal * stripeFeePct) + stripeFeeFixed);
-  // Required platform fee
+  
+  // Required platform fee (Stripe + minimum profit) - this is our safety floor
   const requiredPlatformFee = stripeFeeEstimate + minimumPlatformProfit;
-  // Small order fee logic
-  let smallOrderFee = 0;
-  if (basePlatformFee < requiredPlatformFee) {
-    smallOrderFee = requiredPlatformFee - basePlatformFee;
-    smallOrderFee = Math.round(smallOrderFee * 100) / 100; // round to nearest penny
-  }
-  const totalPlatformFee = basePlatformFee + smallOrderFee;
+  
+  // Final platform fee: use the maximum of capped fee or required fee
+  // This ensures we never lose money on large orders while still benefiting customers with the cap
+  const totalPlatformFee = Math.max(cappedPlatformFee, requiredPlatformFee);
+  
+  // Calculate small order fee (if capped fee was less than required)
+  const smallOrderFee = Math.max(0, totalPlatformFee - cappedPlatformFee);
   const merchantAmount = subtotal;
   const totalOrderAmount = subtotal + totalPlatformFee;
   const smallOrderProtectionApplied = smallOrderFee > 0;
