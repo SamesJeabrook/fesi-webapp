@@ -103,10 +103,10 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
           <div className={styles.explanationItem}>
             <span className={styles.explanationIcon}>✅</span>
             <div>
-              <Typography variant="body-medium" weight="semiBold">
+              <Typography variant="body-medium" style={{ fontWeight: 600 }}>
                 Bank Account (Already Set Up)
               </Typography>
-              <Typography variant="body-small" color="secondary">
+              <Typography variant="body-small" className={styles.secondaryText}>
                 This is where customer payments are deposited
               </Typography>
             </div>
@@ -115,10 +115,10 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
           <div className={styles.explanationItem}>
             <span className={styles.explanationIcon}>💳</span>
             <div>
-              <Typography variant="body-medium" weight="semiBold">
+              <Typography variant="body-medium" style={{ fontWeight: 600 }}>
                 Payment Card (Set Up Now)
               </Typography>
-              <Typography variant="body-small" color="secondary">
+              <Typography variant="body-small" className={styles.secondaryText}>
                 This is how you'll pay your £{price}/month subscription
               </Typography>
             </div>
@@ -133,14 +133,14 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
             £{price}
             <span className={styles.period}>/month</span>
           </Typography>
-          <Typography variant="body-small" color="secondary">
+          <Typography variant="body-small" className={styles.secondaryText}>
             Billed monthly • Cancel anytime
           </Typography>
         </div>
 
         {error && (
           <div className={styles.error}>
-            <Typography variant="body-small" color="error">
+            <Typography variant="body-small" className={styles.errorText}>
               {error}
             </Typography>
           </div>
@@ -155,7 +155,7 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
             <div className={styles.trialBannerContent}>
               {isBetaUser ? (
                 <>
-                  <Typography variant="body-medium" weight="semiBold">
+                  <Typography variant="body-medium" style={{ fontWeight: 600 }}>
                     Beta Access Active
                   </Typography>
                   <Typography variant="body-small">
@@ -164,7 +164,7 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
                 </>
               ) : (
                 <>
-                  <Typography variant="body-medium" weight="semiBold">
+                  <Typography variant="body-medium" style={{ fontWeight: 600 }}>
                     {trialDays}-Day Free Trial Available
                   </Typography>
                   <Typography variant="body-small">
@@ -179,7 +179,7 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
         {/* Trial Warning for Non-Trial Users */}
         {isOnboarding && !isBetaUser && !hasTrialAccess && (
           <div className={styles.trialInfo}>
-            <Typography variant="body-small" color="secondary">
+            <Typography variant="body-small" className={styles.secondaryText}>
               💡 If you skip payment now, you'll get a 7-day free trial. After 7 days, you'll need to add payment to continue using Fesi.
             </Typography>
           </div>
@@ -190,7 +190,7 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
             variant="primary"
             size="lg"
             onClick={handleStartPayment}
-            disabled={loading}
+            isDisabled={loading}
             fullWidth
           >
             {loading ? 'Redirecting to payment...' : 'Continue to Payment'}
@@ -201,7 +201,7 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
               variant="ghost"
               size="md"
               onClick={handleSkip}
-              disabled={loading}
+              isDisabled={loading}
               fullWidth
             >
               {isBetaUser ? 'Continue Without Payment' : `Start ${trialDays}-Day Free Trial`}
@@ -210,7 +210,7 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
         </div>
 
         <div className={styles.secureNote}>
-          <Typography variant="caption" color="secondary" className={styles.secureText}>
+          <Typography variant="caption" className={styles.secureText}>
             🔒 Secure payment powered by Stripe
           </Typography>
         </div>
