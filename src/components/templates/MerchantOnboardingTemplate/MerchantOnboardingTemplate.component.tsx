@@ -369,6 +369,9 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
                 onComplete={() => handleSubscriptionPaymentComplete(false)}
                 onSkip={() => handleSubscriptionPaymentComplete(true)}
                 isOnboarding={true}
+                isBetaUser={formData.planSelection?.isBetaUser || false}
+                hasTrialAccess={formData.planSelection?.hasTrialAccess || false}
+                trialDays={formData.planSelection?.daysRemaining || 7}
               />
             )}
           </div>

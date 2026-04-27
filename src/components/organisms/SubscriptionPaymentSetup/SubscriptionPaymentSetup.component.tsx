@@ -15,6 +15,9 @@ interface SubscriptionPaymentSetupProps {
   onComplete?: () => void;
   onSkip?: () => void;
   isOnboarding?: boolean;
+  isBetaUser?: boolean;
+  hasTrialAccess?: boolean;
+  trialDays?: number;
 }
 
 export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> = ({
@@ -22,6 +25,9 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
   onComplete,
   onSkip,
   isOnboarding = false,
+  isBetaUser = false,
+  hasTrialAccess = false,
+  trialDays = 7,
 }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -140,6 +146,45 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
           </div>
         )}
 
+        {/* Trial/Beta Information Banner */}
+        {isOnboarding && (isBetaUser || hasTrialAccess) && (
+          <div className={styles.trialBanner}>
+            <div className={styles.trialBannerIcon}>
+              {isBetaUser ? '🌟' : '🎟️'}
+            </div>
+            <div className={styles.trialBannerContent}>
+              {isBetaUser ? (
+                <>
+                  <Typography variant="body-medium" weight="semiBold">
+                    Beta Access Active
+                  </Typography>
+                  <Typography variant="body-small">
+                    As a beta user, you won't be charged during the testing period. You can skip payment setup for now.
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography variant="body-medium" weight="semiBold">
+                    {trialDays}-Day Free Trial Available
+                  </Typography>
+                  <Typography variant="body-small">
+                    Click "Start Free Trial" below to begin your {trialDays}-day trial. You won't be charged until the trial ends.
+                  </Typography>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Trial Warning for Non-Trial Users */}
+        {isOnboarding && !isBetaUser && !hasTrialAccess && (
+          <div className={styles.trialInfo}>
+            <Typography variant="body-small" color="secondary">
+              💡 If you skip payment now, you'll get a 7-day free trial. After 7 days, you'll need to add payment to continue using Fesi.
+            </Typography>
+          </div>
+        )}
+
         <div className={styles.actions}>
           <Button
             variant="primary"
@@ -159,7 +204,7 @@ export const SubscriptionPaymentSetup: React.FC<SubscriptionPaymentSetupProps> =
               disabled={loading}
               fullWidth
             >
-              Set up later
+              {isBetaUser ? 'Continue Without Payment' : `Start ${trialDays}-Day Free Trial`}
             </Button>
           )}
         </div>

@@ -32,6 +32,45 @@
   line-height: 1.6;
 }
 
+.trialBanner {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #f59e0b;
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  text-align: left;
+}
+
+.trialBannerIcon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.trialBannerContent {
+  flex: 1;
+
+  p:first-child {
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text-primary);
+  }
+
+  p:last-child {
+    color: var(--color-text-secondary);
+  }
+}
+
+.trialInfo {
+  background: var(--color-blue-50, #eff6ff);
+  border: 1px solid var(--color-blue-200, #bfdbfe);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  text-align: left;
+}
+
 .explanation {
   background: var(--color-gray-50);
   border-radius: var(--border-radius-md);
