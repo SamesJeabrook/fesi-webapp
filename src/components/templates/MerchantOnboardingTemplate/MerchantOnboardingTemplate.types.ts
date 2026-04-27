@@ -10,9 +10,10 @@ export interface MerchantOnboardingData {
   businessDetails?: BusinessDetailsData;
   compliance?: ComplianceData;
   paymentSetup?: PaymentSetupData;
+  subscriptionPayment?: { skipped: boolean };
 }
 
-export type OnboardingStep = 'account' | 'plan' | 'business' | 'compliance' | 'payment';
+export type OnboardingStep = 'account' | 'plan' | 'business' | 'compliance' | 'payment' | 'subscription';
 
 export interface MerchantOnboardingTemplateProps {
   initialData?: MerchantOnboardingData;

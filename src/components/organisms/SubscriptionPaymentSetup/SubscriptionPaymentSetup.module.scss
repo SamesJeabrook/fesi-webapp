@@ -1,0 +1,124 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: var(--spacing-xl);
+}
+
+.card {
+  max-width: 600px;
+  width: 100%;
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-2xl);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.icon {
+  font-size: 64px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.title {
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  margin-bottom: var(--spacing-xl);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.explanation {
+  background: var(--color-gray-50);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  text-align: left;
+}
+
+.explanationItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  
+  &:not(:last-child) {
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+  }
+}
+
+.explanationIcon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.pricingBox {
+  background: linear-gradient(135deg, var(--color-primary-main) 0%, var(--color-primary-dark) 100%);
+  color: var(--color-white);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+.price {
+  color: var(--color-white);
+  margin: var(--spacing-sm) 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.period {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-normal);
+  opacity: 0.9;
+}
+
+.error {
+  background: var(--color-error-light);
+  border: 1px solid var(--color-error-main);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.secureNote {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.secureText {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  .card {
+    padding: var(--spacing-xl);
+  }
+
+  .icon {
+    font-size: 48px;
+  }
+}

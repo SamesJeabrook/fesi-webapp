@@ -7,6 +7,7 @@ import { PlanSelectionStep } from '@/components/organisms/PlanSelectionStep';
 import { BusinessDetailsStep } from '@/components/organisms/BusinessDetailsStep';
 import { ComplianceStep } from '@/components/organisms/ComplianceStep';
 import { PaymentSetupStep } from '@/components/organisms/PaymentSetupStep';
+import { SubscriptionPaymentSetup } from '@/components/organisms/SubscriptionPaymentSetup';
 import {
   MerchantOnboardingTemplateProps,
   MerchantOnboardingData,
@@ -14,6 +15,7 @@ import {
   StepConfig,
 } from './MerchantOnboardingTemplate.types';
 import styles from './MerchantOnboardingTemplate.module.scss';
+import api from '@/utils/api';
 
 const STEPS: StepConfig[] = [
   { id: 'account', title: 'Account', description: 'Basic account setup' },
@@ -21,6 +23,7 @@ const STEPS: StepConfig[] = [
   { id: 'business', title: 'Business', description: 'Business information' },
   { id: 'compliance', title: 'Compliance', description: 'Legal documents' },
   { id: 'payment', title: 'Payment', description: 'Payment setup' },
+  { id: 'subscription', title: 'Subscription', description: 'Monthly billing' },
 ];
 
 export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProps> = ({
@@ -198,7 +201,7 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
     const completeData = { ...formData, paymentSetup: data };
     setFormData(completeData);
     
-    // Update the merchant record with payment details
+    // Update the merchant record with Stripe Connect details
     if (merchantId) {
       try {
         const token = await getAccessTokenSilently();
@@ -245,18 +248,35 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
           throw new Error(errorData.error || 'Failed to complete onboarding');
         }
         
-        const result = await response.json();
-        
-        // Pass the result including merchantId back to the caller
-        onComplete(completeData, result.merchantId || merchantId);
+        // Move to subscription payment step instead of completing
+        setCurrentStep('subscription');
       } catch (error) {
         console.error('Error updating merchant:', error);
         alert(error instanceof Error ? error.message : 'Failed to complete onboarding. Please try again.');
       }
     } else {
-      // Fallback to original behavior if no merchantId
-      onComplete(completeData);
+      // Move to subscription step even without merchantId
+      setCurrentStep('subscription');
     }
+  };
+
+  const handleSubscriptionPaymentComplete = async (skipped: boolean) => {
+    const completeData = { ...formData, subscriptionPayment: { skipped } };
+    setFormData(completeData);
+    
+    if (skipped) {
+      // Start 7-day trial
+      try {
+        await api.post('/api/subscriptions/start-trial');
+        console.log('Trial started successfully');
+      } catch (error) {
+        console.error('Error starting trial:', error);
+        // Continue anyway - trial might already be set
+      }
+    }
+    
+    // Complete onboarding
+    onComplete(completeData, merchantId || undefined);
   };
 
   const handleBack = (targetStep: OnboardingStep) => {
@@ -340,6 +360,15 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
                 initialData={formData.paymentSetup}
                 loading={loading}
                 merchantId={merchantId || undefined}
+              />
+            )}
+
+            {currentStep === 'subscription' && (
+              <SubscriptionPaymentSetup
+                selectedTier={formData.planSelection?.selectedTier || 'starter'}
+                onComplete={() => handleSubscriptionPaymentComplete(false)}
+                onSkip={() => handleSubscriptionPaymentComplete(true)}
+                isOnboarding={true}
               />
             )}
           </div>

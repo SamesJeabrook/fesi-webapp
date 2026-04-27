@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import Link from 'next/link';
 import api from '@/utils/api';
+import { SubscriptionPaymentSetup } from '@/components/organisms/SubscriptionPaymentSetup';
 import styles from './subscription.module.scss';
 
 interface SubscriptionPlan {
@@ -28,10 +29,13 @@ interface CurrentSubscription {
   features: Record<string, boolean>;
   feature_descriptions?: string[];
   limits: Record<string, number | boolean | null>;
+  stripe_subscription_id?: string | null;
+  trial_ends_at?: string | null;
 }
 
 export default function SubscriptionPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { getAccessTokenSilently } = useAuth0();
   const [merchantId, setMerchantId] = useState<string | null>(null);
   const [currentSubscription, setCurrentSubscription] = useState<CurrentSubscription | null>(null);
@@ -39,11 +43,43 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [needsPaymentSetup, setNeedsPaymentSetup] = useState(false);
+  const [trialExpired, setTrialExpired] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     console.log('Subscription page mounted');
+    
+    // Check for success parameter
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+    
+    if (success === 'true') {
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 5000);
+      
+      // Clean up URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('success');
+      url.searchParams.delete('session_id');
+      window.history.replaceState({}, '', url.pathname);
+    }
+    
     fetchSubscriptionData();
   }, []);
+
+  useEffect(() => {
+    // Check if payment setup is needed
+    if (currentSubscription) {
+      const hasPayment = currentSubscription.stripe_subscription_id !== null && 
+                         currentSubscription.stripe_subscription_id !== undefined;
+      const trialEndsAt = currentSubscription.trial_ends_at ? new Date(currentSubscription.trial_ends_at) : null;
+      const isTrialExpired = trialEndsAt && trialEndsAt < new Date();
+      
+      setNeedsPaymentSetup(!hasPayment);
+      setTrialExpired(!!isTrialExpired);
+    }
+  }, [currentSubscription]);
 
   const fetchSubscriptionData = async () => {
     console.log('fetchSubscriptionData called');
@@ -126,6 +162,48 @@ export default function SubscriptionPage() {
     return <div className={styles.loading}>Loading subscription information...</div>;
   }
 
+  // If payment setup is needed, show that first
+  if (needsPaymentSetup && currentSubscription) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <Link href="/merchant/admin" className={styles.backLink}>
+            ← Back to Dashboard
+          </Link>
+          <h1>Payment Required</h1>
+        </div>
+
+        <div className={styles.paymentSetupSection}>
+          {trialExpired && (
+            <div className={styles.trialExpiredBanner}>
+              <h2>⚠️ Trial Expired</h2>
+              <p>Your 7-day trial has ended. Please add a payment method to continue using Fesi.</p>
+            </div>
+          )}
+          
+          {!trialExpired && currentSubscription.trial_ends_at && (
+            <div className={styles.trialInfoBanner}>
+              <h2>📅 Trial Active</h2>
+              <p>
+                Your trial ends on {new Date(currentSubscription.trial_ends_at).toLocaleDateString()}.
+                Add a payment method now to avoid service interruption.
+              </p>
+            </div>
+          )}
+
+          <SubscriptionPaymentSetup
+            selectedTier={currentSubscription.subscription_tier as 'starter' | 'professional' | 'business'}
+            isOnboarding={false}
+            onComplete={() => {
+              // Refresh subscription data after payment setup
+              fetchSubscriptionData();
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -134,6 +212,16 @@ export default function SubscriptionPage() {
         </Link>
         <h1>Subscription Management</h1>
       </div>
+
+      {showSuccessMessage && (
+        <div className={styles.successBanner}>
+          <span className={styles.successIcon}>✅</span>
+          <div>
+            <strong>Payment Successful!</strong>
+            <p>Your subscription is now active and your account is fully set up.</p>
+          </div>
+        </div>
+      )}
 
       {currentSubscription && (
         <div className={styles.currentPlan}>
