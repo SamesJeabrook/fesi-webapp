@@ -150,6 +150,19 @@ const dashboardSections: DashboardSection[] = [
         color: 'warning'
       },
     ]
+  },
+  {
+    title: 'Account & Billing',
+    description: 'Subscription and account management',
+    items: [
+      {
+        title: 'Subscription Management',
+        description: 'Manage subscription tier, cancel subscriptions, or delete account',
+        icon: '💳',
+        href: '/merchant/admin/subscription?merchantId=[merchantId]',
+        color: 'warning'
+      },
+    ]
   }
 ];
 
