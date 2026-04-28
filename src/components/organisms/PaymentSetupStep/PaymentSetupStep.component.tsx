@@ -31,7 +31,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
       newErrors.stripe = 'Please connect your Stripe account to continue';
     }
 
-    if (formData.accountStatus !== 'active') {
+    if (formData.accountStatus !== 'enabled' && formData.accountStatus !== 'active') {
       newErrors.stripeStatus = 'Your Stripe account must be fully verified';
     }
 
@@ -99,6 +99,9 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
           setErrors(prev => ({ ...prev, stripe: undefined }));
         }
 
+        // Store that we're in onboarding flow before redirect
+        sessionStorage.setItem('stripeOnboardingContext', 'merchant-onboarding');
+
         // Redirect to Stripe Connect onboarding
         window.location.href = data.accountLinkUrl;
       } else {
@@ -131,8 +134,19 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
   ].filter(Boolean).join(' ');
 
   const isStripeConnected = !!formData.stripeAccountId;
-  const isStripeActive = formData.accountStatus === 'active';
+  const isStripeActive = formData.accountStatus === 'enabled' || formData.accountStatus === 'active';
   const canProceed = isStripeConnected && isStripeActive && formData.acceptedTerms && formData.agreedToPaymentProcessing;
+
+  // Debug logging
+  console.log('PaymentSetupStep state:', {
+    stripeAccountId: formData.stripeAccountId,
+    accountStatus: formData.accountStatus,
+    isStripeConnected,
+    isStripeActive,
+    acceptedTerms: formData.acceptedTerms,
+    agreedToPaymentProcessing: formData.agreedToPaymentProcessing,
+    canProceed
+  });
 
   return (
     <div className={containerClasses}>
@@ -354,7 +368,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
             className={`${styles.paymentSetupStep__button} ${styles['paymentSetupStep__button--primary']}`}
             disabled={loading || !canProceed}
           >
-            Complete Setup
+            Continue to Subscription
           </button>
         </div>
       </form>

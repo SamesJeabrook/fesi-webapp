@@ -19,8 +19,19 @@ export default function StripeCompletePage() {
         // Still here? Show the message
       }, 1000);
     } else {
-      // Desktop - redirect to merchant admin
-      router.push('/merchant/admin');
+      // Desktop - check if they came from onboarding
+      const context = sessionStorage.getItem('stripeOnboardingContext');
+      
+      if (context === 'merchant-onboarding') {
+        // Don't clear the context flag yet - let onboarding page handle it
+        // This prevents race conditions with auth checks
+        console.log('Returning to merchant onboarding after Stripe setup...');
+        // Return to onboarding flow
+        router.push('/merchant/onboarding');
+      } else {
+        // Regular merchant updating their Stripe account
+        router.push('/merchant/admin');
+      }
     }
   }, [router]);
 

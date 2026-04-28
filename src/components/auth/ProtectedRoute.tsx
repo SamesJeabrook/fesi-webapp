@@ -100,7 +100,19 @@ export default function ProtectedRoute({
           
           // Handle consent required error
           if (errorMessage.includes('consent_required') || errorMessage.includes('Consent required')) {
-            console.log('🔄 Consent required - redirecting to login...');
+            console.log('🔄 Consent required - checking if onboarding is active...');
+            
+            // Check if we're CURRENTLY ON the onboarding page - if so, don't redirect
+            const isOnOnboardingPage = typeof window !== 'undefined' && window.location.pathname === '/merchant/onboarding';
+            const hasOnboardingContext = typeof window !== 'undefined' && sessionStorage.getItem('stripeOnboardingContext') === 'merchant-onboarding';
+            
+            if (isOnOnboardingPage || hasOnboardingContext) {
+              console.log('⚠️ Consent required but user is on onboarding page - allowing them to continue');
+              // Mark this user as synced to avoid constant retries
+              syncedRef.current = user.sub;
+              return;
+            }
+            
             // Clear the cache and redirect to login
             localStorage.removeItem('auth-token');
             

@@ -41,6 +41,16 @@ export function AuthGuard({
       return;
     }
     
+    // Skip auth check if we're CURRENTLY ON the onboarding page
+    const isOnOnboardingPage = pathname === '/merchant/onboarding';
+    const hasOnboardingContext = typeof window !== 'undefined' && 
+      sessionStorage.getItem('stripeOnboardingContext') === 'merchant-onboarding';
+    
+    if (isOnOnboardingPage || hasOnboardingContext) {
+      console.log('AuthGuard - On onboarding page, skipping auth check');
+      return;
+    }
+    
     // Only run auth check after loading is complete and component is mounted
     if (!isLoading && isMounted) {
       console.log('AuthGuard - Running auth check', {

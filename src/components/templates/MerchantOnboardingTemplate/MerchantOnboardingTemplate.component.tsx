@@ -29,13 +29,14 @@ const STEPS: StepConfig[] = [
 export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProps> = ({
   initialData,
   initialStep = 'account',
+  initialMerchantId,
   onComplete,
   loading = false,
   className,
 }) => {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>(initialStep);
   const [formData, setFormData] = useState<MerchantOnboardingData>(initialData || {});
-  const [merchantId, setMerchantId] = useState<string | null>(null);
+  const [merchantId, setMerchantId] = useState<string | null>(initialMerchantId || null);
   const [isCreatingMerchant, setIsCreatingMerchant] = useState(false);
   const { user, getAccessTokenSilently } = useAuth0();
 
