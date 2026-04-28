@@ -1,6 +1,6 @@
 export interface PaymentSetupData {
   stripeAccountId?: string;
-  accountStatus?: 'pending' | 'active' | 'restricted';
+  accountStatus?: 'pending' | 'active' | 'enabled' | 'restricted';
   bankAccountLast4?: string;
   acceptedTerms: boolean;
   agreedToPaymentProcessing: boolean;
@@ -18,5 +18,5 @@ export interface PaymentSetupStepProps {
 export interface StripeConnectResponse {
   accountId: string;
   accountLink: string;
-  status: 'pending' | 'active' | 'restricted';
+  status: 'pending' | 'active' | 'enabled' | 'restricted';
 }
