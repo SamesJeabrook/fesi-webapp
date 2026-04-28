@@ -214,6 +214,31 @@
   font-size: 0.813rem;
 }
 
+.pendingLabel {
+  color: var(--color-warning-dark);
+  font-style: italic;
+  font-size: 0.813rem;
+}
+
+.pendingBadge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  background: var(--color-warning-lightest);
+  color: var(--color-warning-dark);
+  border-radius: var(--border-radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.sectionDescription {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: var(--color-info-lightest);
+  border-left: 3px solid var(--color-info);
+  border-radius: var(--border-radius-sm);
+}
+
 .actions {
   display: flex;
   gap: 0.5rem;

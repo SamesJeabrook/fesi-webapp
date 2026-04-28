@@ -21,6 +21,15 @@ interface TestUser {
   granted_by_name?: string;
 }
 
+interface PendingBetaAccess {
+  id: number;
+  email: string;
+  subscription_tier: string;
+  notes: string;
+  granted_at: string;
+  granted_by_name?: string;
+}
+
 export default function TestAccessPage() {
   const [emails, setEmails] = useState('');
   const [accessType, setAccessType] = useState<'trial' | 'beta'>('trial');
@@ -32,9 +41,13 @@ export default function TestAccessPage() {
   
   const [testUsers, setTestUsers] = useState<TestUser[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  
+  const [pendingInvitations, setPendingInvitations] = useState<PendingBetaAccess[]>([]);
+  const [isLoadingPending, setIsLoadingPending] = useState(true);
 
   useEffect(() => {
     fetchTestUsers();
+    fetchPendingInvitations();
   }, []);
 
   const fetchTestUsers = async () => {
@@ -46,6 +59,18 @@ export default function TestAccessPage() {
       console.error('Error fetching test users:', error);
     } finally {
       setIsLoadingUsers(false);
+    }
+  };
+
+  const fetchPendingInvitations = async () => {
+    try {
+      setIsLoadingPending(true);
+      const data = await api.get('/api/admin/test-access/pending');
+      setPendingInvitations(data.pendingAccess || []);
+    } catch (error) {
+      console.error('Error fetching pending invitations:', error);
+    } finally {
+      setIsLoadingPending(false);
     }
   };
 
@@ -79,8 +104,9 @@ export default function TestAccessPage() {
       setEmails('');
       setNotes('');
       
-      // Refresh the test users list
+      // Refresh both lists
       await fetchTestUsers();
+      await fetchPendingInvitations();
 
     } catch (error: any) {
       console.error('Error granting test access:', error);
@@ -131,6 +157,24 @@ export default function TestAccessPage() {
     } catch (error: any) {
       console.error('Error extending trial:', error);
       alert(`Error: ${error.message || 'Failed to extend trial'}`);
+    }
+  };
+
+  const handleRevokePending = async (email: string) => {
+    if (!confirm(`Are you sure you want to revoke the pending invitation for ${email}?`)) {
+      return;
+    }
+
+    try {
+      await api.post('/api/admin/test-access/revoke-pending', {
+        email
+      });
+
+      alert('Pending invitation revoked successfully');
+      await fetchPendingInvitations();
+    } catch (error: any) {
+      console.error('Error revoking pending invitation:', error);
+      alert(`Error: ${error.message || 'Failed to revoke invitation'}`);
     }
   };
 
@@ -269,7 +313,12 @@ export default function TestAccessPage() {
                   <ul className={styles.resultList}>
                     {result.granted.map((item: any) => (
                       <li key={item.email}>
-                        {item.email} - {item.merchantName} ({item.subscriptionTier})
+                        {item.email}
+                        {item.status === 'pending' ? (
+                          <span className={styles.pendingLabel}> - ⏳ Pending (will apply on signup)</span>
+                        ) : (
+                          <span> - {item.merchantName} ({item.subscriptionTier})</span>
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -287,6 +336,79 @@ export default function TestAccessPage() {
                   </ul>
                 </div>
               )}
+            </div>
+          )}
+        </Card>
+
+        {/* Pending Beta Invitations Table */}
+        <Card className={styles.usersCard}>
+          <div className={styles.usersHeader}>
+            <Typography variant="heading-4">
+              Pending Invitations ({pendingInvitations.length})
+            </Typography>
+            <Button variant="secondary" onClick={fetchPendingInvitations} isDisabled={isLoadingPending}>
+              {isLoadingPending ? 'Loading...' : 'Refresh'}
+            </Button>
+          </div>
+
+          <div className={styles.sectionDescription}>
+            <Typography variant="body-small" style={{ color: 'var(--color-text-tertiary)' }}>
+              Beta access invitations sent to emails that haven't created accounts yet.
+              Access will be automatically applied when they sign up.
+            </Typography>
+          </div>
+
+          {isLoadingPending ? (
+            <div className={styles.loading}>Loading pending invitations...</div>
+          ) : pendingInvitations.length === 0 ? (
+            <div className={styles.empty}>No pending invitations</div>
+          ) : (
+            <div className={styles.tableWrapper}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Tier</th>
+                    <th>Invited</th>
+                    <th>Invited By</th>
+                    <th>Notes</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingInvitations.map((invitation) => (
+                    <tr key={invitation.id}>
+                      <td>
+                        <strong>{invitation.email}</strong>
+                        <span className={styles.pendingBadge}>⏳ Awaiting Signup</span>
+                      </td>
+                      <td>
+                        <span className={styles.tier}>
+                          {invitation.subscription_tier}
+                        </span>
+                      </td>
+                      <td>{formatDate(invitation.granted_at)}</td>
+                      <td>{invitation.granted_by_name || '-'}</td>
+                      <td>
+                        <span className={styles.notes} title={invitation.notes || ''}>
+                          {invitation.notes || '-'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className={styles.actions}>
+                          <button
+                            className={`${styles.actionButton} ${styles['actionButton--danger']}`}
+                            onClick={() => handleRevokePending(invitation.email)}
+                            title="Revoke Invitation"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </Card>
