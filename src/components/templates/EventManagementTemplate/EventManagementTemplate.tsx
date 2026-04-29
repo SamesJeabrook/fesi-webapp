@@ -767,19 +767,20 @@ export function EventManagementTemplate({
                     </div>
                   </div>
 
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={generateSchedulesFromDateRange}
-                    style={{ marginTop: '1rem' }}
-                  >
-                    Generate {(() => {
-                      const start = new Date(dateRangeForm.startDate);
-                      const end = new Date(dateRangeForm.endDate);
-                      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-                      return days > 0 ? `${days} ${days === 1 ? 'Day' : 'Days'}` : 'Days';
-                    })()}
-                  </Button>
+                  <div style={{ marginTop: '1rem' }}>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={generateSchedulesFromDateRange}
+                    >
+                      Generate {(() => {
+                        const start = new Date(dateRangeForm.startDate);
+                        const end = new Date(dateRangeForm.endDate);
+                        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                        return days > 0 ? `${days} ${days === 1 ? 'Day' : 'Days'}` : 'Days';
+                      })()}
+                    </Button>
+                  </div>
                 </div>
 
                 {eventForm.schedules && eventForm.schedules.length > 0 && (
@@ -1019,19 +1020,20 @@ export function EventManagementTemplate({
                     </div>
                   </div>
 
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={generateSchedulesFromDateRange}
-                    style={{ marginTop: '1rem' }}
-                  >
-                    Generate {(() => {
-                      const start = new Date(dateRangeForm.startDate);
-                      const end = new Date(dateRangeForm.endDate);
-                      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-                      return days > 0 ? `${days} ${days === 1 ? 'Day' : 'Days'}` : 'Days';
-                    })()}
-                  </Button>
+                  <div style={{ marginTop: '1rem' }}>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={generateSchedulesFromDateRange}
+                    >
+                      Generate {(() => {
+                        const start = new Date(dateRangeForm.startDate);
+                        const end = new Date(dateRangeForm.endDate);
+                        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                        return days > 0 ? `${days} ${days === 1 ? 'Day' : 'Days'}` : 'Days';
+                      })()}
+                    </Button>
+                  </div>
                 </div>
 
                 {eventForm.schedules && eventForm.schedules.length > 0 && (
