@@ -108,6 +108,13 @@ export const PlanSelectionStep: React.FC<PlanSelectionStepProps> = ({
     }
   }, [userEmail]);
 
+  // Update selected tier when initialData changes (e.g., when navigating back)
+  useEffect(() => {
+    if (initialData?.selectedTier) {
+      setSelectedTier(initialData.selectedTier);
+    }
+  }, [initialData]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 

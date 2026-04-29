@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Typography } from '@/components/atoms/Typography';
 import { BusinessDetailsStepProps, BusinessDetailsData } from './BusinessDetailsStep.types';
 import styles from './BusinessDetailsStep.module.scss';
@@ -31,6 +31,24 @@ export const BusinessDetailsStep: React.FC<BusinessDetailsStepProps> = ({
   });
 
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+
+  // Update form data when initialData changes (e.g., when navigating back)
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        businessName: initialData.businessName || '',
+        description: initialData.description || '',
+        phoneNumber: initialData.phoneNumber || '',
+        address: {
+          street: initialData.address?.street || '',
+          city: initialData.address?.city || '',
+          postcode: initialData.address?.postcode || '',
+          country: initialData.address?.country || 'United Kingdom',
+        },
+        categories: initialData.categories || [],
+      });
+    }
+  }, [initialData]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<string, string>> = {};

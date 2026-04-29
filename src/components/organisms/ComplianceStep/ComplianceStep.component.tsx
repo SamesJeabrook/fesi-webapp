@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Typography } from '@/components/atoms/Typography';
 import { ComplianceStepProps, ComplianceData, ComplianceDocument } from './ComplianceStep.types';
 import styles from './ComplianceStep.module.scss';
@@ -31,6 +31,22 @@ export const ComplianceStep: React.FC<ComplianceStepProps> = ({
   });
 
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+
+  // Update form data when initialData changes (e.g., when navigating back)
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        hygieneRating: initialData.hygieneRating,
+        hygieneRatingDate: initialData.hygieneRatingDate,
+        foodSafetyCertificate: initialData.foodSafetyCertificate,
+        businessLicense: initialData.businessLicense,
+        publicLiabilityInsurance: initialData.publicLiabilityInsurance,
+        allergenTrainingCertificate: initialData.allergenTrainingCertificate,
+        additionalDocuments: initialData.additionalDocuments || [],
+        confirmedAccuracy: initialData.confirmedAccuracy || false,
+      });
+    }
+  }, [initialData]);
 
   const foodSafetyRef = useRef<HTMLInputElement>(null);
   const businessLicenseRef = useRef<HTMLInputElement>(null);
@@ -162,6 +178,20 @@ export const ComplianceStep: React.FC<ComplianceStepProps> = ({
           UK law requires food vendors to maintain proper hygiene standards and documentation
         </Typography>
       </div>
+
+      {/* Show info when returning to this step with saved data */}
+      {(formData.foodSafetyCertificate || formData.businessLicense || formData.publicLiabilityInsurance) && (
+        <div className={styles.complianceStep__infoBox} style={{ 
+          backgroundColor: 'var(--color-success-light, #D1FAE5)', 
+          borderLeft: '4px solid var(--color-success, #10B981)',
+          marginBottom: '1.5rem'
+        }}>
+          <span className={styles.complianceStep__infoIcon}>✓</span>
+          <div className={styles.complianceStep__infoText}>
+            <strong>Your documents are saved:</strong> We've kept your previously uploaded documents and can continue from where you left off.
+          </div>
+        </div>
+      )}
 
       <form className={styles.complianceStep__form} onSubmit={handleSubmit}>
         {/* Info Box */}

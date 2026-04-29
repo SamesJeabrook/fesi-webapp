@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography } from '@/components/atoms/Typography';
 import { AccountSetupStepProps, AccountSetupData } from './AccountSetupStep.types';
@@ -30,6 +30,17 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
   const [errors, setErrors] = useState<Partial<Record<keyof AccountSetupData, string>>>({});
   const [isValidating, setIsValidating] = useState(false);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+
+  // Update form data when initialData changes (e.g., when navigating back)
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        username: initialData.username || '',
+        email: initialData.email || user?.email || '',
+        name: initialData.name || (user?.name && !looksLikeEmail(user.name) ? user.name : ''),
+      });
+    }
+  }, [initialData, user?.email, user?.name]);
 
   const validateUsername = (username: string): string | null => {
     if (!username) return 'Username is required';
