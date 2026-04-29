@@ -12,6 +12,7 @@ export interface ComplianceData {
   hygieneRating?: number; // 0-5 (UK FSA scale)
   hygieneRatingDate?: Date;
   foodSafetyCertificate?: ComplianceDocument;
+  businessLicense?: ComplianceDocument;
   publicLiabilityInsurance?: ComplianceDocument;
   allergenTrainingCertificate?: ComplianceDocument;
   additionalDocuments?: ComplianceDocument[];

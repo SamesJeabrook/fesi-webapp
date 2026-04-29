@@ -23,6 +23,7 @@ export const ComplianceStep: React.FC<ComplianceStepProps> = ({
     hygieneRating: initialData?.hygieneRating,
     hygieneRatingDate: initialData?.hygieneRatingDate,
     foodSafetyCertificate: initialData?.foodSafetyCertificate,
+    businessLicense: initialData?.businessLicense,
     publicLiabilityInsurance: initialData?.publicLiabilityInsurance,
     allergenTrainingCertificate: initialData?.allergenTrainingCertificate,
     additionalDocuments: initialData?.additionalDocuments || [],
@@ -32,6 +33,7 @@ export const ComplianceStep: React.FC<ComplianceStepProps> = ({
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
 
   const foodSafetyRef = useRef<HTMLInputElement>(null);
+  const businessLicenseRef = useRef<HTMLInputElement>(null);
   const insuranceRef = useRef<HTMLInputElement>(null);
   const allergenRef = useRef<HTMLInputElement>(null);
   const additionalRef = useRef<HTMLInputElement>(null);
@@ -49,6 +51,10 @@ export const ComplianceStep: React.FC<ComplianceStepProps> = ({
 
     if (!formData.foodSafetyCertificate) {
       newErrors.foodSafetyCertificate = 'Food safety certificate is required';
+    }
+
+    if (!formData.businessLicense) {
+      newErrors.businessLicense = 'Business license is required';
     }
 
     if (!formData.publicLiabilityInsurance) {
@@ -78,7 +84,7 @@ export const ComplianceStep: React.FC<ComplianceStepProps> = ({
   };
 
   const handleFileUpload = (
-    field: 'foodSafetyCertificate' | 'publicLiabilityInsurance' | 'allergenTrainingCertificate' | 'additional',
+    field: 'foodSafetyCertificate' | 'businessLicense' | 'publicLiabilityInsurance' | 'allergenTrainingCertificate' | 'additional',
     file: File
   ) => {
     const document: ComplianceDocument = {
@@ -104,13 +110,13 @@ export const ComplianceStep: React.FC<ComplianceStepProps> = ({
   };
 
   const handleFileRemove = (
-    field: 'foodSafetyCertificate' | 'publicLiabilityInsurance' | 'allergenTrainingCertificate'
+    field: 'foodSafetyCertificate' | 'businessLicense' | 'publicLiabilityInsurance' | 'allergenTrainingCertificate'
   ) => {
     setFormData(prev => ({ ...prev, [field]: undefined }));
   };
 
   const handleExpiryDateChange = (
-    field: 'foodSafetyCertificate' | 'publicLiabilityInsurance' | 'allergenTrainingCertificate',
+    field: 'foodSafetyCertificate' | 'businessLicense' | 'publicLiabilityInsurance' | 'allergenTrainingCertificate',
     date: Date
   ) => {
     setFormData(prev => {
@@ -295,6 +301,83 @@ export const ComplianceStep: React.FC<ComplianceStepProps> = ({
                   className={styles.complianceStep__dateInput}
                   value={formData.foodSafetyCertificate.expiryDate ? formData.foodSafetyCertificate.expiryDate.toISOString().split('T')[0] : ''}
                   onChange={(e) => handleExpiryDateChange('foodSafetyCertificate', new Date(e.target.value))}
+                  disabled={loading}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Business License */}
+          <div className={styles.complianceStep__field}>
+            <label className={styles.complianceStep__label}>
+              Business License/Street Trading Permit<span className={styles.complianceStep__required}>*</span>
+            </label>
+            {!formData.businessLicense ? (
+              <>
+                <div
+                  className={`${styles.complianceStep__uploadArea} ${
+                    errors.businessLicense ? styles['complianceStep__uploadArea--error'] : ''
+                  } ${loading ? styles['complianceStep__uploadArea--disabled'] : ''}`}
+                  onClick={() => !loading && businessLicenseRef.current?.click()}
+                >
+                  <span className={styles.complianceStep__uploadIcon}>📋</span>
+                  <div className={styles.complianceStep__uploadText}>
+                    Click to upload your Business License or Trading Permit
+                  </div>
+                  <div className={styles.complianceStep__uploadHint}>
+                    PDF, JPG or PNG (max 10MB)
+                  </div>
+                </div>
+                <input
+                  ref={businessLicenseRef}
+                  type="file"
+                  className={styles.complianceStep__fileInput}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileUpload('businessLicense', file);
+                  }}
+                  disabled={loading}
+                />
+                {errors.businessLicense && (
+                  <span className={styles.complianceStep__error}>⚠️ {errors.businessLicense}</span>
+                )}
+              </>
+            ) : (
+              <div className={styles.complianceStep__uploadedFile}>
+                <div className={styles.complianceStep__fileInfo}>
+                  <span className={styles.complianceStep__fileIcon}>📋</span>
+                  <div className={styles.complianceStep__fileDetails}>
+                    <div className={styles.complianceStep__fileName}>
+                      {formData.businessLicense.name}
+                    </div>
+                    <div className={styles.complianceStep__fileMetadata}>
+                      {formatFileSize(formData.businessLicense.size)} • Uploaded {formData.businessLicense.uploadedAt.toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.complianceStep__fileActions}>
+                  <button
+                    type="button"
+                    className={styles.complianceStep__removeButton}
+                    onClick={() => handleFileRemove('businessLicense')}
+                    disabled={loading}
+                    title="Remove file"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+            {formData.businessLicense && (
+              <div className={styles.complianceStep__field}>
+                <label className={styles.complianceStep__label}>License Expiry Date (if applicable)</label>
+                <input
+                  type="date"
+                  className={styles.complianceStep__dateInput}
+                  value={formData.businessLicense.expiryDate ? formData.businessLicense.expiryDate.toISOString().split('T')[0] : ''}
+                  onChange={(e) => handleExpiryDateChange('businessLicense', new Date(e.target.value))}
                   disabled={loading}
                   min={new Date().toISOString().split('T')[0]}
                 />

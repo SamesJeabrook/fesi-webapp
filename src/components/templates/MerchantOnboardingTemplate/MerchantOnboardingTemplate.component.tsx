@@ -67,6 +67,7 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
 
     const documentsToUpload = [
       { doc: compliance.foodSafetyCertificate, type: 'food_safety_certificate' },
+      { doc: compliance.businessLicense, type: 'business_license' },
       { doc: compliance.publicLiabilityInsurance, type: 'insurance_certificate' },
       { doc: compliance.allergenTrainingCertificate, type: 'allergen_information' },
     ];
@@ -227,6 +228,7 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
           hygieneRating: completeData.compliance?.hygieneRating,
           hygieneRatingDate: completeData.compliance?.hygieneRatingDate,
           foodSafetyCertificate: completeData.compliance?.foodSafetyCertificate,
+          businessLicense: completeData.compliance?.businessLicense,
           publicLiabilityInsurance: completeData.compliance?.publicLiabilityInsurance,
           allergenTrainingCertificate: completeData.compliance?.allergenTrainingCertificate,
           

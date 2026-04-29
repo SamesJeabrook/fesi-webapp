@@ -173,6 +173,7 @@ export default function AdminMerchantDashboard() {
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [qrOpen, setQrOpen] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const merchantId = params?.merchantId as string;
 
@@ -194,6 +195,25 @@ export default function AdminMerchantDashboard() {
       fetchMerchant();
     }
   }, [merchantId]);
+
+  const copyMenuLink = async () => {
+    if (!merchant?.username) {
+      alert('Username not set for this merchant.');
+      return;
+    }
+    
+    // Use username-based URL for better presentation
+    const menuUrl = `${window.location.origin}/vendors/${merchant.username}`;
+    
+    try {
+      await navigator.clipboard.writeText(menuUrl);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      alert('Failed to copy link. Please try again.');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -246,10 +266,16 @@ export default function AdminMerchantDashboard() {
                 {merchant.status}
               </span>
             </div>
-            <div style={{ marginTop: 24 }}>
+            <div style={{ marginTop: 24, display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
               <Button variant="primary" size="md" onClick={() => setQrOpen(true)}>
                 <span style={{ fontSize: '1.2em', marginRight: '0.5rem' }}>📱</span>
                 Show QR Code
+              </Button>
+              <Button variant="secondary" size="md" onClick={copyMenuLink}>
+                <span style={{ fontSize: '1.2em', marginRight: '0.5rem' }}>
+                  {copySuccess ? '✓' : '🔗'}
+                </span>
+                {copySuccess ? 'Link Copied!' : 'Copy Menu Link'}
               </Button>
             </div>
             <MerchantQrModal
