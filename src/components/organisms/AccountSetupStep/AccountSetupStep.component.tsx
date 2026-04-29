@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography } from '@/components/atoms/Typography';
 import { AccountSetupStepProps, AccountSetupData } from './AccountSetupStep.types';
@@ -29,6 +29,7 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
   });
   const [errors, setErrors] = useState<Partial<Record<keyof AccountSetupData, string>>>({});
   const [isValidating, setIsValidating] = useState(false);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
 
   const validateUsername = (username: string): string | null => {
     if (!username) return 'Username is required';
@@ -39,6 +40,39 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
     }
     return null;
   };
+
+  const checkUsernameAvailability = useCallback(async (username: string) => {
+    // First check format validation
+    const formatError = validateUsername(username);
+    if (formatError) {
+      return; // Don't check API if format is invalid
+    }
+
+    setIsCheckingUsername(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/merchants/check-username/${encodeURIComponent(username)}`);
+      const data = await response.json();
+      
+      if (!data.available) {
+        setErrors(prev => ({ ...prev, username: 'This username is already taken' }));
+      } else {
+        // Clear username error if it was about availability
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          if (newErrors.username === 'This username is already taken') {
+            delete newErrors.username;
+          }
+          return newErrors;
+        });
+      }
+    } catch (error) {
+      console.error('Error checking username:', error);
+      // Don't show error to user - fail silently for availability check
+    } finally {
+      setIsCheckingUsername(false);
+    }
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof AccountSetupData, string>> = {};
@@ -68,6 +102,12 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
     }
   };
 
+  const handleUsernameBlur = () => {
+    if (formData.username) {
+      checkUsernameAvailability(formData.username);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -75,15 +115,22 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
       return;
     }
 
+    // Check username availability one final time before submitting
     setIsValidating(true);
-
-    // Here you could add an API call to check username availability
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/merchants/check-username/${encodeURIComponent(formData.username)}`);
+      const data = await response.json();
+      
+      if (!data.available) {
+        setErrors({ username: 'This username is already taken' });
+        return;
+      }
+      
       onComplete(formData);
     } catch (error) {
-      setErrors({ username: 'This username is already taken' });
+      console.error('Error validating username:', error);
+      setErrors({ username: 'Failed to validate username. Please try again.' });
     } finally {
       setIsValidating(false);
     }
@@ -165,15 +212,23 @@ export const AccountSetupStep: React.FC<AccountSetupStepProps> = ({
             className={`${styles.accountSetupStep__input} ${errors.username ? styles['accountSetupStep__input--error'] : ''}`}
             value={formData.username}
             onChange={(e) => handleInputChange('username', e.target.value)}
+            onBlur={handleUsernameBlur}
             placeholder="your-business-name"
             disabled={loading || isValidating}
           />
+          {isCheckingUsername && (
+            <span className={styles.accountSetupStep__helpText}>
+              ⏳ Checking availability...
+            </span>
+          )}
           {errors.username && (
             <span className={styles.accountSetupStep__error}>⚠️ {errors.username}</span>
           )}
-          <span className={styles.accountSetupStep__helpText}>
-            This will be used in your business URL: fesi.app/{formData.username || 'username'}
-          </span>
+          {!errors.username && !isCheckingUsername && (
+            <span className={styles.accountSetupStep__helpText}>
+              This will be used in your business URL: fesi.app/vendors/{formData.username || 'username'}
+            </span>
+          )}
         </div>
 
         {/* Action Buttons */}

@@ -213,6 +213,7 @@ export default function MerchantAdminDashboard() {
   const { hasFeature } = useSubscription();
   const [merchantId, setMerchantId] = useState<string | null>(null);
   const [merchant, setMerchant] = useState<any>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isTogglingOpen, setIsTogglingOpen] = useState(false);
@@ -296,6 +297,25 @@ export default function MerchantAdminDashboard() {
     }
   };
 
+  const copyMenuLink = async () => {
+    if (!merchant?.username) {
+      alert('Username not set. Please complete your account setup to get a menu link.');
+      return;
+    }
+    
+    // Use username-based URL for better presentation
+    const menuUrl = `${window.location.origin}/vendors/${merchant.username}`;
+    
+    try {
+      await navigator.clipboard.writeText(menuUrl);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      alert('Failed to copy link. Please try again.');
+    }
+  };
+
   return (
     <ProtectedRoute requireRole={['merchant']}>
       <div className={styles.dashboard} data-tour="dashboard">
@@ -307,7 +327,7 @@ export default function MerchantAdminDashboard() {
             Manage your restaurant operations and menu
           </Typography>
           {merchant && (
-            <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
               {merchant.operating_mode === 'static' && (
                 <Button 
                   variant={merchant.is_currently_open ? 'primary' : 'secondary'}
@@ -332,6 +352,16 @@ export default function MerchantAdminDashboard() {
               >
                 <span style={{ fontSize: '1.2em', marginRight: '0.5rem' }}>📱</span>
                 Show QR Code
+              </Button>
+              <Button 
+                variant="secondary"
+                size="md" 
+                onClick={copyMenuLink}
+              >
+                <span style={{ fontSize: '1.2em', marginRight: '0.5rem' }}>
+                  {copySuccess ? '✓' : '🔗'}
+                </span>
+                {copySuccess ? 'Link Copied!' : 'Copy Menu Link'}
               </Button>
             </div>
           )}
