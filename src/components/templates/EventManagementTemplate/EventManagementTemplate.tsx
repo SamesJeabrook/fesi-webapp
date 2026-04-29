@@ -78,6 +78,15 @@ export function EventManagementTemplate({
     pre_order_menu_id: undefined
   });
 
+  // Date range mode state
+  const [dateRangeMode, setDateRangeMode] = useState(false);
+  const [dateRangeForm, setDateRangeForm] = useState({
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
+    startTime: '09:00',
+    endTime: '17:00'
+  });
+
   // API instance
   const [eventApi, setEventApi] = useState<EventAPIInterface | null>(null);
 
@@ -171,22 +180,18 @@ export function EventManagementTemplate({
     const handleCreateEvent = async () => {
     if (!eventApi) return;
     
+    // Validate that we have at least one schedule
+    if (!eventForm.schedules || eventForm.schedules.length === 0) {
+      alert('Please add at least one day to the event schedule');
+      return;
+    }
+    
     try {
       setSubmitting(true);
       await eventApi.createEvent(eventForm, merchantId);
       await loadEvents();
       setIsCreateModalOpen(false);
-      setEventForm({
-        name: '',
-        latitude: 51.5074, // Default to London coordinates
-        longitude: -0.1278,
-        eventType: 'multi_day',
-        isOpen: false,
-        menu_id: undefined,
-        schedules: [createDefaultSchedule(1)],
-        pre_orders_enabled: false,
-        pre_order_menu_id: undefined
-      });
+      resetForm();
     } catch (error) {
       console.error('Failed to create event:', error);
     } finally {
@@ -205,6 +210,13 @@ export function EventManagementTemplate({
       schedules: [createDefaultSchedule(1)],
       pre_orders_enabled: false,
       pre_order_menu_id: undefined
+    });
+    setDateRangeMode(false);
+    setDateRangeForm({
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      startTime: '09:00',
+      endTime: '17:00'
     });
   };
 
@@ -350,6 +362,40 @@ export function EventManagementTemplate({
       ...prev,
       schedules: prev.schedules?.filter((_, i) => i !== index)
         .map((schedule, i) => ({ ...schedule, dayNumber: i + 1 })) || []
+    }));
+  };
+
+  const generateSchedulesFromDateRange = () => {
+    const { startDate, endDate, startTime, endTime } = dateRangeForm;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // Validate dates
+    if (end < start) {
+      alert('End date must be after start date');
+      return;
+    }
+    
+    const schedules: DailySchedule[] = [];
+    const currentDate = new Date(start);
+    let dayNumber = 1;
+    
+    while (currentDate <= end) {
+      schedules.push({
+        dayNumber,
+        date: currentDate.toISOString().split('T')[0],
+        startTime,
+        endTime,
+        isActive: true
+      });
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+      dayNumber++;
+    }
+    
+    setEventForm(prev => ({
+      ...prev,
+      schedules
     }));
   };
 
@@ -645,27 +691,150 @@ export function EventManagementTemplate({
           <div className={styles.eventForm__section}>
             <div className={styles.eventForm__sectionHeader}>
               <Typography variant="heading-6">Daily Schedules</Typography>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={addScheduleDay}
-              >
-                ➕ Add Day
-              </Button>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={dateRangeMode}
+                    onChange={(e) => setDateRangeMode(e.target.checked)}
+                  />
+                  Use Date Range
+                </label>
+                {!dateRangeMode && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={addScheduleDay}
+                  >
+                    ➕ Add Day
+                  </Button>
+                )}
+              </div>
             </div>
 
-            <div className={styles.eventForm__schedules}>
-              {eventForm.schedules?.map((schedule, index) => (
-                <DailyScheduleCard
-                  key={index}
-                  schedule={schedule}
-                  onUpdate={(updatedSchedule) => updateSchedule(index, updatedSchedule)}
-                  onRemove={() => removeSchedule(index)}
-                  canRemove={(eventForm.schedules?.length || 0) > 1}
-                  dayLabel={`Day ${index + 1}`}
-                />
-              ))}
-            </div>
+            {dateRangeMode ? (
+              <div className={styles.eventForm__dateRange}>
+                <div style={{ 
+                  padding: '1rem', 
+                  backgroundColor: 'var(--color-background-secondary)', 
+                  borderRadius: '8px',
+                  marginBottom: '1rem'
+                }}>
+                  <Typography variant="body-small" style={{ marginBottom: '1rem', color: 'var(--color-text-secondary)' }}>
+                    Set a start and end date to automatically generate schedules for all days in the range.
+                  </Typography>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className={styles.eventForm__field}>
+                      <label className={styles.eventForm__label}>Start Date</label>
+                      <input
+                        type="date"
+                        value={dateRangeForm.startDate}
+                        onChange={(e) => setDateRangeForm(prev => ({ ...prev, startDate: e.target.value }))}
+                        className={styles.eventForm__input}
+                      />
+                    </div>
+
+                    <div className={styles.eventForm__field}>
+                      <label className={styles.eventForm__label}>End Date</label>
+                      <input
+                        type="date"
+                        value={dateRangeForm.endDate}
+                        onChange={(e) => setDateRangeForm(prev => ({ ...prev, endDate: e.target.value }))}
+                        className={styles.eventForm__input}
+                        min={dateRangeForm.startDate}
+                      />
+                    </div>
+
+                    <div className={styles.eventForm__field}>
+                      <label className={styles.eventForm__label}>Daily Start Time</label>
+                      <input
+                        type="time"
+                        value={dateRangeForm.startTime}
+                        onChange={(e) => setDateRangeForm(prev => ({ ...prev, startTime: e.target.value }))}
+                        className={styles.eventForm__input}
+                      />
+                    </div>
+
+                    <div className={styles.eventForm__field}>
+                      <label className={styles.eventForm__label}>Daily End Time</label>
+                      <input
+                        type="time"
+                        value={dateRangeForm.endTime}
+                        onChange={(e) => setDateRangeForm(prev => ({ ...prev, endTime: e.target.value }))}
+                        className={styles.eventForm__input}
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={generateSchedulesFromDateRange}
+                    style={{ marginTop: '1rem' }}
+                  >
+                    Generate {(() => {
+                      const start = new Date(dateRangeForm.startDate);
+                      const end = new Date(dateRangeForm.endDate);
+                      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                      return days > 0 ? `${days} ${days === 1 ? 'Day' : 'Days'}` : 'Days';
+                    })()}
+                  </Button>
+                </div>
+
+                {eventForm.schedules && eventForm.schedules.length > 0 && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <Typography variant="body-small" style={{ marginBottom: '0.5rem', fontWeight: 600 }}>
+                      Generated Schedule ({eventForm.schedules.length} {eventForm.schedules.length === 1 ? 'day' : 'days'})
+                    </Typography>
+                    <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
+                      {new Date(eventForm.schedules[0].date).toLocaleDateString()} - {new Date(eventForm.schedules[eventForm.schedules.length - 1].date).toLocaleDateString()}
+                    </Typography>
+                    
+                    {/* Show generated schedule cards */}
+                    <div className={styles.eventForm__schedules}>
+                      {eventForm.schedules.map((schedule, index) => (
+                        <DailyScheduleCard
+                          key={index}
+                          schedule={schedule}
+                          onUpdate={(updatedSchedule) => updateSchedule(index, updatedSchedule)}
+                          onRemove={() => removeSchedule(index)}
+                          canRemove={(eventForm.schedules?.length || 0) > 1}
+                          dayLabel={`Day ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {(!eventForm.schedules || eventForm.schedules.length === 0) && (
+                  <div style={{ 
+                    marginTop: '1rem', 
+                    padding: '1rem', 
+                    backgroundColor: 'var(--color-warning-light, #FEF3C7)',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid var(--color-warning, #F59E0B)'
+                  }}>
+                    <Typography variant="body-small" style={{ color: 'var(--color-warning-dark, #92400E)' }}>
+                      ⚠️ Click "Generate" to create the event schedule
+                    </Typography>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={styles.eventForm__schedules}>
+                {eventForm.schedules?.map((schedule, index) => (
+                  <DailyScheduleCard
+                    key={index}
+                    schedule={schedule}
+                    onUpdate={(updatedSchedule) => updateSchedule(index, updatedSchedule)}
+                    onRemove={() => removeSchedule(index)}
+                    canRemove={(eventForm.schedules?.length || 0) > 1}
+                    dayLabel={`Day ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <div className={styles.eventForm__actions}>
@@ -682,7 +851,7 @@ export function EventManagementTemplate({
             <Button
               variant="primary"
               onClick={handleCreateEvent}
-              isDisabled={submitting || !eventForm.name.trim()}
+              isDisabled={submitting || !eventForm.name.trim() || !eventForm.schedules || eventForm.schedules.length === 0}
             >
               {submitting ? 'Creating...' : 'Create Event'}
             </Button>
@@ -774,26 +943,148 @@ export function EventManagementTemplate({
           <div className={styles.eventForm__section}>
             <div className={styles.eventForm__sectionHeader}>
               <Typography variant="heading-6">Daily Schedules</Typography>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={addScheduleDay}
-              >
-                ➕ Add Day
-              </Button>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={dateRangeMode}
+                    onChange={(e) => setDateRangeMode(e.target.checked)}
+                  />
+                  Use Date Range
+                </label>
+                {!dateRangeMode && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={addScheduleDay}
+                  >
+                    ➕ Add Day
+                  </Button>
+                )}
+              </div>
             </div>
 
-            <div className={styles.eventForm__schedules}>
-              {eventForm.schedules?.map((schedule, index) => (
-                <DailyScheduleCard
-                  key={index}
-                  schedule={schedule}
-                  onUpdate={(updatedSchedule) => updateSchedule(index, updatedSchedule)}
-                  onRemove={() => removeSchedule(index)}
-                  canRemove={(eventForm.schedules?.length || 0) > 1}
-                />
-              ))}
-            </div>
+            {dateRangeMode ? (
+              <div className={styles.eventForm__dateRange}>
+                <div style={{ 
+                  padding: '1rem', 
+                  backgroundColor: 'var(--color-background-secondary)', 
+                  borderRadius: '8px',
+                  marginBottom: '1rem'
+                }}>
+                  <Typography variant="body-small" style={{ marginBottom: '1rem', color: 'var(--color-text-secondary)' }}>
+                    Set a start and end date to automatically generate schedules for all days in the range.
+                  </Typography>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className={styles.eventForm__field}>
+                      <label className={styles.eventForm__label}>Start Date</label>
+                      <input
+                        type="date"
+                        value={dateRangeForm.startDate}
+                        onChange={(e) => setDateRangeForm(prev => ({ ...prev, startDate: e.target.value }))}
+                        className={styles.eventForm__input}
+                      />
+                    </div>
+
+                    <div className={styles.eventForm__field}>
+                      <label className={styles.eventForm__label}>End Date</label>
+                      <input
+                        type="date"
+                        value={dateRangeForm.endDate}
+                        onChange={(e) => setDateRangeForm(prev => ({ ...prev, endDate: e.target.value }))}
+                        className={styles.eventForm__input}
+                        min={dateRangeForm.startDate}
+                      />
+                    </div>
+
+                    <div className={styles.eventForm__field}>
+                      <label className={styles.eventForm__label}>Daily Start Time</label>
+                      <input
+                        type="time"
+                        value={dateRangeForm.startTime}
+                        onChange={(e) => setDateRangeForm(prev => ({ ...prev, startTime: e.target.value }))}
+                        className={styles.eventForm__input}
+                      />
+                    </div>
+
+                    <div className={styles.eventForm__field}>
+                      <label className={styles.eventForm__label}>Daily End Time</label>
+                      <input
+                        type="time"
+                        value={dateRangeForm.endTime}
+                        onChange={(e) => setDateRangeForm(prev => ({ ...prev, endTime: e.target.value }))}
+                        className={styles.eventForm__input}
+                      />
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={generateSchedulesFromDateRange}
+                    style={{ marginTop: '1rem' }}
+                  >
+                    Generate {(() => {
+                      const start = new Date(dateRangeForm.startDate);
+                      const end = new Date(dateRangeForm.endDate);
+                      const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                      return days > 0 ? `${days} ${days === 1 ? 'Day' : 'Days'}` : 'Days';
+                    })()}
+                  </Button>
+                </div>
+
+                {eventForm.schedules && eventForm.schedules.length > 0 && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <Typography variant="body-small" style={{ marginBottom: '0.5rem', fontWeight: 600 }}>
+                      Generated Schedule ({eventForm.schedules.length} {eventForm.schedules.length === 1 ? 'day' : 'days'})
+                    </Typography>
+                    <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
+                      {new Date(eventForm.schedules[0].date).toLocaleDateString()} - {new Date(eventForm.schedules[eventForm.schedules.length - 1].date).toLocaleDateString()}
+                    </Typography>
+                    
+                    {/* Show generated schedule cards */}
+                    <div className={styles.eventForm__schedules}>
+                      {eventForm.schedules.map((schedule, index) => (
+                        <DailyScheduleCard
+                          key={index}
+                          schedule={schedule}
+                          onUpdate={(updatedSchedule) => updateSchedule(index, updatedSchedule)}
+                          onRemove={() => removeSchedule(index)}
+                          canRemove={(eventForm.schedules?.length || 0) > 1}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {(!eventForm.schedules || eventForm.schedules.length === 0) && (
+                  <div style={{ 
+                    marginTop: '1rem', 
+                    padding: '1rem', 
+                    backgroundColor: 'var(--color-warning-light, #FEF3C7)',
+                    borderRadius: '8px',
+                    borderLeft: '4px solid var(--color-warning, #F59E0B)'
+                  }}>
+                    <Typography variant="body-small" style={{ color: 'var(--color-warning-dark, #92400E)' }}>
+                      ⚠️ Click "Generate" to create the event schedule
+                    </Typography>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={styles.eventForm__schedules}>
+                {eventForm.schedules?.map((schedule, index) => (
+                  <DailyScheduleCard
+                    key={index}
+                    schedule={schedule}
+                    onUpdate={(updatedSchedule) => updateSchedule(index, updatedSchedule)}
+                    onRemove={() => removeSchedule(index)}
+                    canRemove={(eventForm.schedules?.length || 0) > 1}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <div className={styles.eventForm__actions}>
@@ -810,7 +1101,7 @@ export function EventManagementTemplate({
             <Button
               variant="primary"
               onClick={handleUpdateEvent}
-              isDisabled={submitting || !eventForm.name.trim()}
+              isDisabled={submitting || !eventForm.name.trim() || !eventForm.schedules || eventForm.schedules.length === 0}
             >
               {submitting ? 'Updating...' : 'Update Event'}
             </Button>
