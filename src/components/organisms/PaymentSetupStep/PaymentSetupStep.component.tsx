@@ -31,9 +31,8 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
       newErrors.stripe = 'Please connect your Stripe account to continue';
     }
 
-    if (formData.accountStatus !== 'enabled' && formData.accountStatus !== 'active') {
-      newErrors.stripeStatus = 'Your Stripe account must be fully verified';
-    }
+    // Don't block on pending status - let them continue with a warning
+    // Stripe verification can take time and shouldn't block onboarding
 
     if (!formData.acceptedTerms) {
       newErrors.acceptedTerms = 'You must accept the terms and conditions';
@@ -135,7 +134,8 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
 
   const isStripeConnected = !!formData.stripeAccountId;
   const isStripeActive = formData.accountStatus === 'enabled' || formData.accountStatus === 'active';
-  const canProceed = isStripeConnected && isStripeActive && formData.acceptedTerms && formData.agreedToPaymentProcessing;
+  const isStripePending = formData.accountStatus === 'pending';
+  const canProceed = isStripeConnected && formData.acceptedTerms && formData.agreedToPaymentProcessing;
 
   // Debug logging
   console.log('PaymentSetupStep state:', {
@@ -143,6 +143,7 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
     accountStatus: formData.accountStatus,
     isStripeConnected,
     isStripeActive,
+    isStripePending,
     acceptedTerms: formData.acceptedTerms,
     agreedToPaymentProcessing: formData.agreedToPaymentProcessing,
     canProceed
@@ -256,14 +257,19 @@ export const PaymentSetupStep: React.FC<PaymentSetupStepProps> = ({
                 </span>
                 <div className={styles.paymentSetupStep__statusContent}>
                   <h4 className={styles.paymentSetupStep__statusTitle}>
-                    {isStripeActive ? 'Account Connected' : 'Account Pending'}
+                    {isStripeActive ? 'Account Connected & Verified' : 'Account Connected - Verification Pending'}
                   </h4>
                   <p className={styles.paymentSetupStep__statusText}>
                     {isStripeActive 
                       ? 'Your Stripe account is active and ready to accept payments'
-                      : 'Complete your Stripe verification to start accepting payments'
+                      : 'Your account is connected. Stripe may need additional information before you can accept payments.'
                     }
                   </p>
+                  {isStripePending && (
+                    <p className={styles.paymentSetupStep__statusText} style={{ marginTop: '8px', fontSize: '14px' }}>
+                      <strong>You can continue with onboarding.</strong> Check your <a href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Stripe Dashboard</a> to complete any remaining verification steps.
+                    </p>
+                  )}
                 </div>
               </div>
 
