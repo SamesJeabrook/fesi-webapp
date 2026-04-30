@@ -45,12 +45,6 @@
       "type": "image/png",
       "density": "4.0",
       "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/android-icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
     }
   ],
   "screenshots": [
