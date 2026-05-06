@@ -49,7 +49,7 @@ export interface DocumentationPage {
   title: string;
   summary: string;
   audience: string;
-  category: 'overview' | 'merchant-admin' | 'mobile-pos';
+  category: 'overview' | 'merchant-admin' | 'mobile-pos' | 'quick-start';
   blocks: DocumentationBlock[];
   related: string[][];
 }
