@@ -101,6 +101,29 @@ export default function AdminMenuCategoriesPage() {
     }
   };
 
+  const handleDeleteCategory = async (categoryId: string) => {
+    const category = categories.find(c => c.id === categoryId);
+    if (!category) return;
+
+    const confirmMessage = `Are you sure you want to delete the category "${category.name}"?\n\nThis will remove the category, but any menu items in this category will NOT be deleted - they will become uncategorized.`;
+    
+    if (!confirm(confirmMessage)) return;
+
+    try {
+      await api.delete(`/api/menu/categories/${categoryId}`);
+      fetchData(); // Refresh the categories list
+    } catch (error: any) {
+      console.error('Error deleting category:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to delete category';
+      
+      if (errorMessage.includes('being used by menu items')) {
+        alert('Cannot delete this category because it contains menu items.\n\nPlease move or delete all items in this category first, then try again.');
+      } else {
+        alert(`Failed to delete category: ${errorMessage}`);
+      }
+    }
+  };
+
   useEffect(() => {
     if (merchantId) {
       fetchData();
@@ -190,6 +213,7 @@ export default function AdminMenuCategoriesPage() {
                   description={category.description}
                   displayOrder={category.display_order}
                   onEdit={handleEditCategory}
+                  onDelete={handleDeleteCategory}
                 />
               </Grid.Item>
             ))

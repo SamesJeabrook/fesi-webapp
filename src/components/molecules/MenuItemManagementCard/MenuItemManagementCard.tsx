@@ -15,6 +15,7 @@ export interface MenuItemManagementCardProps {
   imageUrl?: string;
   onToggleAvailability?: (id: string, currentStatus: boolean) => void;
   onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
   onManageStock?: (id: string, name: string) => void;
   showOrder?: boolean;
 }
@@ -30,6 +31,7 @@ export const MenuItemManagementCard: React.FC<MenuItemManagementCardProps> = ({
   imageUrl,
   onToggleAvailability,
   onEdit,
+  onDelete,
   onManageStock,
   showOrder = true,
 }) => {
@@ -113,6 +115,15 @@ export const MenuItemManagementCard: React.FC<MenuItemManagementCardProps> = ({
             onClick={() => onEdit(id)}
           >
             Edit
+          </Button>
+        )}
+        {onDelete && (
+          <Button 
+            variant="danger" 
+            size="sm"
+            onClick={() => onDelete(id)}
+          >
+            Delete
           </Button>
         )}
       </div>

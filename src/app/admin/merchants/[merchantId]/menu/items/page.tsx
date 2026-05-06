@@ -202,7 +202,22 @@ export default function AdminMenuItemsPage() {
       console.error('Error updating item:', error);
     }
   };
+  const handleDeleteItem = async (itemId: string) => {
+    const item = items.find(i => i.id === itemId);
+    if (!item) return;
 
+    const confirmMessage = `Are you sure you want to delete "${item.title}"?\n\nThis will permanently remove the item from the merchant's menu.`;
+    
+    if (!confirm(confirmMessage)) return;
+
+    try {
+      await api.delete(`/api/menu/${itemId}`);
+      fetchData(); // Refresh the items list
+    } catch (error: any) {
+      console.error('Error deleting item:', error);
+      alert(error.response?.data?.error || 'Failed to delete menu item');
+    }
+  };
   const handleEditItem = async (item: MenuItem) => {
     console.log('handleEditItem called with item:', item);
     // Fetch the full item with option groups and restriction fields
@@ -406,6 +421,7 @@ export default function AdminMenuItemsPage() {
                       imageUrl={item.image_url}
                       onToggleAvailability={toggleItemAvailability}
                       onEdit={() => handleEditItem(item)}
+                      onDelete={handleDeleteItem}
                     />
                   </Grid.Item>
                 ))
