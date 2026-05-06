@@ -12,6 +12,14 @@ import { mobilePosTapToPayDocumentationPage } from './pages/mobilePosTapToPay';
 import { mobilePosStaffSecurityDocumentationPage } from './pages/mobilePosStaffSecurity';
 import { overviewDocumentationPage } from './pages/overview';
 import { pricingFeesDocumentationPage } from './pages/pricingFees';
+import { quickStartOverviewDocumentationPage } from './pages/quickStartOverview';
+import { quickStartMenuCategoriesDocumentationPage } from './pages/quickStartMenuCategories';
+import { quickStartCustomizationOptionsDocumentationPage } from './pages/quickStartCustomizationOptions';
+import { quickStartMenuItemsDocumentationPage } from './pages/quickStartMenuItems';
+import { quickStartCreatingMenusDocumentationPage } from './pages/quickStartCreatingMenus';
+import { quickStartCreatingEventsDocumentationPage } from './pages/quickStartCreatingEvents';
+import { quickStartManagingOrdersDocumentationPage } from './pages/quickStartManagingOrders';
+import { quickStartPosAppDocumentationPage } from './pages/quickStartPosApp';
 import type { DocumentationNavGroup, DocumentationPage } from './types';
 
 function basicPage(page: DocumentationPage): DocumentationPage {
@@ -21,6 +29,14 @@ function basicPage(page: DocumentationPage): DocumentationPage {
 export const documentationPages: DocumentationPage[] = [
   overviewDocumentationPage,
   pricingFeesDocumentationPage,
+  quickStartOverviewDocumentationPage,
+  quickStartMenuCategoriesDocumentationPage,
+  quickStartCustomizationOptionsDocumentationPage,
+  quickStartMenuItemsDocumentationPage,
+  quickStartCreatingMenusDocumentationPage,
+  quickStartCreatingEventsDocumentationPage,
+  quickStartManagingOrdersDocumentationPage,
+  quickStartPosAppDocumentationPage,
   merchantAdminDashboardDocumentationPage,
   merchantAdminOnboardingDocumentationPage,
   merchantAdminMenuDocumentationPage,
@@ -59,6 +75,19 @@ export const documentationNavGroups: DocumentationNavGroup[] = [
   {
     title: 'Overview',
     slugs: [[], ['pricing-fees']],
+  },
+  {
+    title: '🚀 Quick Start Guide',
+    slugs: [
+      ['quick-start'],
+      ['quick-start', 'menu-categories'],
+      ['quick-start', 'customization-options'],
+      ['quick-start', 'menu-items'],
+      ['quick-start', 'creating-menus'],
+      ['quick-start', 'creating-events'],
+      ['quick-start', 'managing-orders'],
+      ['quick-start', 'pos-app'],
+    ],
   },
   {
     title: 'Merchant Web Dashboard',

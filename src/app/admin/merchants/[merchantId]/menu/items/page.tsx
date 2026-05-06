@@ -129,6 +129,18 @@ export default function AdminMenuItemsPage() {
     price: string;
     category_id: string;
     image_url?: string;
+    optionGroupIds?: number[];
+    is_age_restricted?: boolean;
+    minimum_age?: number;
+    restriction_type?: string;
+    restriction_warning?: string;
+    requires_id_verification?: boolean;
+    is_vegetarian?: boolean;
+    is_vegan?: boolean;
+    is_gluten_free?: boolean;
+    is_dairy_free?: boolean;
+    allergens?: string[];
+    allergen_info_complete?: boolean;
   }) => {
     setIsSubmitting(true);
     try {
@@ -140,12 +152,38 @@ export default function AdminMenuItemsPage() {
         merchant_id: merchantId,
         display_order: items.length + 1,
         image_url: itemData.image_url || undefined,
+        is_age_restricted: itemData.is_age_restricted || false,
+        minimum_age: itemData.minimum_age,
+        restriction_type: itemData.restriction_type,
+        restriction_warning: itemData.restriction_warning,
+        requires_id_verification: itemData.requires_id_verification || false,
+        is_vegetarian: itemData.is_vegetarian || false,
+        is_vegan: itemData.is_vegan || false,
+        is_gluten_free: itemData.is_gluten_free || false,
+        is_dairy_free: itemData.is_dairy_free || false,
+        allergens: itemData.allergens || [],
+        allergen_info_complete: itemData.allergen_info_complete || false,
       };
 
       console.log('Creating menu item with data:', requestData);
 
       const result = await api.post('/api/menu', requestData);
       console.log('Menu item created successfully:', result);
+      
+      const newItemId = result.data?.id;
+      
+      // If option groups were selected, assign them to the new item
+      if (newItemId && itemData.optionGroupIds && itemData.optionGroupIds.length > 0) {
+        for (const groupId of itemData.optionGroupIds) {
+          try {
+            await api.post(`/api/menu/${newItemId}/sub-groups`, { sub_group_id: groupId });
+          } catch (error) {
+            console.error(`Failed to assign option group ${groupId}:`, error);
+            // Continue with other groups even if one fails
+          }
+        }
+      }
+      
       setIsCreating(false);
       await fetchData();
     } catch (error) {

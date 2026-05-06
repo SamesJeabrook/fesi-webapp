@@ -163,6 +163,17 @@ export default function MenuItemsPage() {
     category_id: string;
     image_url?: string;
     optionGroupIds?: number[];
+    is_age_restricted?: boolean;
+    minimum_age?: number;
+    restriction_type?: string;
+    restriction_warning?: string;
+    requires_id_verification?: boolean;
+    is_vegetarian?: boolean;
+    is_vegan?: boolean;
+    is_gluten_free?: boolean;
+    is_dairy_free?: boolean;
+    allergens?: string[];
+    allergen_info_complete?: boolean;
   }) => {
     setIsSubmitting(true);
     try {
@@ -173,6 +184,17 @@ export default function MenuItemsPage() {
         category_id: itemData.category_id || null,
         display_order: items.length + 1,
         image_url: itemData.image_url || null,
+        is_age_restricted: itemData.is_age_restricted || false,
+        minimum_age: itemData.minimum_age,
+        restriction_type: itemData.restriction_type,
+        restriction_warning: itemData.restriction_warning,
+        requires_id_verification: itemData.requires_id_verification || false,
+        is_vegetarian: itemData.is_vegetarian || false,
+        is_vegan: itemData.is_vegan || false,
+        is_gluten_free: itemData.is_gluten_free || false,
+        is_dairy_free: itemData.is_dairy_free || false,
+        allergens: itemData.allergens || [],
+        allergen_info_complete: itemData.allergen_info_complete || false,
       });
 
       const newItemId = responseData.data?.id;
