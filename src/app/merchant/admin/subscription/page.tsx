@@ -338,7 +338,7 @@ export default function SubscriptionPage() {
 
     try {
       // Get CSRF token
-      const csrfResponse = await api.get('/api/auth/csrf-token');
+      const csrfResponse = await api.get('/api/csrf-token');
       const csrfToken = csrfResponse.csrfToken;
 
       await api.delete(`/api/merchants/${merchantId}`, {
