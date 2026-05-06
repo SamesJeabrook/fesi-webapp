@@ -80,12 +80,12 @@ export const quickStartMenuCategoriesDocumentationPage: DocumentationPage = {
       ],
     },
     {
-      type: 'section',
-      title: '🎥 Video Tutorial',
-      paragraphs: [
-        'Watch our step-by-step video guide on creating menu categories. We\'ll show you how to set up a complete category structure in under 5 minutes.',
-        '[Video: Setting Up Menu Categories - Duration: 4:32]',
-      ],
+      type: 'embed',
+      embed: {
+        url: 'https://youtu.be/qNhNAkiE5OA?si=PcFxOlB2uVaBcBIy',
+        title: 'Video Tutorial: Setting Up Menu Categories',
+        description: 'Watch our step-by-step video guide on creating menu categories. We\'ll show you how to set up a complete category structure in under 5 minutes.',
+      },
     },
     {
       type: 'section',

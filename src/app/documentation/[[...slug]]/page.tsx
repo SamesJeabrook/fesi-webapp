@@ -36,8 +36,11 @@ export default async function DocumentationPage({ params }: PageProps) {
         <section className={styles.content}>
           <DocsHero title={entry.title} summary={entry.summary} audience={entry.audience} />
 
-          {entry.blocks.map((block) => (
-            <DocsBlockRenderer key={`${entry.slug.join('/')}-${block.title}`} block={block} />
+          {entry.blocks.map((block, index) => (
+            <DocsBlockRenderer
+              key={`${entry.slug.join('/')}-${block.type}-${index}`}
+              block={block}
+            />
           ))}
 
           {entry.related.length > 0 ? (

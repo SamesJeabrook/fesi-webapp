@@ -91,3 +91,14 @@
   background: #ecfdf3;
   border-color: #86efac;
 }
+
+.embedContainer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.embedContainer iframe {
+  max-width: 100%;
+  border-radius: 12px;
+}

@@ -103,7 +103,7 @@ const nextConfig = {
               "img-src 'self' data: https: blob:",
               "font-src 'self' data: https://fonts.gstatic.com",
               "connect-src 'self' https://*.auth0.com https://api.stripe.com https://api.mapbox.com https://events.mapbox.com wss://*.railway.app https://*.railway.app " + (process.env.NEXT_PUBLIC_API_URL || ''),
-              "frame-src 'self' https://*.auth0.com https://js.stripe.com https://hooks.stripe.com",
+              "frame-src 'self' https://*.auth0.com https://js.stripe.com https://hooks.stripe.com https://www.youtube.com https://www.youtube-nocookie.com",
               "worker-src 'self' blob:",
               "object-src 'none'",
               "base-uri 'self'",

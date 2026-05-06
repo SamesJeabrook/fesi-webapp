@@ -15,6 +15,12 @@ export interface DocumentationAssetItem {
   description: string;
 }
 
+export interface DocumentationEmbedItem {
+  url: string;
+  title?: string;
+  description?: string;
+}
+
 export type DocumentationBlock =
   | {
       type: 'section';
@@ -42,6 +48,10 @@ export type DocumentationBlock =
       type: 'assets';
       title: string;
       assets: DocumentationAssetItem[];
+    }
+  | {
+      type: 'embed';
+      embed: DocumentationEmbedItem;
     };
 
 export interface DocumentationPage {

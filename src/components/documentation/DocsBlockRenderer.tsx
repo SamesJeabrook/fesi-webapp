@@ -74,6 +74,68 @@ export function DocsBlockRenderer({ block }: DocsBlockRendererProps) {
     );
   }
 
+  if (block.type === 'embed') {
+    const getYouTubeVideoId = (url: string): string | null => {
+      try {
+        const parsed = new URL(url);
+        const hostname = parsed.hostname.replace(/^www\./, '');
+        if (hostname === 'youtu.be') {
+          return parsed.pathname.slice(1);
+        }
+
+        if (
+          hostname === 'youtube.com' ||
+          hostname === 'm.youtube.com' ||
+          hostname === 'youtube-nocookie.com'
+        ) {
+          if (parsed.pathname === '/watch') {
+            return parsed.searchParams.get('v');
+          }
+          if (parsed.pathname.startsWith('/embed/') || parsed.pathname.startsWith('/shorts/')) {
+            return parsed.pathname.split('/')[2];
+          }
+        }
+      } catch {
+        const legacyMatch = url.match(
+          /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+        );
+        return legacyMatch?.[1] ?? null;
+      }
+      return null;
+    };
+
+    const videoId = getYouTubeVideoId(block.embed.url);
+    if (!videoId) {
+      return (
+        <article className={contentStyles.block}>
+          <p className={contentStyles.paragraph}>Invalid YouTube URL: {block.embed.url}</p>
+        </article>
+      );
+    }
+
+    return (
+      <article className={contentStyles.block}>
+        {block.embed.title && (
+          <h2 className={contentStyles.sectionTitle}>{block.embed.title}</h2>
+        )}
+        {block.embed.description && (
+          <p className={contentStyles.paragraph}>{block.embed.description}</p>
+        )}
+        <div className={contentStyles.embedContainer}>
+          <iframe
+            width="560"
+            height="315"
+            src={`https://www.youtube.com/embed/${videoId}`}
+            title={block.embed.title || 'YouTube video'}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+      </article>
+    );
+  }
+
   const toneClass =
     block.tone === 'warning'
       ? contentStyles.calloutWarning
