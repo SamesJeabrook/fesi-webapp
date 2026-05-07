@@ -87,12 +87,12 @@ export const quickStartCustomizationOptionsDocumentationPage: DocumentationPage 
       ],
     },
     {
-      type: 'section',
-      title: '🎥 Video Tutorial',
-      paragraphs: [
-        'Watch our detailed video guide on creating and managing customization options. We cover single vs. multiple selection, pricing strategies, and best practices.',
-        '[Video: Setting Up Customization Options - Duration: 6:45]',
-      ],
+      type: 'embed',
+      embed: {
+        url: 'https://youtu.be/cchs61eoqCU',
+        title: 'Video Tutorial: Creating sub-items and options',
+        description: 'Watch our step-by-step video guide on creating menu sub-items and options. We\'ll show you how to set up additional options for your menu items in under 5 minutes.',
+      },
     },
     {
       type: 'section',
