@@ -101,12 +101,12 @@ export const quickStartCreatingEventsDocumentationPage: DocumentationPage = {
       ],
     },
     {
-      type: 'section',
-      title: '🎥 Video Tutorial',
-      paragraphs: [
-        'Watch our step-by-step guide on creating and managing events, including best practices for different event types.',
-        '[Video: Creating and Managing Events - Duration: 7:30]',
-      ],
+      type: 'embed',
+      embed: {
+        url: 'https://youtu.be/yTa2GnwvbN8',
+        title: 'Video Tutorial: Creating events',
+        description: 'Watch our step-by-step video guide on creating events. We\'ll show you how to set up your event details, set your location and link a menu to your event.',
+      },
     },
     {
       type: 'section',
