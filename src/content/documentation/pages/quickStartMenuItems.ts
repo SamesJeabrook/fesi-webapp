@@ -105,12 +105,12 @@ export const quickStartMenuItemsDocumentationPage: DocumentationPage = {
       ],
     },
     {
-      type: 'section',
-      title: '🎥 Video Tutorial',
-      paragraphs: [
-        'Watch our comprehensive video on creating menu items, attaching options, and managing availability during service.',
-        '[Video: Creating and Managing Menu Items - Duration: 8:15]',
-      ],
+      type: 'embed',
+      embed: {
+        url: 'https://youtu.be/S_omeI4zNkY',
+        title: 'Video Tutorial: Creating your menu items',
+        description: 'Watch our step-by-step video guide on creating menu items. We\'ll show you how to link your categories and sub-items and options to actual menu items along with dietary information.',
+      },
     },
     {
       type: 'section',

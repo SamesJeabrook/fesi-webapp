@@ -87,12 +87,12 @@ export const quickStartCreatingMenusDocumentationPage: DocumentationPage = {
       ],
     },
     {
-      type: 'section',
-      title: '🎥 Video Tutorial',
-      paragraphs: [
-        'Watch our video guide on building and publishing menus, including strategies for multiple menu management.',
-        '[Video: Building and Publishing Menus - Duration: 5:20]',
-      ],
+      type: 'embed',
+      embed: {
+        url: 'https://youtu.be/Oe3fOIKQ2ec',
+        title: 'Video Tutorial: Creating your menu items',
+        description: 'Watch our step-by-step video guide on creating menu items. We\'ll show you how to link your categories and sub-items and options to actual menu items along with dietary information.',
+      },
     },
     {
       type: 'section',
