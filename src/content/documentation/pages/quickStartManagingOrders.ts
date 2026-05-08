@@ -109,12 +109,12 @@ export const quickStartManagingOrdersDocumentationPage: DocumentationPage = {
       ],
     },
     {
-      type: 'section',
-      title: '🎥 Video Tutorial',
-      paragraphs: [
-        'Watch our complete guide to order management, including tips for busy service periods and handling edge cases.',
-        '[Video: Managing Orders Like a Pro - Duration: 9:15]',
-      ],
+      type: 'embed',
+      embed: {
+        url: 'https://youtu.be/XL0ntDOKX5k',
+        title: 'Video Tutorial: Managing your customers Orders',
+        description: 'Watch this overview of the order management dashboard and how to use it to keep customers informed and manage your kitchen workflow efficiently.',
+      },
     },
     {
       type: 'section',

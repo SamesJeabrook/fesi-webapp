@@ -4,7 +4,7 @@ export const quickStartPosAppDocumentationPage: DocumentationPage = {
   slug: ['quick-start', 'pos-app'],
   title: 'Step 7: Get the POS App',
   summary:
-    'Download the Fesi POS app for iOS to accept in-person orders and use Apple Tap to Pay for contactless payments.',
+    'Download the Fesi POS app for iOS or Android to accept in-person orders and use mobile contactless payments.',
   audience: 'Merchants wanting to accept in-person orders with mobile payments.',
   category: 'quick-start',
   blocks: [
@@ -12,18 +12,18 @@ export const quickStartPosAppDocumentationPage: DocumentationPage = {
       type: 'section',
       title: 'Why Use the POS App?',
       paragraphs: [
-        'The Fesi POS app transforms your iPhone into a complete point-of-sale system. Accept orders face-to-face, process payments with a tap, and manage your business on the go.',
-        'Best of all: no extra hardware needed. Your iPhone is your card reader thanks to Apple Tap to Pay.',
+        'The Fesi POS app transforms your mobile device into a complete point-of-sale system. Accept orders face-to-face, process payments with a tap, and manage your business on the go.',
+        'Best of all: no extra hardware needed. Your phone becomes your card reader for contactless payments.',
       ],
     },
     {
       type: 'callout',
       tone: 'success',
-      title: '💳 Apple Tap to Pay',
+      title: '💳 Contactless Mobile Payments',
       paragraphs: [
-        'Accept contactless payments directly on your iPhone - no dongles, no extra devices.',
-        'Customers just tap their card, phone, or watch on your iPhone to pay. Fast, secure, and professional.',
-        'Requires iPhone XS or newer running iOS 16+. Works with Visa, Mastercard, American Express, and mobile wallets.',
+        'Accept contactless payments directly on your phone - no dongles, no extra devices.',
+        'Customers just tap their card, phone, or watch on your screen to pay. Fast, secure, and professional.',
+        'Works on supported iOS and Android devices. Compatible with Visa, Mastercard, American Express, and mobile wallets.',
       ],
     },
     {
@@ -80,8 +80,8 @@ export const quickStartPosAppDocumentationPage: DocumentationPage = {
       type: 'section',
       title: 'Device Requirements',
       bullets: [
-        '**iPhone XS or newer** (for Tap to Pay)',
-        '**iOS 16.0 or later**',
+        '**Supported iPhone or Android device**',
+        '**iOS 16.0 or later, or a supported Android version**',
         '**Active internet connection** (4G/5G or WiFi)',
         '**Stripe account** connected to your Fesi merchant account',
         '**UK merchant** (Tap to Pay currently UK only)',
@@ -129,12 +129,12 @@ export const quickStartPosAppDocumentationPage: DocumentationPage = {
       ],
     },
     {
-      type: 'section',
-      title: '🎥 Video Tutorial',
-      paragraphs: [
-        'Watch our comprehensive POS app tutorial covering setup, Tap to Pay, and handling your first transactions.',
-        '[Video: Fesi POS App Complete Guide - Duration: 12:45]',
-      ],
+      type: 'embed',
+      embed: {
+        url: 'https://youtu.be/KdWRZVzRvLI',
+        title: 'Video Tutorial: The Mobile POS App',
+        description: 'Watch this overview of the mobile POS app and how to use it to manage your service on the go and take contactless payments directly.',
+      },
     },
     {
       type: 'section',
