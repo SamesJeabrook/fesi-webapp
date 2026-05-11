@@ -3,8 +3,8 @@
  */
 
 export interface SubItemGroup {
-  id: number;
-  merchant_id: number;
+  id: string;
+  merchant_id: string;
   name: string;
   description?: string;
   selection_type: 'single' | 'multiple';
@@ -17,8 +17,8 @@ export interface SubItemGroup {
 }
 
 export interface SubItem {
-  id: number;
-  group_id: number;
+  id: string;
+  group_id: string;
   name: string;
   additional_price: number;
   display_order: number;
@@ -30,10 +30,10 @@ export interface OptionGroupSelectorProps {
   availableGroups: SubItemGroup[];
   
   /** Currently selected/assigned option group IDs */
-  selectedGroupIds: number[];
+  selectedGroupIds: string[];
   
   /** Callback when selection changes */
-  onChange: (selectedIds: number[]) => void;
+  onChange: (selectedIds: string[]) => void;
   
   /** Whether the selector is disabled */
   disabled?: boolean;

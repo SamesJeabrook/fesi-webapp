@@ -72,7 +72,7 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
   
   // Option groups state
   const [availableOptionGroups, setAvailableOptionGroups] = useState<SubItemGroup[]>([]);
-  const [selectedOptionGroupIds, setSelectedOptionGroupIds] = useState<number[]>([]);
+  const [selectedOptionGroupIds, setSelectedOptionGroupIds] = useState<string[]>([]);
   const [isLoadingOptionGroups, setIsLoadingOptionGroups] = useState(false);
   const [optionGroupsError, setOptionGroupsError] = useState<string>('');
 
@@ -144,7 +144,7 @@ export const EditMenuItemModal: React.FC<EditMenuItemModalProps> = ({
     }
   };
 
-  const handleOptionGroupChange = async (newSelectedIds: number[]) => {
+  const handleOptionGroupChange = async (newSelectedIds: string[]) => {
     // Determine which groups were added and which were removed
     const addedIds = newSelectedIds.filter(id => !selectedOptionGroupIds.includes(id));
     const removedIds = selectedOptionGroupIds.filter(id => !newSelectedIds.includes(id));

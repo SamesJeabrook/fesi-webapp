@@ -20,7 +20,7 @@ const OptionGroupSelector: React.FC<OptionGroupSelectorProps> = ({
   loading = false,
   error
 }) => {
-  const handleToggle = (groupId: number) => {
+  const handleToggle = (groupId: string) => {
     if (disabled) return;
     
     const isSelected = selectedGroupIds.includes(groupId);

@@ -18,7 +18,7 @@ export interface CreateMenuItemFormProps {
     price: string;
     category_id: string;
     image_url?: string;
-    optionGroupIds?: number[];
+    optionGroupIds?: string[];
     is_age_restricted?: boolean;
     minimum_age?: number;
     restriction_type?: string;
@@ -36,6 +36,7 @@ export interface CreateMenuItemFormProps {
   className?: string;
   merchantId: string;
   authToken: string;
+  showTitle?: boolean;
 }
 
 export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
@@ -46,6 +47,7 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
   className = '',
   merchantId,
   authToken,
+  showTitle = false,
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -78,7 +80,7 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
 
   // Option groups state
   const [availableOptionGroups, setAvailableOptionGroups] = useState<SubItemGroup[]>([]);
-  const [selectedOptionGroupIds, setSelectedOptionGroupIds] = useState<number[]>([]);
+  const [selectedOptionGroupIds, setSelectedOptionGroupIds] = useState<string[]>([]);
   const [isLoadingOptionGroups, setIsLoadingOptionGroups] = useState(false);
   const [optionGroupsError, setOptionGroupsError] = useState<string>('');
 
@@ -118,7 +120,7 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
     }
   };
 
-  const handleOptionGroupChange = (newSelectedIds: number[]) => {
+  const handleOptionGroupChange = (newSelectedIds: string[]) => {
     setSelectedOptionGroupIds(newSelectedIds);
   };
 
@@ -229,9 +231,10 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
       }
 
       console.log('[CreateMenuItemForm] Final image URL:', imageUrl);
+      console.log('[CreateMenuItemForm] Selected option group IDs:', selectedOptionGroupIds);
       console.log('[CreateMenuItemForm] Calling onSubmit with data');
       
-      await onSubmit({ 
+      const submitData = { 
         ...formData, 
         image_url: imageUrl,
         optionGroupIds: selectedOptionGroupIds.length > 0 ? selectedOptionGroupIds : undefined,
@@ -246,7 +249,11 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
         is_dairy_free: formData.is_dairy_free || undefined,
         allergens: formData.allergens.length > 0 ? formData.allergens : undefined,
         allergen_info_complete: formData.allergen_info_complete,
-      });
+      };
+      
+      console.log('[CreateMenuItemForm] Submit data optionGroupIds:', submitData.optionGroupIds);
+      
+      await onSubmit(submitData);
       
       console.log('[CreateMenuItemForm] onSubmit completed successfully');
       
@@ -290,9 +297,11 @@ export const CreateMenuItemForm: React.FC<CreateMenuItemFormProps> = ({
 
   return (
     <div className={`${styles.createForm} ${className}`}>
-      <Typography variant="heading-5" className={styles.createForm__title}>
-        Create New Menu Item
-      </Typography>
+      {showTitle && (
+        <Typography variant="heading-5" className={styles.createForm__title}>
+          Create New Menu Item
+        </Typography>
+      )}
 
       <Grid.Container gap="md" className={styles.createForm__content}>
         <Grid.Item sm={16} md={8}>

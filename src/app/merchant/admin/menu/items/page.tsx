@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import { MenuItemManagementCard, EditMenuItemModal, MenuItemStockRequirementsModal, SubscriptionLimitBanner } from '@/components/molecules';
+import { MenuItemManagementCard, EditMenuItemModal, MenuItemStockRequirementsModal, SubscriptionLimitBanner, Modal } from '@/components/molecules';
 import { CreateMenuItemForm } from '@/components/organisms';
 import { SubItemGroup } from '@/components/molecules/OptionGroupSelector';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
@@ -162,7 +162,7 @@ export default function MenuItemsPage() {
     price: string;
     category_id: string;
     image_url?: string;
-    optionGroupIds?: number[];
+    optionGroupIds?: string[];
     is_age_restricted?: boolean;
     minimum_age?: number;
     restriction_type?: string;
@@ -197,17 +197,40 @@ export default function MenuItemsPage() {
         allergen_info_complete: itemData.allergen_info_complete || false,
       });
 
-      const newItemId = responseData.data?.id;
+      const newItemId = responseData.id;
+      
+      console.log('[createItem] Item created with ID:', newItemId);
+      console.log('[createItem] itemData received:', itemData);
+      console.log('[createItem] itemData.optionGroupIds:', itemData.optionGroupIds);
+      console.log('[createItem] Condition check:', {
+        hasNewItemId: !!newItemId,
+        hasOptionGroupIds: !!itemData.optionGroupIds,
+        optionGroupsLength: itemData.optionGroupIds?.length,
+        willProcessOptionGroups: !!(newItemId && itemData.optionGroupIds && itemData.optionGroupIds.length > 0)
+      });
       
       // If option groups were selected, assign them to the new item
       if (newItemId && itemData.optionGroupIds && itemData.optionGroupIds.length > 0) {
+        console.log('[createItem] Assigning option groups:', itemData.optionGroupIds);
+        const failedGroups: string[] = [];
+        
         for (const groupId of itemData.optionGroupIds) {
           try {
+            console.log(`[createItem] Assigning option group ${groupId} to item ${newItemId}`);
             await api.post(`/api/menu/${newItemId}/sub-groups`, { sub_group_id: groupId });
-          } catch (error) {
-            console.error(`Failed to assign option group ${groupId}:`, error);
-            // Continue with other groups even if one fails
+            console.log(`[createItem] ✅ Successfully assigned option group ${groupId}`);
+          } catch (error: any) {
+            console.error(`[createItem] ❌ Failed to assign option group ${groupId}:`, error);
+            failedGroups.push(groupId);
           }
+        }
+        
+        // Show warning if some option groups failed
+        if (failedGroups.length > 0) {
+          const message = failedGroups.length === itemData.optionGroupIds.length
+            ? 'Menu item created but all option groups failed to assign. Please edit the item to add them.'
+            : `Menu item created but ${failedGroups.length} option group(s) failed to assign. Please edit the item to add them.`;
+          alert(message);
         }
       }
       
@@ -390,7 +413,13 @@ export default function MenuItemsPage() {
           </select>
         </div>
 
-        {isCreating && (
+        {/* Create Menu Item Modal */}
+        <Modal
+          isOpen={isCreating}
+          onClose={() => setIsCreating(false)}
+          title="Create New Menu Item"
+          size="large"
+        >
           <CreateMenuItemForm
             categories={categories}
             authToken={authToken}
@@ -399,7 +428,7 @@ export default function MenuItemsPage() {
             isSubmitting={isSubmitting}
             merchantId={merchantId}
           />
-        )}
+        </Modal>
 
         <Grid.Container gap="lg" justifyContent="start" className={styles.items__list}>
           {isLoading ? (
