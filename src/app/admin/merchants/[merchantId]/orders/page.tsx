@@ -73,6 +73,16 @@ export default function AdminMerchantOrdersPage() {
       console.log('🔄 Fetching orders for merchant:', merchantId);
       
       const data = await api.get(`/api/merchants/${merchantId}/orders`);
+      console.log('📦 Orders received from API:', data.orders?.length || 0);
+      if (data.orders && data.orders.length > 0) {
+        console.log('📦 First order from API:', {
+          id: data.orders[0].id,
+          order_number: data.orders[0].order_number,
+          payment_method: data.orders[0].payment_method,
+          payment_status: data.orders[0].payment_status,
+          keys: Object.keys(data.orders[0])
+        });
+      }
       setOrders(data.orders || []);
     } catch (error) {
       console.error('Error fetching merchant orders:', error);

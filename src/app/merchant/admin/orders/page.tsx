@@ -133,6 +133,7 @@ function useMerchantOrders(merchantId: string | null, filterDate?: string) {
           delivery_fee: order.delivery_fee,
           platform_fee: order.platform_fee,
           payment_status: order.payment_status,
+          payment_method: order.payment_method,
           order_type: order.order_type,
           notes: order.notes,
           special_instructions: order.special_instructions,

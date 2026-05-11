@@ -417,6 +417,23 @@
     font-weight: 600;
     color: var(--color-info-dark);
   }
+
+  &__cashWarning {
+    margin: var(--spacing-4) 0;
+    padding: var(--spacing-4);
+    background-color: var(--color-warning-light);
+    border-left: 4px solid var(--color-warning-main);
+    border-radius: var(--border-radius-md);
+  }
+
+  &__warningText {
+    color: var(--color-warning-dark);
+    line-height: 1.6;
+    
+    strong {
+      font-weight: 700;
+    }
+  }
 }
 
 .loading {

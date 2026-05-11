@@ -24,17 +24,19 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   const [refundType, setRefundType] = useState<'full' | 'partial'>('full');
   const [customRefundAmount, setCustomRefundAmount] = useState<string>('');
 
-  // Debug: Log the order data to see what we're receiving
+  // Debug: Log when refund modal opens
   React.useEffect(() => {
-    if (isOpen && order) {
-      console.log('OrderDetailsModal - Full order data:', order);
-      console.log('OrderDetailsModal - Order items:', order.items);
-      if (order.items?.[0]) {
-        console.log('OrderDetailsModal - First item:', order.items[0]);
-        console.log('OrderDetailsModal - First item customizations:', order.items[0].customizations);
-      }
+    if (showRefundModal && order) {
+      console.log('🔍 Refund Modal Opened - Order Data:', {
+        orderId: order.id,
+        orderNumber: order.order_number,
+        payment_method: order.payment_method,
+        payment_method_type: order.payment_method_type,
+        payment_status: order.payment_status,
+        isCashDetected: order.payment_method === 'cash'
+      });
     }
-  }, [isOpen, order]);
+  }, [showRefundModal, order]);
 
   const formatPrice = (amount: number) => {
     return `£${(amount / 100).toFixed(2)}`;
@@ -98,27 +100,28 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       setIsRefunding(true);
 
       const refundAmount = refundType === 'full' ? undefined : calculatePartialRefundAmount();
-      const isCashRefund = order.payment_status === 'pending' || !order.payment_status || order.payment_status === 'cash';
+      const isCashPayment = order.payment_method === 'cash' || order.payment_method_type === 'cash';
       
       console.log('Processing refund:', {
         orderId: order.id,
         refundType,
         refundAmount,
-        isCashRefund,
+        isCashPayment,
+        paymentMethod: order.payment_method,
         selectedItems: selectedRefundItems,
       });
 
       // Call API to process refund
       const response = await api.post<{
         success: boolean;
-        refundType: 'stripe' | 'cash';
+        refund_type?: 'stripe' | 'cash';
+        payment_method?: string;
         amount: number;
         status: string;
       }>(`/api/payments/orders/${order.id}/refund`, {
         amount: refundAmount,
         reason: refundType === 'full' ? 'full_refund' : 'partial_refund',
         items: selectedRefundItems,
-        isCashRefund,
       });
 
       console.log('Refund response:', response);
@@ -131,7 +134,11 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       onRefund?.(order.id);
       
       // Show success message
-      alert(`Refund processed successfully: £${response.amount.toFixed(2)}`);
+      const refundMessage = response.refund_type === 'cash' || isCashPayment
+        ? `Cash refund recorded: £${response.amount.toFixed(2)}. Please provide cash refund to customer.`
+        : `Refund processed successfully: £${response.amount.toFixed(2)}. Customer will receive refund in 5-10 business days.`;
+      
+      alert(refundMessage);
       
       // Close the main modal
       onClose();
@@ -451,11 +458,19 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
       >
         <div className={styles.refireModal__content}>
           <Typography variant="body-medium">
-            {order.payment_status === 'pending' || !order.payment_status || order.payment_status === 'cash' 
-              ? 'This will record a cash refund for analytics purposes only.'
-              : 'This will process a refund through Stripe. The platform fee will be reversed.'
+            {order.payment_method === 'cash'
+              ? '💵 Cash Payment Detected: This will record the refund for your records only. You must provide the cash refund to the customer directly.'
+              : '💳 Card Payment: This will process an automatic refund through Stripe. The customer will receive the refund in 5-10 business days.'
             }
           </Typography>
+          
+          {order.payment_method === 'cash' && (
+            <div className={styles.refundModal__cashWarning}>
+              <Typography variant="body-small" className={styles.refundModal__warningText}>
+                ⚠️ <strong>Important:</strong> Cash refunds must be handled manually. Make sure to give the customer their money back before confirming this refund.
+              </Typography>
+            </div>
+          )}
 
           <div className={styles.refundModal__typeSelector}>
             <label className={styles.refundModal__radioLabel}>
