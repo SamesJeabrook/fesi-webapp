@@ -31,7 +31,7 @@ export const PostOrderSignupPrompt: React.FC<PostOrderSignupPromptProps> = ({
       <div className={styles.promptCard}>
         <div className={styles.promptIcon}>🎉</div>
         
-        <Typography variant="h3" className={styles.promptTitle}>
+        <Typography variant="heading-3" className={styles.promptTitle}>
           Order Confirmed!
         </Typography>
         
