@@ -1,0 +1,134 @@
+.promptContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--spacing-4);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.promptCard {
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-6);
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+  text-align: center;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.promptIcon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-3);
+  animation: bounce 0.6s ease-out;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.promptTitle {
+  margin-bottom: var(--spacing-2);
+  color: var(--color-text-primary);
+}
+
+.promptSubtitle {
+  color: var(--color-success);
+  font-weight: 600;
+  margin-bottom: var(--spacing-4);
+}
+
+.promptContent {
+  margin-bottom: var(--spacing-5);
+  text-align: left;
+}
+
+.benefitsList {
+  list-style: none;
+  padding: 0;
+  margin: var(--spacing-4) 0;
+  
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-2) 0;
+    
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--color-border-light);
+    }
+  }
+}
+
+.benefitIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.emailNote {
+  margin-top: var(--spacing-4);
+  padding: var(--spacing-3);
+  background: var(--color-background-secondary);
+  border-radius: var(--border-radius-md);
+  text-align: center;
+  color: var(--color-text-secondary);
+  
+  strong {
+    color: var(--color-text-primary);
+    font-weight: 600;
+  }
+}
+
+.promptActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+// Mobile responsive
+@media (max-width: 768px) {
+  .promptContainer {
+    padding: var(--spacing-3);
+  }
+  
+  .promptCard {
+    padding: var(--spacing-5);
+  }
+  
+  .promptIcon {
+    font-size: 3rem;
+  }
+}

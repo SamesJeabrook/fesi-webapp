@@ -35,6 +35,18 @@ export function CustomerNavigationWrapper({
     });
   };
 
+  const handleSignupClick = () => {
+    loginWithRedirect({
+      appState: {
+        returnTo: window.location.pathname,
+      },
+      authorizationParams: {
+        redirect_uri: `${window.location.origin}/customer/login`,
+        screen_hint: 'signup',
+      },
+    });
+  };
+
   const handleLogoutClick = () => {
     sessionStorage.setItem('postLogoutRedirect', '/customer/login');
     logout({
@@ -56,6 +68,7 @@ export function CustomerNavigationWrapper({
           : undefined
       }
       onLoginClick={handleLoginClick}
+      onSignupClick={handleSignupClick}
       onLogoutClick={handleLogoutClick}
       showCart={false}
       cartItemCount={0}

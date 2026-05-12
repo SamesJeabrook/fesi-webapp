@@ -21,6 +21,11 @@ export interface CustomerNavigationProps {
   onLoginClick?: () => void;
   
   /**
+   * Callback when signup button is clicked
+   */
+  onSignupClick?: () => void;
+  
+  /**
    * Callback when logout is requested
    */
   onLogoutClick?: () => void;
