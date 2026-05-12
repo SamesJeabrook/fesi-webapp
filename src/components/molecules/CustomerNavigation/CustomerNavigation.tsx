@@ -17,6 +17,7 @@ export function CustomerNavigation({
   activePath,
   user,
   onLoginClick,
+  onSignupClick,
   onLogoutClick,
   cartItemCount = 0,
   showCart = false,
@@ -27,12 +28,26 @@ export function CustomerNavigation({
   const pathname = usePathname();
   const currentPath = activePath || pathname;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   // Prevent hydration mismatch by only showing orders button after client mount
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (userDropdownOpen && !target.closest(`.${styles.customerNavigation__user}`)) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [userDropdownOpen]);
 
   const getInitials = (name?: string, email?: string) => {
     if (name) {
@@ -116,29 +131,80 @@ export function CustomerNavigation({
           {/* User Section */}
           {user ? (
             <div className={styles.customerNavigation__user}>
-              <div className={styles.customerNavigation__userInfo}>
-                {user.name && (
-                  <span className={styles.customerNavigation__userName}>
-                    {user.name}
+              <button 
+                className={styles.customerNavigation__userButton}
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                aria-label="User menu"
+              >
+                <div className={styles.customerNavigation__userInfo}>
+                  {user.name && (
+                    <span className={styles.customerNavigation__userName}>
+                      {user.name}
+                    </span>
+                  )}
+                  <span className={styles.customerNavigation__userEmail}>
+                    {user.email}
                   </span>
-                )}
-                <span className={styles.customerNavigation__userEmail}>
-                  {user.email}
-                </span>
-              </div>
-              <div className={styles.customerNavigation__avatar}>
-                {getInitials(user.name, user.email)}
-              </div>
+                </div>
+                <div className={styles.customerNavigation__avatar}>
+                  {getInitials(user.name, user.email)}
+                </div>
+              </button>
+
+              {/* User Dropdown */}
+              {userDropdownOpen && (
+                <div className={styles.customerNavigation__dropdown}>
+                  <Link 
+                    href="/customer/settings"
+                    className={styles.customerNavigation__dropdownItem}
+                    onClick={() => setUserDropdownOpen(false)}
+                  >
+                    <span>⚙️</span>
+                    Account Settings
+                  </Link>
+                  <Link 
+                    href="/customer/terms"
+                    className={styles.customerNavigation__dropdownItem}
+                    onClick={() => setUserDropdownOpen(false)}
+                  >
+                    <span>📄</span>
+                    Terms & Conditions
+                  </Link>
+                  <hr className={styles.customerNavigation__dropdownDivider} />
+                  {onLogoutClick && (
+                    <button
+                      className={`${styles.customerNavigation__dropdownItem} ${styles.customerNavigation__dropdownItemDanger}`}
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        onLogoutClick();
+                      }}
+                    >
+                      <span>🚪</span>
+                      Logout
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={onLoginClick}
-              className={styles.customerNavigation__loginButton}
-            >
-              Login
-            </Button>
+            <div className={styles.customerNavigation__authButtons}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onLoginClick}
+                className={styles.customerNavigation__loginButton}
+              >
+                Login
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={onSignupClick}
+                className={styles.customerNavigation__signupButton}
+              >
+                Sign Up
+              </Button>
+            </div>
           )}
 
           {/* Mobile Menu Button */}
@@ -177,6 +243,29 @@ export function CustomerNavigation({
               </Link>
             );
           })}
+          
+          {/* User Menu Items */}
+          {user && (
+            <>
+              <hr className={styles.customerNavigation__mobileDivider} />
+              <Link
+                href="/customer/settings"
+                className={styles.customerNavigation__mobileNavItem}
+                onClick={handleNavClick}
+              >
+                <span>⚙️</span>
+                Account Settings
+              </Link>
+              <Link
+                href="/customer/terms"
+                className={styles.customerNavigation__mobileNavItem}
+                onClick={handleNavClick}
+              >
+                <span>📄</span>
+                Terms & Conditions
+              </Link>
+            </>
+          )}
           
           {user && onLogoutClick && (
             <Button

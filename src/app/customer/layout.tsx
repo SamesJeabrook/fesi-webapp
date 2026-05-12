@@ -37,8 +37,10 @@ export default function CustomerLayout({
   // Don't show nav on signup page or when not authenticated
   const showNav = isAuthenticated && pathname !== '/customer/signup';
 
+  // Allow any authenticated user to access customer features
+  // Customer profile will be auto-created when needed (e.g., when placing first order)
   return (
-    <AuthGuard requireRole="customer" loginPath="/customer/login">
+    <AuthGuard loginPath="/customer/login">
       <div className={styles.layout}>
         {showNav && (
           <nav className={styles.nav}>

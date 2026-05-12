@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { CustomerNavigationWrapper } from '@/components/molecules/CustomerNavigation';
 import Link from 'next/link';
 import styles from './orders.module.scss';
 
@@ -92,8 +92,8 @@ export default function CustomerOrdersPage() {
   };
 
   return (
-    <ProtectedRoute requireRole={['customer']}>
-      <div className={styles.orders}>
+    <div className={styles.orders}>
+      <CustomerNavigationWrapper />
         <div className={styles.orders__header}>
           <div>
             <Typography variant="heading-2">Order History</Typography>
@@ -253,6 +253,5 @@ export default function CustomerOrdersPage() {
           </div>
         )}
       </div>
-    </ProtectedRoute>
   );
 }

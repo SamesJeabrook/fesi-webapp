@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { CustomerNavigationWrapper } from '@/components/molecules/CustomerNavigation';
 import api from '@/utils/api';
 import Link from 'next/link';
 import styles from './dashboard.module.scss';
@@ -55,6 +55,7 @@ export default function CustomerDashboard() {
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [loyaltyCards, setLoyaltyCards] = useState<LoyaltyCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasProfile, setHasProfile] = useState(true);
 
   useEffect(() => {
     fetchDashboardData();
@@ -66,14 +67,20 @@ export default function CustomerDashboard() {
 
       // Fetch all dashboard data in parallel
       const [profileData, statsData, ordersData, loyaltyData] = await Promise.all([
-        api.get('/api/customers/me'),
-        api.get('/api/customers/me/stats'),
-        api.get('/api/customers/me/orders?limit=5'),
-        api.get('/api/customers/me/loyalty-cards'),
+        api.get('/api/customers/me').catch(() => null),
+        api.get('/api/customers/me/stats').catch(() => null),
+        api.get('/api/customers/me/orders?limit=5').catch(() => ({ data: [] })),
+        api.get('/api/customers/me/loyalty-cards').catch(() => ({ data: [] })),
       ]);
 
+      // Check if customer profile exists
+      if (!profileData || !profileData.data) {
+        setHasProfile(false);
+        return;
+      }
+
       setProfile(profileData.data);
-      setStats(statsData.data);
+      setStats(statsData?.data || null);
       setRecentOrders(ordersData.data || []);
       setLoyaltyCards(loyaltyData.data || []);
     } catch (error) {
@@ -109,17 +116,38 @@ export default function CustomerDashboard() {
 
   if (isLoading) {
     return (
-      <ProtectedRoute requireRole={['customer']}>
-        <div className={styles.dashboard}>
-          <Typography variant="heading-3">Loading...</Typography>
+      <div className={styles.dashboard}>
+        <CustomerNavigationWrapper />
+        <Typography variant="heading-3">Loading...</Typography>
+      </div>
+    );
+  }
+
+  // Show helpful message if no customer profile exists yet
+  if (!hasProfile) {
+    return (
+      <div className={styles.dashboard}>
+        <CustomerNavigationWrapper />
+        <div className={styles.dashboard__header}>
+          <Typography variant="heading-2">Welcome to Fesi!</Typography>
+          <Typography variant="body-large" style={{ color: 'var(--color-text-secondary)', marginTop: '1rem' }}>
+            You don't have a customer profile yet. A profile will be automatically created when you place your first order.
+          </Typography>
+          <div style={{ marginTop: '2rem' }}>
+            <Link href="/vendors">
+              <Button variant="primary" size="lg">
+                Browse Events & Start Ordering
+              </Button>
+            </Link>
+          </div>
         </div>
-      </ProtectedRoute>
+      </div>
     );
   }
 
   return (
-    <ProtectedRoute requireRole={['customer']}>
-      <div className={styles.dashboard}>
+    <div className={styles.dashboard}>
+      <CustomerNavigationWrapper />
         {/* Welcome Section */}
         <div className={styles.dashboard__header}>
           <Typography variant="heading-2">
@@ -132,7 +160,7 @@ export default function CustomerDashboard() {
 
         {/* Quick Stats */}
         <Grid.Container gap="lg" className={styles.dashboard__stats}>
-          <Grid.Item sm={16} md={8} lg={4}>
+          <Grid.Item sm={16} md={8} lg={8}>
             <div className={styles.statCard}>
               <Typography variant="heading-6" style={{ color: 'var(--color-text-secondary)' }}>
                 Total Orders
@@ -140,30 +168,12 @@ export default function CustomerDashboard() {
               <Typography variant="heading-2">{stats?.total_orders || 0}</Typography>
             </div>
           </Grid.Item>
-          <Grid.Item sm={16} md={8} lg={4}>
-            <div className={styles.statCard}>
-              <Typography variant="heading-6" style={{ color: 'var(--color-text-secondary)' }}>
-                Total Spent
-              </Typography>
-              <Typography variant="heading-2">{formatPrice(stats?.total_spent || 0)}</Typography>
-            </div>
-          </Grid.Item>
-          <Grid.Item sm={16} md={8} lg={4}>
+          <Grid.Item sm={16} md={8} lg={8}>
             <div className={styles.statCard}>
               <Typography variant="heading-6" style={{ color: 'var(--color-text-secondary)' }}>
                 Loyalty Cards
               </Typography>
               <Typography variant="heading-2">{loyaltyCards.length}</Typography>
-            </div>
-          </Grid.Item>
-          <Grid.Item sm={16} md={8} lg={4}>
-            <div className={styles.statCard}>
-              <Typography variant="heading-6" style={{ color: 'var(--color-text-secondary)' }}>
-                Avg Order Value
-              </Typography>
-              <Typography variant="heading-2">
-                {formatPrice(stats?.average_order_value || 0)}
-              </Typography>
             </div>
           </Grid.Item>
         </Grid.Container>
@@ -281,6 +291,5 @@ export default function CustomerDashboard() {
           </Grid.Container>
         </div>
       </div>
-    </ProtectedRoute>
   );
 }

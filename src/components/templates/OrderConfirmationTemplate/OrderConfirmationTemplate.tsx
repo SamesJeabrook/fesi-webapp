@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Typography, Button } from '@/components/atoms';
 import { CustomerNavigationWrapper } from '@/components/molecules/CustomerNavigation';
+import { PostOrderSignupPrompt } from '@/components/molecules/PostOrderSignupPrompt';
 import { useAuth0 } from '@auth0/auth0-react';
 import { getAuthToken } from '@/utils/devAuth';
 import styles from './OrderConfirmationTemplate.module.scss';
@@ -47,14 +48,30 @@ interface OrderDetails {
 
 export function OrderConfirmationTemplate({ orderId }: OrderConfirmationTemplateProps) {
   const router = useRouter();
-  const { getAccessTokenSilently, isAuthenticated } = useAuth0();
+  const { getAccessTokenSilently, isAuthenticated, loginWithRedirect } = useAuth0();
   const [order, setOrder] = useState<OrderDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showSignupPrompt, setShowSignupPrompt] = useState(false);
 
   useEffect(() => {
     loadOrderDetails();
   }, [orderId]);
+
+  useEffect(() => {
+    // Show signup prompt for guest users after order loads
+    if (!isAuthenticated && order && order.guest_email) {
+      // Check if user has already dismissed the prompt in this session
+      const dismissed = sessionStorage.getItem(`signup_prompt_dismissed_${orderId}`);
+      if (!dismissed) {
+        // Show prompt after a short delay for better UX
+        const timer = setTimeout(() => {
+          setShowSignupPrompt(true);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isAuthenticated, order, orderId]);
 
   const loadOrderDetails = async () => {
     try {
@@ -122,6 +139,28 @@ export function OrderConfirmationTemplate({ orderId }: OrderConfirmationTemplate
     
     // For regular orders, estimate 15-30 minutes for food preparation
     return '15-30 minutes';
+  };
+
+  const handleSignup = () => {
+    // Close the prompt
+    setShowSignupPrompt(false);
+    
+    // Redirect to Auth0 signup with the guest email pre-filled
+    loginWithRedirect({
+      authorizationParams: {
+        screen_hint: 'signup',
+        login_hint: order?.guest_email || undefined,
+      },
+      appState: {
+        returnTo: `/orders/confirmation/${orderId}`,
+      },
+    });
+  };
+
+  const handleSkipSignup = () => {
+    // Mark as dismissed for this session
+    sessionStorage.setItem(`signup_prompt_dismissed_${orderId}`, 'true');
+    setShowSignupPrompt(false);
   };
 
   if (loading) {
@@ -291,6 +330,16 @@ export function OrderConfirmationTemplate({ orderId }: OrderConfirmationTemplate
           </Typography>
         </div>
       </div>
+
+      {/* Signup Prompt for Guest Users */}
+      {showSignupPrompt && order && order.guest_email && (
+        <PostOrderSignupPrompt
+          orderNumber={order.order_number}
+          orderEmail={order.guest_email}
+          onSignup={handleSignup}
+          onSkip={handleSkipSignup}
+        />
+      )}
     </div>
   );
 }
