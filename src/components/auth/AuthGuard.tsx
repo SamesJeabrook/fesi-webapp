@@ -83,10 +83,14 @@ export function AuthGuard({
       } else if (requireRole && user) {
         // Check if user has the required role from JWT token
         const userRoles = user['https://fesi.app/roles'] || [];
+        const customerIds = user['https://fesi.app/customer_ids'] || [];
+        const merchantIds = user['https://fesi.app/merchant_ids'] || [];
         
         console.log('AuthGuard - User:', user);
         console.log('AuthGuard - Required role:', requireRole);
         console.log('AuthGuard - User roles:', userRoles);
+        console.log('AuthGuard - Customer IDs:', customerIds);
+        console.log('AuthGuard - Merchant IDs:', merchantIds);
         
         // Admin users have access to all routes (superuser)
         if (userRoles.includes('admin')) {
@@ -94,8 +98,23 @@ export function AuthGuard({
           return;
         }
         
-        if (!userRoles.includes(requireRole)) {
-          console.warn('AuthGuard - User does not have required role. Redirecting to unauthorized.');
+        // Check role access
+        let hasAccess = userRoles.includes(requireRole);
+        
+        // Special case: Allow customer access if user has customer_ids (dual-role merchant/customer)
+        if (requireRole === 'customer' && customerIds.length > 0) {
+          console.log('AuthGuard - User has customer_ids, granting customer access (dual-role)');
+          hasAccess = true;
+        }
+        
+        // Special case: Allow merchant access if user has merchant_ids
+        if (requireRole === 'merchant' && merchantIds.length > 0) {
+          console.log('AuthGuard - User has merchant_ids, granting merchant access');
+          hasAccess = true;
+        }
+        
+        if (!hasAccess) {
+          console.warn('AuthGuard - User does not have required role or IDs. Redirecting to unauthorized.');
           console.warn('AuthGuard - Available roles:', userRoles);
           console.warn('AuthGuard - Required role:', requireRole);
           
@@ -136,6 +155,8 @@ export function AuthGuard({
   // Check role if required
   if (requireRole && user && !devToken) {
     const userRoles = user['https://fesi.app/roles'] || [];
+    const customerIds = user['https://fesi.app/customer_ids'] || [];
+    const merchantIds = user['https://fesi.app/merchant_ids'] || [];
     
     // If user just logged in and roles haven't loaded yet, show loading
     // This prevents the unauthorized redirect during the brief moment roles are loading
@@ -154,8 +175,21 @@ export function AuthGuard({
       );
     }
     
+    // Check role access
+    let hasAccess = userRoles.includes('admin') || userRoles.includes(requireRole);
+    
+    // Special case: Allow customer access if user has customer_ids (dual-role merchant/customer)
+    if (requireRole === 'customer' && customerIds.length > 0) {
+      hasAccess = true;
+    }
+    
+    // Special case: Allow merchant access if user has merchant_ids
+    if (requireRole === 'merchant' && merchantIds.length > 0) {
+      hasAccess = true;
+    }
+    
     // Admin users have access to all routes (superuser)
-    if (!userRoles.includes('admin') && !userRoles.includes(requireRole)) {
+    if (!hasAccess) {
       return null; // Will redirect via useEffect
     }
   }

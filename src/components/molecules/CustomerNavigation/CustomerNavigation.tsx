@@ -155,7 +155,7 @@ export function CustomerNavigation({
               {userDropdownOpen && (
                 <div className={styles.customerNavigation__dropdown}>
                   <Link 
-                    href="/customer/profile"
+                    href="/customer/settings"
                     className={styles.customerNavigation__dropdownItem}
                     onClick={() => setUserDropdownOpen(false)}
                   >
@@ -249,7 +249,7 @@ export function CustomerNavigation({
             <>
               <hr className={styles.customerNavigation__mobileDivider} />
               <Link
-                href="/customer/profile"
+                href="/customer/settings"
                 className={styles.customerNavigation__mobileNavItem}
                 onClick={handleNavClick}
               >

@@ -177,7 +177,7 @@ export default function CustomerTermsPage() {
               For questions about these terms, contact us at:
             </Typography>
             <ul>
-              <li>Email: <a href="mailto:support@fesi.app" className={styles.terms__link}>support@fesi.app</a></li>
+              <li>Email: <a href="mailto:info@fesi.app" className={styles.terms__link}>info@fesi.app</a></li>
               <li>Website: <a href="https://fesi.app" className={styles.terms__link}>https://fesi.app</a></li>
             </ul>
           </section>
@@ -197,7 +197,7 @@ export default function CustomerTermsPage() {
               </Typography>
               <Button 
                 variant="primary" 
-                size="large"
+                size="lg"
                 onClick={handleAcceptTerms}
               >
                 I Accept the Terms & Conditions

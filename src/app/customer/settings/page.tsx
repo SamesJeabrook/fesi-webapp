@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography, Button, Grid } from '@/components/atoms';
 import { FormInput } from '@/components/atoms';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { CustomerNavigationWrapper } from '@/components/molecules/CustomerNavigation';
 import Link from 'next/link';
 import api from '@/utils/api';
+import { getAuthToken } from '@/utils/devAuth';
 import styles from './settings.module.scss';
 
 interface CustomerProfile {
@@ -24,13 +25,14 @@ interface CustomerProfile {
 
 export default function CustomerSettingsPage() {
   const router = useRouter();
-  const { getAccessTokenSilently, logout } = useAuth0();
+  const { getAccessTokenSilently, logout, user } = useAuth0();
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletionReason, setDeletionReason] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -47,7 +49,13 @@ export default function CustomerSettingsPage() {
 
   useEffect(() => {
     fetchProfile();
-  }, []);
+    // Debug Auth0 user object
+    if (user) {
+      console.log('Auth0 user object:', user);
+      console.log('Auth0 user.email:', user.email);
+      console.log('Auth0 user.name:', user.name);
+    }
+  }, [user]);
 
   const fetchProfile = async () => {
     try {
@@ -88,6 +96,39 @@ export default function CustomerSettingsPage() {
     }
   };
 
+  const handleExportData = async () => {
+    try {
+      setIsExporting(true);
+      const token = await getAccessTokenSilently();
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/customers/me/export-data`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `fesi-my-data-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      alert('Your data has been downloaded successfully');
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      alert('Failed to export data');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleUpdatePreferences = async () => {
     try {
       setIsSaving(true);
@@ -103,19 +144,28 @@ export default function CustomerSettingsPage() {
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm('Are you absolutely sure? This action cannot be undone.')) {
+    if (!deletionReason.trim()) {
+      alert('Please provide a reason for deletion');
+      return;
+    }
+
+    if (!window.confirm('Are you absolutely sure? This will delete your CUSTOMER account only (not your merchant account if you have one). Your customer data will be anonymized and you will be logged out. This action cannot be undone.')) {
       return;
     }
 
     try {
       setIsDeleting(true);
-      await api.delete('/api/customers/me', {
-        body: JSON.stringify({ deletion_reason: deletionReason }),
+      const token = await getAuthToken(getAccessTokenSilently);
+      
+      await api.post('/api/customers/me/request-deletion', {
+        deletion_reason: deletionReason
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       
-      alert('Your account has been deleted. You will be logged out.');
-      sessionStorage.setItem('postLogoutRedirect', '/customer/login');
-      logout({ logoutParams: { returnTo: window.location.origin } });
+      alert('Your customer account has been deleted. You will now be logged out.');
+      // Logout and redirect
+      window.location.href = '/vendors';
     } catch (error) {
       console.error('Error deleting account:', error);
       alert('Failed to delete account. Please try again.');
@@ -125,16 +175,16 @@ export default function CustomerSettingsPage() {
 
   if (isLoading) {
     return (
-      <ProtectedRoute requireRole={['customer']}>
-        <div className={styles.settings}>
-          <Typography variant="heading-3">Loading...</Typography>
-        </div>
-      </ProtectedRoute>
+      <div className={styles.settings}>
+        <CustomerNavigationWrapper />
+        <Typography variant="heading-3">Loading...</Typography>
+      </div>
     );
   }
 
   return (
-    <ProtectedRoute requireRole={['customer']}>
+    <>
+      <CustomerNavigationWrapper />
       <div className={styles.settings}>
         <div className={styles.settings__header}>
           <div>
@@ -176,9 +226,19 @@ export default function CustomerSettingsPage() {
               <Grid.Item sm={16} md={8}>
                 <FormInput
                   label="Email"
-                  value={profile?.email || ''}
+                  value={
+                    (profile?.email && !profile.email.includes('@auth0.local')) 
+                      ? profile.email 
+                      : (user?.email && !user?.email.includes('@auth0.local'))
+                        ? user.email
+                        : 'No email on file'
+                  }
                   disabled
-                  helpText="Email cannot be changed"
+                  helpText={
+                    (profile?.email?.includes('@auth0.local') || user?.email?.includes('@auth0.local'))
+                      ? "Please contact support to update your email"
+                      : "Email cannot be changed"
+                  }
                 />
               </Grid.Item>
               <Grid.Item sm={16} md={8}>
@@ -250,47 +310,6 @@ export default function CustomerSettingsPage() {
               </label>
             </div>
 
-            <div className={styles.preference}>
-              <div>
-                <Typography variant="body-medium" style={{ fontWeight: 500 }}>
-                  SMS Notifications
-                </Typography>
-                <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                  Receive order updates via text message
-                </Typography>
-              </div>
-              <label className={styles.switch}>
-                <input
-                  type="checkbox"
-                  checked={preferences.sms_notifications}
-                  onChange={(e) =>
-                    setPreferences((prev) => ({ ...prev, sms_notifications: e.target.checked }))
-                  }
-                />
-                <span className={styles.switch__slider}></span>
-              </label>
-            </div>
-
-            <div className={styles.preference}>
-              <div>
-                <Typography variant="body-medium" style={{ fontWeight: 500 }}>
-                  Push Notifications
-                </Typography>
-                <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
-                  Receive push notifications on your device
-                </Typography>
-              </div>
-              <label className={styles.switch}>
-                <input
-                  type="checkbox"
-                  checked={preferences.push_notifications}
-                  onChange={(e) =>
-                    setPreferences((prev) => ({ ...prev, push_notifications: e.target.checked }))
-                  }
-                />
-                <span className={styles.switch__slider}></span>
-              </label>
-            </div>
 
             <Button
               variant="primary"
@@ -303,24 +322,45 @@ export default function CustomerSettingsPage() {
           </div>
         </div>
 
+        {/* GDPR Data Export */}
+        <div className={styles.settings__section}>
+          <Typography variant="heading-4">Your Data</Typography>
+          <div className={styles.settings__card}>
+            <Typography variant="body-medium" style={{ marginBottom: '1rem' }}>
+              Download all your personal data and order history in JSON format (GDPR compliant)
+            </Typography>
+            <Button
+              variant="secondary"
+              onClick={handleExportData}
+              isLoading={isExporting}
+              isDisabled={isExporting}
+            >
+              📥 Download My Data
+            </Button>
+          </div>
+        </div>
+
         {/* Delete Account */}
         <div className={styles.settings__section}>
-          <Typography variant="heading-4">Delete Account</Typography>
+          <Typography variant="heading-4">Delete Customer Account</Typography>
           <div className={`${styles.settings__card} ${styles.settings__dangerZone}`}>
             <Typography variant="body-medium" style={{ marginBottom: '1rem' }}>
-              Once you delete your account, there is no going back. Please be certain.
+              Permanently delete your customer profile and anonymize all your order data. This action cannot be undone.
+            </Typography>
+            <Typography variant="body-small" style={{ marginBottom: '1rem', color: 'var(--color-warning-main)', fontWeight: 500 }}>
+              ⚠️ Note: This only deletes your customer account. If you have a merchant account, it will remain active.
             </Typography>
             {!showDeleteConfirm ? (
               <Button
                 variant="danger"
                 onClick={() => setShowDeleteConfirm(true)}
               >
-                Delete My Account
+                Delete Customer Account
               </Button>
             ) : (
               <div className={styles.deleteConfirm}>
                 <Typography variant="body-medium" style={{ marginBottom: '1rem' }}>
-                  Are you sure you want to delete your account?
+                  ⚠️ Warning: This will permanently delete your CUSTOMER account and anonymize all your order data. If you have a merchant account, it will NOT be affected.
                 </Typography>
                 <textarea
                   className={styles.deleteConfirm__textarea}
@@ -346,7 +386,7 @@ export default function CustomerSettingsPage() {
                     isDisabled={isDeleting}
                     isLoading={isDeleting}
                   >
-                    Yes, Delete My Account
+                    Yes, Delete Customer Account
                   </Button>
                 </div>
               </div>
@@ -354,6 +394,6 @@ export default function CustomerSettingsPage() {
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </>
   );
 }
