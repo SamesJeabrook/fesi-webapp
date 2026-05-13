@@ -187,9 +187,11 @@ export default function AdminMenusPage() {
       <div className={styles.page}>
         <AdminPageHeader
           title="Menu Management"
-          subtitle={`Manage menus for ${merchantName}`}
-          backLabel="Back to Merchant"
-          backHref={`/admin/merchants/${merchantId}`}
+          description={`Manage menus for ${merchantName}`}
+          backLink={{
+            href: `/admin/merchants/${merchantId}`,
+            label: 'Back to Merchant',
+          }}
         />
 
         <div className={styles.page__content}>
