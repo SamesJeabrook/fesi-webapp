@@ -76,11 +76,11 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
           hasTrialAccess: updatedFormData.planSelection?.hasTrialAccess,
           isBetaUser: updatedFormData.planSelection?.isBetaUser,
           
-          businessName: data.businessName,
-          description: data.description,
-          phoneNumber: data.phoneNumber,
-          address: data.address,
-          categories: data.categories,
+          businessName: data?.businessName,
+          description: data?.description,
+          phoneNumber: data?.phoneNumber,
+          address: data?.address,
+          categories: data?.categories,
           
           // No compliance data since step is skipped
           hygieneRating: null,
