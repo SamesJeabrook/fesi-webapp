@@ -100,7 +100,7 @@ We reserve the right to suspend or terminate your account if you:
 
 For questions about these terms, contact us at:
 
-- Email: support@fesi.app
+- Email: info@fesi.app
 - Website: https://fesi.app
 
 ---

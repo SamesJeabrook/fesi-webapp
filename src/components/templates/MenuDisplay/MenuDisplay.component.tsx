@@ -82,7 +82,20 @@ export const MenuDisplay: React.FC<MenuDisplayProps> = ({
             className={styles.merchantImage}
           />
         )}
-        <h1 className={styles.merchantName}>{merchant.name}</h1>
+        <div className={styles.merchantNameContainer}>
+          <h1 className={styles.merchantName}>
+            {merchant.name}
+            {merchant.isVerified && (
+              <span 
+                className={styles.verifiedBadge} 
+                title="Verified merchant - compliance documents approved"
+                aria-label="Verified merchant"
+              >
+                ✓
+              </span>
+            )}
+          </h1>
+        </div>
         {merchant.description && (
           <p className={styles.merchantDescription}>{merchant.description}</p>
         )}

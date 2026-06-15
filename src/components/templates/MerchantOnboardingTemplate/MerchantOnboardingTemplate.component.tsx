@@ -21,7 +21,7 @@ const STEPS: StepConfig[] = [
   { id: 'account', title: 'Account', description: 'Basic account setup' },
   { id: 'plan', title: 'Plan', description: 'Choose subscription' },
   { id: 'business', title: 'Business', description: 'Business information' },
-  { id: 'compliance', title: 'Compliance', description: 'Legal documents' },
+  // { id: 'compliance', title: 'Compliance', description: 'Legal documents' }, // Hidden for now - documents now optional
   { id: 'payment', title: 'Payment', description: 'Payment setup' },
   { id: 'subscription', title: 'Subscription', description: 'Monthly billing' },
 ];
@@ -54,9 +54,75 @@ export const MerchantOnboardingTemplate: React.FC<MerchantOnboardingTemplateProp
     setCurrentStep('business');
   };
 
-  const handleBusinessDetailsComplete = (data: MerchantOnboardingData['businessDetails']) => {
-    setFormData(prev => ({ ...prev, businessDetails: data }));
-    setCurrentStep('compliance');
+  const handleBusinessDetailsComplete = async (data: MerchantOnboardingData['businessDetails']) => {
+    const updatedFormData = { ...formData, businessDetails: data };
+    setFormData(updatedFormData);
+    
+    // Skip compliance step - create the merchant record here instead
+    // This gives us a merchantId needed for Stripe onboarding
+    if (!merchantId) {
+      setIsCreatingMerchant(true);
+      try {
+        const token = await getAccessTokenSilently();
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        
+        const payload = {
+          username: updatedFormData.accountSetup?.username,
+          email: user?.email || updatedFormData.accountSetup?.email,
+          name: user?.name || updatedFormData.accountSetup?.name,
+          auth0Id: user?.sub,
+          
+          selectedTier: updatedFormData.planSelection?.selectedTier,
+          hasTrialAccess: updatedFormData.planSelection?.hasTrialAccess,
+          isBetaUser: updatedFormData.planSelection?.isBetaUser,
+          
+          businessName: data.businessName,
+          description: data.description,
+          phoneNumber: data.phoneNumber,
+          address: data.address,
+          categories: data.categories,
+          
+          // No compliance data since step is skipped
+          hygieneRating: null,
+          hygieneRatingDate: null,
+          
+          // Mark as incomplete onboarding - will be updated after payment setup
+          acceptedTerms: false,
+          agreedToPaymentProcessing: false,
+        };
+        
+        const response = await fetch(`${apiUrl}/api/merchants/onboard`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create merchant account');
+        }
+        
+        const result = await response.json();
+        const createdMerchantId = result.merchantId;
+        setMerchantId(createdMerchantId);
+        
+        console.log('Merchant created, skipping compliance - moving to payment');
+        
+        // Skip compliance and move directly to payment step
+        setCurrentStep('payment');
+      } catch (error) {
+        console.error('Error creating merchant:', error);
+        alert(error instanceof Error ? error.message : 'Failed to create merchant account. Please try again.');
+      } finally {
+        setIsCreatingMerchant(false);
+      }
+    } else {
+      // Merchant already exists, just move to payment step
+      setCurrentStep('payment');
+    }
   };
 
   const uploadComplianceDocuments = async (merchantIdToUse: string, token: string) => {

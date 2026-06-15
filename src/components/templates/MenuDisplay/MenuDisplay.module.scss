@@ -24,6 +24,44 @@
   @extend %heading-1;
   color: var(--color-neutral-900);
   margin: 0 0 var(--spacing-2) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+  justify-content: center;
+  
+  @include breakpoint(md) {
+    justify-content: flex-start;
+  }
+}
+
+.merchantNameContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  @include breakpoint(md) {
+    justify-content: flex-start;
+  }
+}
+
+.verifiedBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--color-primary, #3b82f6);
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+  flex-shrink: 0;
+  cursor: help;
+  
+  &:hover {
+    background: var(--color-primary-dark, #2563eb);
+  }
 }
 
 .merchantDescription {

@@ -15,6 +15,7 @@ export interface Merchant {
   currency: string;
   loyaltyEnabled?: boolean;
   canAcceptOrders?: boolean;
+  isVerified?: boolean; // Merchant has uploaded compliance documents and been verified
 }
 
 export interface MenuDisplayProps {

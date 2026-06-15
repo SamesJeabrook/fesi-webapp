@@ -119,7 +119,7 @@ export default function MerchantLoginPage() {
               )}
 
               <Typography variant="body-small" className={styles.helpText}>
-                Need help? Contact support@fesi.app
+                Need help? Contact info@fesi.app
               </Typography>
 
               <div style={{ marginTop: 'var(--spacing-4)', textAlign: 'center' }}>
