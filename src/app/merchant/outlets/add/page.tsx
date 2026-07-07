@@ -73,7 +73,7 @@ export default function AddOutletPage() {
     <div className={styles.addOutlet}>
       <div className={styles.addOutlet__header}>
         <Typography variant="heading-2">Add New Outlet</Typography>
-        <Typography variant="body">
+        <Typography variant="body-medium">
           Create an additional outlet to manage from your account. Each outlet has its own menus, 
           events, and orders, but shares your subscription.
         </Typography>
@@ -83,7 +83,7 @@ export default function AddOutletPage() {
         <form onSubmit={handleSubmit} className={styles.addOutlet__form}>
           {error && (
             <div className={styles.addOutlet__error}>
-              <Typography variant="body" className={styles.addOutlet__errorText}>
+              <Typography variant="body-medium" className={styles.addOutlet__errorText}>
                 ⚠️ {error}
               </Typography>
             </div>
@@ -91,7 +91,7 @@ export default function AddOutletPage() {
 
           <div className={styles.addOutlet__field}>
             <label htmlFor="name" className={styles.addOutlet__label}>
-              <Typography variant="body">Outlet Name *</Typography>
+              <Typography variant="body-medium">Outlet Name *</Typography>
             </label>
             <input
               id="name"
@@ -110,7 +110,7 @@ export default function AddOutletPage() {
 
           <div className={styles.addOutlet__field}>
             <label htmlFor="description" className={styles.addOutlet__label}>
-              <Typography variant="body">Description</Typography>
+              <Typography variant="body-medium">Description</Typography>
             </label>
             <textarea
               id="description"
@@ -125,7 +125,7 @@ export default function AddOutletPage() {
 
           <div className={styles.addOutlet__field}>
             <label htmlFor="operating_mode" className={styles.addOutlet__label}>
-              <Typography variant="body">Operating Mode *</Typography>
+              <Typography variant="body-medium">Operating Mode *</Typography>
             </label>
             <select
               id="operating_mode"
@@ -152,14 +152,14 @@ export default function AddOutletPage() {
               type="button"
               variant="secondary"
               onClick={handleCancel}
-              disabled={loading}
+              isDisabled={loading}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="primary"
-              disabled={loading}
+              isDisabled={loading}
             >
               {loading ? 'Creating...' : 'Create Outlet'}
             </Button>
@@ -170,21 +170,21 @@ export default function AddOutletPage() {
       <div className={styles.addOutlet__info}>
         <Card>
           <Typography variant="heading-4">📍 What's an outlet?</Typography>
-          <Typography variant="body">
+          <Typography variant="body-medium">
             An outlet is a separate business location or operation that you manage. For example:
           </Typography>
           <ul className={styles.addOutlet__list}>
             <li>
-              <Typography variant="body">• A burger van and a coffee cart at different markets</Typography>
+              <Typography variant="body-medium">• A burger van and a coffee cart at different markets</Typography>
             </li>
             <li>
-              <Typography variant="body">• Multiple restaurant locations</Typography>
+              <Typography variant="body-medium">• Multiple restaurant locations</Typography>
             </li>
             <li>
-              <Typography variant="body">• Different food concepts under one company</Typography>
+              <Typography variant="body-medium">• Different food concepts under one company</Typography>
             </li>
           </ul>
-          <Typography variant="body">
+          <Typography variant="body-medium">
             Each outlet has its own menus, prices, and orders, making it easy to manage 
             different operations from one account.
           </Typography>

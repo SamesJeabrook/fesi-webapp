@@ -115,7 +115,7 @@ export default function AdminOutletManagementPage() {
     return (
       <ProtectedRoute requireRole={['admin']}>
         <div className={styles.container}>
-          <Typography variant="body">Loading outlet information...</Typography>
+          <Typography variant="body-medium">Loading outlet information...</Typography>
         </div>
       </ProtectedRoute>
     );
@@ -129,14 +129,14 @@ export default function AdminOutletManagementPage() {
             ← Back to Settings
           </Link>
           <Typography variant="heading-2">Outlet Management</Typography>
-          <Typography variant="body" className={styles.subtitle}>
+          <Typography variant="body-medium" className={styles.subtitle}>
             Manage outlets for {merchantName}
           </Typography>
         </div>
 
         {error && (
           <div className={styles.errorBanner}>
-            <Typography variant="body">⚠️ {error}</Typography>
+            <Typography variant="body-medium">⚠️ {error}</Typography>
           </div>
         )}
 
@@ -170,7 +170,7 @@ export default function AdminOutletManagementPage() {
                 <Button
                   onClick={() => setShowAddModal(true)}
                   variant="primary"
-                  disabled={!outletInfo.subscription.can_add_more}
+                  isDisabled={!outletInfo.subscription.can_add_more}
                 >
                   + Add Outlet
                 </Button>
@@ -281,14 +281,14 @@ export default function AdminOutletManagementPage() {
                 <Button
                   onClick={handleCreateOutlet}
                   variant="primary"
-                  disabled={creating || !newOutlet.name.trim()}
+                  isDisabled={creating || !newOutlet.name.trim()}
                 >
                   {creating ? 'Creating...' : 'Create Outlet'}
                 </Button>
                 <Button
                   onClick={() => setShowAddModal(false)}
                   variant="secondary"
-                  disabled={creating}
+                  isDisabled={creating}
                 >
                   Cancel
                 </Button>
