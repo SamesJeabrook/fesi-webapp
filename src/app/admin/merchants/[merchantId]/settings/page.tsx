@@ -108,6 +108,28 @@ export default function AdminSystemSettingsPage() {
               </div>
             </div>
           </Link>
+          <Link href={`/admin/merchants/${merchantId}/settings/beta`} className={styles.navLink}>
+            <div className={styles.navItem}>
+              <span className={styles.navIcon}>🧪</span>
+              <div>
+                <Typography variant="body-medium">Beta User Management</Typography>
+                <Typography variant="body-small" className={styles.navDescription}>
+                  Grant beta access and manage outlet limits
+                </Typography>
+              </div>
+            </div>
+          </Link>
+          <Link href={`/admin/merchants/${merchantId}/settings/outlets`} className={styles.navLink}>
+            <div className={styles.navItem}>
+              <span className={styles.navIcon}>🏪</span>
+              <div>
+                <Typography variant="body-medium">Outlet Management</Typography>
+                <Typography variant="body-small" className={styles.navDescription}>
+                  Add, remove, and manage multiple outlets
+                </Typography>
+              </div>
+            </div>
+          </Link>
           <div className={styles.navItem + ' ' + styles.navItemActive}>
             <span className={styles.navIcon}>⚙️</span>
             <div>

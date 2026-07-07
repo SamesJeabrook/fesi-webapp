@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import Link from 'next/link';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Typography } from '@/components/atoms';
+import { MerchantSwitcher } from '@/components/organisms';
 import LoginButton from '@/components/auth/LoginButton';
 import LogoutButton from '@/components/auth/LogoutButton';
 import type { NavigationProps } from './Navigation.types';
@@ -75,6 +76,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         <div className={styles.navigation__auth}>
           {isAuthenticated ? (
             <div className={styles.navigation__user}>
+              {(isMerchant || isAdmin) && <MerchantSwitcher />}
               <Typography variant="body-small" style={{ color: 'var(--color-text-secondary)' }}>
                 {user?.email} {isAdmin && '(Admin)'} {isMerchant && !isAdmin && '(Merchant)'}
               </Typography>

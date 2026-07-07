@@ -4,6 +4,7 @@ export { NotificationContainer } from './NotificationContainer';
 export type { Notification } from './NotificationContainer';
 export { StockManagement } from './StockManagement';
 export type { StockManagementProps } from './StockManagement';
+export { MerchantSwitcher } from './MerchantSwitcher';
 
 export * from './MenuItemOptionsModal';
 export * from './POSOrderSummary';

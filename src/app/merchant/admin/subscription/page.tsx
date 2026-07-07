@@ -33,6 +33,27 @@ interface CurrentSubscription {
   trial_ends_at?: string | null;
 }
 
+interface Outlet {
+  id: string;
+  name: string;
+  description?: string;
+  operating_mode: string;
+  created_at: string;
+}
+
+interface OutletInfo {
+  merchants: Outlet[];
+  subscription: {
+    current_outlets: number;
+    max_outlets: number;
+    additional_outlets?: number;
+    total_allowed?: number;
+    can_add_more: boolean;
+    addon_price?: number;
+    message?: string;
+  };
+}
+
 export default function SubscriptionPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -53,6 +74,8 @@ export default function SubscriptionPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isManagingOtherMerchant, setIsManagingOtherMerchant] = useState(false);
+  const [outletInfo, setOutletInfo] = useState<OutletInfo | null>(null);
+  const [loadingOutlets, setLoadingOutlets] = useState(false);
 
   useEffect(() => {
     console.log('Subscription page mounted');
@@ -204,10 +227,25 @@ export default function SubscriptionPage() {
       const subscriptionData = await api.get(subscriptionUrl);
       console.log('Subscription data received:', subscriptionData);
       setCurrentSubscription(subscriptionData.subscription);
+      
+      // Fetch outlet information
+      await fetchOutletInfo();
     } catch (error) {
       console.error('Error fetching subscription data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOutletInfo = async () => {
+    try {
+      setLoadingOutlets(true);
+      const data = await api.get('/api/merchants/outlets/all');
+      setOutletInfo(data);
+    } catch (error) {
+      console.error('Error fetching outlet info:', error);
+    } finally {
+      setLoadingOutlets(false);
     }
   };
 
@@ -409,6 +447,92 @@ export default function SubscriptionPage() {
           />
         </div>
 
+        {/* Outlet Management Section - Available during trial */}
+        {outletInfo && (
+          <div className={styles.outletSection} id="outlets">
+            <h2>🏪 Outlet Management</h2>
+            
+            <div className={styles.outletSummary}>
+              <div className={styles.outletCount}>
+                <strong>
+                  {outletInfo.subscription.current_outlets} of {outletInfo.subscription.total_allowed || outletInfo.subscription.max_outlets} outlets
+                </strong>
+                {outletInfo.subscription.additional_outlets && outletInfo.subscription.additional_outlets > 0 && (
+                  <span className={styles.addonBadge}>
+                    +{outletInfo.subscription.additional_outlets} add-on{outletInfo.subscription.additional_outlets > 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+              
+              {outletInfo.subscription.can_add_more ? (
+                <Link href="/merchant/outlets/add">
+                  <button className={styles.addOutletButton}>
+                    + Add Outlet
+                    {outletInfo.subscription.addon_price && (
+                      <span className={styles.priceTag}> (£{outletInfo.subscription.addon_price}/mo)</span>
+                    )}
+                  </button>
+                </Link>
+              ) : (
+                <div className={styles.upgradePrompt}>
+                  <p>🔒 Maximum outlets reached for your plan</p>
+                </div>
+              )}
+            </div>
+
+            {loadingOutlets ? (
+              <div className={styles.loading}>Loading outlets...</div>
+            ) : (
+              <div className={styles.outletList}>
+                {outletInfo.merchants.map((outlet) => (
+                  <div key={outlet.id} className={styles.outletCard}>
+                    <div className={styles.outletInfo}>
+                      <h3>{outlet.name}</h3>
+                      {outlet.description && <p>{outlet.description}</p>}
+                      <div className={styles.outletMeta}>
+                        <span className={styles.badge}>
+                          {outlet.operating_mode === 'static' ? '📍 Fixed Location' : '🚚 Event-Based'}
+                        </span>
+                        <span className={styles.date}>
+                          Added {new Date(outlet.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {outletInfo.merchants.length > 1 && (
+                      <button 
+                        className={styles.removeOutletButton}
+                        onClick={async () => {
+                          if (!confirm(`Are you sure you want to remove "${outlet.name}"? This cannot be undone.`)) {
+                            return;
+                          }
+                          
+                          try {
+                            await api.delete(`/api/merchants/outlets/${outlet.id}`);
+                            alert('Outlet removed successfully. Please log out and log back in.');
+                            await fetchOutletInfo();
+                          } catch (error: any) {
+                            alert(error.message || 'Failed to remove outlet');
+                          }
+                        }}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className={styles.outletHelp}>
+              <p>
+                💡 <strong>About outlets:</strong> Each outlet operates independently with its own menus, events, and orders. 
+                {outletInfo.subscription.addon_price && ` Additional outlets cost £${outletInfo.subscription.addon_price}/month each.`}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* GDPR Danger Zone - Always available */}
         <div className={styles.dangerZone}>
           <div className={styles.dangerZoneHeader}>
@@ -541,6 +665,98 @@ export default function SubscriptionPage() {
           {currentSubscription.subscription_ends_at && (
             <p>Ends: {new Date(currentSubscription.subscription_ends_at).toLocaleDateString()}</p>
           )}
+        </div>
+      )}
+
+      {/* Outlet Management Section */}
+      {outletInfo && (
+        <div className={styles.outletSection} id="outlets">
+          <h2>🏪 Outlet Management</h2>
+          
+          <div className={styles.outletSummary}>
+            <div className={styles.outletCount}>
+              <strong>
+                {outletInfo.subscription.current_outlets} of {outletInfo.subscription.total_allowed || outletInfo.subscription.max_outlets} outlets
+              </strong>
+              {outletInfo.subscription.additional_outlets && outletInfo.subscription.additional_outlets > 0 && (
+                <span className={styles.addonBadge}>
+                  +{outletInfo.subscription.additional_outlets} add-on{outletInfo.subscription.additional_outlets > 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+            
+            {outletInfo.subscription.can_add_more ? (
+              <Link href="/merchant/outlets/add">
+                <button className={styles.addOutletButton}>
+                  + Add Outlet
+                  {outletInfo.subscription.addon_price && (
+                    <span className={styles.priceTag}> (£{outletInfo.subscription.addon_price}/mo)</span>
+                  )}
+                </button>
+              </Link>
+            ) : (
+              <div className={styles.upgradePrompt}>
+                <p>🔒 Maximum outlets reached for your plan</p>
+                <button className={styles.upgradeBtn} onClick={() => {
+                  const plansSection = document.querySelector('h2:contains("Available Plans")');
+                  plansSection?.scrollIntoView({ behavior: 'smooth' });
+                }}>
+                  Upgrade Plan
+                </button>
+              </div>
+            )}
+          </div>
+
+          {loadingOutlets ? (
+            <div className={styles.loading}>Loading outlets...</div>
+          ) : (
+            <div className={styles.outletList}>
+              {outletInfo.merchants.map((outlet) => (
+                <div key={outlet.id} className={styles.outletCard}>
+                  <div className={styles.outletInfo}>
+                    <h3>{outlet.name}</h3>
+                    {outlet.description && <p>{outlet.description}</p>}
+                    <div className={styles.outletMeta}>
+                      <span className={styles.badge}>
+                        {outlet.operating_mode === 'static' ? '📍 Fixed Location' : '🚚 Event-Based'}
+                      </span>
+                      <span className={styles.date}>
+                        Added {new Date(outlet.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {outletInfo.merchants.length > 1 && (
+                    <button 
+                      className={styles.removeOutletButton}
+                      onClick={async () => {
+                        if (!confirm(`Are you sure you want to remove "${outlet.name}"? This cannot be undone.`)) {
+                          return;
+                        }
+                        
+                        try {
+                          await api.delete(`/api/merchants/outlets/${outlet.id}`);
+                          alert('Outlet removed successfully. Please log out and log back in.');
+                          await fetchOutletInfo();
+                        } catch (error: any) {
+                          alert(error.message || 'Failed to remove outlet');
+                        }
+                      }}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className={styles.outletHelp}>
+            <p>
+              💡 <strong>About outlets:</strong> Each outlet operates independently with its own menus, events, and orders. 
+              {outletInfo.subscription.addon_price && ` Additional outlets cost £${outletInfo.subscription.addon_price}/month each.`}
+            </p>
+          </div>
         </div>
       )}
 

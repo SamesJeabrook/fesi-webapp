@@ -1,0 +1,133 @@
+@use '@/styles/tokens' as *;
+
+.addOutlet {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--spacing-6);
+
+  &__header {
+    margin-bottom: var(--spacing-6);
+    
+    h2 {
+      margin-bottom: var(--spacing-3);
+    }
+  }
+
+  &__card {
+    margin-bottom: var(--spacing-6);
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+  }
+
+  &__error {
+    padding: var(--spacing-4);
+    background: var(--color-error-light);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-md);
+  }
+
+  &__errorText {
+    color: var(--color-error);
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+  }
+
+  &__label {
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  &__input,
+  &__textarea,
+  &__select {
+    padding: var(--spacing-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-primary);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    &::placeholder {
+      color: var(--color-text-tertiary);
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  &__hint {
+    color: var(--color-text-secondary);
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--spacing-3);
+    justify-content: flex-end;
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  &__info {
+    background: var(--color-info-light);
+    border-radius: var(--radius-lg);
+
+    .card {
+      background: transparent;
+      border: none;
+    }
+
+    h4 {
+      margin-bottom: var(--spacing-3);
+    }
+  }
+
+  &__list {
+    margin: var(--spacing-3) 0;
+    padding-left: var(--spacing-4);
+    list-style: none;
+
+    li {
+      margin-bottom: var(--spacing-2);
+    }
+  }
+
+  // Mobile responsive
+  @media (max-width: 768px) {
+    padding: var(--spacing-4);
+
+    &__actions {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

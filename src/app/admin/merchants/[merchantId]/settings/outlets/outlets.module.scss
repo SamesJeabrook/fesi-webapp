@@ -1,0 +1,233 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--spacing-6);
+}
+
+.header {
+  margin-bottom: var(--spacing-8);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  text-decoration: none;
+  margin-bottom: var(--spacing-4);
+  font-size: var(--font-size-sm);
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.subtitle {
+  margin-top: var(--spacing-2);
+  color: var(--color-text-secondary);
+}
+
+.errorBanner {
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
+  background: var(--color-error-light);
+  border: 1px solid var(--color-error);
+  border-radius: var(--border-radius-md);
+}
+
+.summaryCard {
+  margin-bottom: var(--spacing-6);
+}
+
+.summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--spacing-6);
+}
+
+.summaryInfo {
+  flex: 1;
+}
+
+.summaryMessage {
+  margin-top: var(--spacing-2);
+  color: var(--color-success);
+  font-weight: var(--font-weight-medium);
+}
+
+.summaryPrice {
+  margin-top: var(--spacing-2);
+  color: var(--color-text-secondary);
+}
+
+.limitWarning {
+  padding: var(--spacing-4);
+  background: var(--color-warning-light);
+  border-top: 1px solid var(--color-border);
+}
+
+.outletList {
+  display: grid;
+  gap: var(--spacing-4);
+}
+
+.outletCard {
+  transition: box-shadow 0.2s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.outletInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--spacing-4);
+  gap: var(--spacing-4);
+}
+
+.outletDescription {
+  margin-top: var(--spacing-2);
+  color: var(--color-text-secondary);
+}
+
+.outletMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-3);
+}
+
+.badge {
+  display: inline-block;
+  padding: var(--spacing-1) var(--spacing-2);
+  background: var(--color-neutral-light);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.date {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.deleteButton {
+  white-space: nowrap;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modalContent {
+  position: relative;
+  z-index: 1001;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.form {
+  padding: var(--spacing-6);
+}
+
+.field {
+  margin-bottom: var(--spacing-4);
+  
+  label {
+    display: block;
+  }
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: var(--spacing-3);
+  margin-top: var(--spacing-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.textarea {
+  width: 100%;
+  padding: var(--spacing-3);
+  margin-top: var(--spacing-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  resize: vertical;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.modalActions {
+  display: flex;
+  gap: var(--spacing-3);
+  padding: var(--spacing-6);
+  border-top: 1px solid var(--color-border);
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .summary {
+    flex-direction: column;
+    gap: var(--spacing-4);
+  }
+  
+  .outletInfo {
+    flex-direction: column;
+  }
+  
+  .deleteButton {
+    width: 100%;
+  }
+  
+  .modalActions {
+    flex-direction: column-reverse;
+    
+    button {
+      width: 100%;
+    }
+  }
+}

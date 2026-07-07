@@ -900,3 +900,207 @@
     }
   }
 }
+
+/* Outlet Management Section */
+.outletSection {
+  margin: var(--spacing-8, 3rem) 0;
+  padding: var(--spacing-6, 2rem);
+  background: var(--color-neutral-50, #F9FAFB);
+  border: 1px solid var(--color-neutral-200, #E5E7EB);
+  border-radius: var(--border-radius-lg, 12px);
+
+  h2 {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--spacing-4, 1rem);
+    color: var(--color-neutral-900, #111827);
+  }
+}
+
+.outletSummary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-6, 2rem);
+  padding-bottom: var(--spacing-4, 1rem);
+  border-bottom: 2px solid var(--color-neutral-200, #E5E7EB);
+}
+
+.outletCount {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2, 0.5rem);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-lg);
+  color: var(--color-neutral-900, #111827);
+}
+
+.addonBadge {
+  display: inline-block;
+  padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem);
+  background: var(--color-primary-100, #DBEAFE);
+  color: var(--color-primary-700, #1D4ED8);
+  border-radius: var(--border-radius-md, 8px);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.addOutletButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2, 0.5rem);
+  padding: var(--spacing-3, 0.75rem) var(--spacing-4, 1rem);
+  background: var(--color-primary-600, #2563EB);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md, 8px);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: var(--color-primary-700, #1D4ED8);
+  }
+}
+
+.priceTag {
+  opacity: 0.9;
+  font-size: var(--font-size-sm);
+}
+
+.upgradePrompt {
+  text-align: right;
+
+  p {
+    margin: 0 0 var(--spacing-2, 0.5rem) 0;
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-600, #6B7280);
+  }
+}
+
+.outletList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-4, 1rem);
+  margin-bottom: var(--spacing-6, 2rem);
+}
+
+.outletCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--spacing-4, 1rem);
+  background: white;
+  border: 1px solid var(--color-neutral-200, #E5E7EB);
+  border-radius: var(--border-radius-md, 8px);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--color-primary-300, #93C5FD);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+}
+
+.outletInfo {
+  flex: 1;
+
+  h3 {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--spacing-2, 0.5rem) 0;
+    color: var(--color-neutral-900, #111827);
+  }
+
+  p {
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-600, #6B7280);
+    margin: 0 0 var(--spacing-2, 0.5rem) 0;
+  }
+}
+
+.outletMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-2, 0.5rem);
+}
+
+.badge {
+  display: inline-block;
+  padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem);
+  background: var(--color-neutral-100, #F3F4F6);
+  color: var(--color-neutral-700, #374151);
+  border-radius: var(--border-radius-sm, 6px);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.date {
+  display: inline-block;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-neutral-500, #9CA3AF);
+}
+
+.removeOutletButton {
+  padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
+  background: transparent;
+  color: var(--color-error-600, #DC2626);
+  border: 1px solid var(--color-error-300, #FCA5A5);
+  border-radius: var(--border-radius-md, 8px);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: var(--color-error-50, #FEF2F2);
+    border-color: var(--color-error-600, #DC2626);
+  }
+}
+
+.outletHelp {
+  padding: var(--spacing-3, 0.75rem) var(--spacing-4, 1rem);
+  background: var(--color-primary-50, #EFF6FF);
+  border-left: 3px solid var(--color-primary-600, #2563EB);
+  border-radius: var(--border-radius-md, 8px);
+
+  p {
+    margin: 0;
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-700, #374151);
+
+    strong {
+      color: var(--color-neutral-900, #111827);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .outletSummary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-4, 1rem);
+  }
+
+  .outletList {
+    grid-template-columns: 1fr;
+  }
+
+  .outletCard {
+    flex-direction: column;
+    gap: var(--spacing-3, 0.75rem);
+  }
+
+  .removeOutletButton {
+    width: 100%;
+  }
+}
