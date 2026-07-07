@@ -91,7 +91,7 @@ export default function BetaManagementPage() {
     return (
       <ProtectedRoute requireRole={['admin']}>
         <div className={styles.container}>
-          <Typography variant="body">Loading beta settings...</Typography>
+          <Typography variant="body-medium">Loading beta settings...</Typography>
         </div>
       </ProtectedRoute>
     );
@@ -105,27 +105,27 @@ export default function BetaManagementPage() {
             ← Back to Settings
           </Link>
           <Typography variant="heading-2">Beta User Management</Typography>
-          <Typography variant="body" className={styles.subtitle}>
+          <Typography variant="body-medium" className={styles.subtitle}>
             Configure beta access and outlet limits for {merchant?.name}
           </Typography>
         </div>
 
         {error && (
           <div className={styles.errorBanner}>
-            <Typography variant="body">⚠️ {error}</Typography>
+            <Typography variant="body-medium">⚠️ {error}</Typography>
           </div>
         )}
 
         {success && (
           <div className={styles.successBanner}>
-            <Typography variant="body">✅ {success}</Typography>
+            <Typography variant="body-medium">✅ {success}</Typography>
           </div>
         )}
 
         <Card className={styles.card}>
           <div className={styles.section}>
             <Typography variant="heading-4">Beta Status</Typography>
-            <Typography variant="body" className={styles.description}>
+            <Typography variant="body-medium" className={styles.description}>
               Beta users get unlimited outlets at no cost
             </Typography>
             
@@ -153,7 +153,7 @@ export default function BetaManagementPage() {
           {settings.is_beta_user && (
             <div className={styles.section}>
               <Typography variant="heading-4">Beta Notes</Typography>
-              <Typography variant="body" className={styles.description}>
+              <Typography variant="body-medium" className={styles.description}>
                 Internal notes about this beta user (not visible to merchant)
               </Typography>
               
@@ -169,7 +169,7 @@ export default function BetaManagementPage() {
 
           <div className={styles.section}>
             <Typography variant="heading-4">Outlet Limit Override</Typography>
-            <Typography variant="body" className={styles.description}>
+            <Typography variant="body-medium" className={styles.description}>
               {settings.is_beta_user 
                 ? 'Beta users have unlimited outlets by default. Set a specific limit if needed.'
                 : 'Override the subscription plan\'s outlet limit. Leave empty to use plan default.'}
@@ -201,7 +201,7 @@ export default function BetaManagementPage() {
             <Button
               onClick={handleSave}
               variant="primary"
-              disabled={saving}
+              isDisabled={saving}
             >
               {saving ? 'Saving...' : 'Save Beta Settings'}
             </Button>
@@ -218,22 +218,22 @@ export default function BetaManagementPage() {
           <Typography variant="heading-5">ℹ️ How Beta Access Works</Typography>
           <ul className={styles.infoList}>
             <li>
-              <Typography variant="body">
+              <Typography variant="body-medium">
                 <strong>Beta users</strong> can add unlimited outlets at no additional cost
               </Typography>
             </li>
             <li>
-              <Typography variant="body">
+              <Typography variant="body-medium">
                 <strong>No charges</strong> are applied when beta users add or remove outlets
               </Typography>
             </li>
             <li>
-              <Typography variant="body">
+              <Typography variant="body-medium">
                 <strong>Outlet limit override</strong> applies to both beta and regular users
               </Typography>
             </li>
             <li>
-              <Typography variant="body">
+              <Typography variant="body-medium">
                 Beta status can be revoked at any time - standard subscription limits will then apply
               </Typography>
             </li>
